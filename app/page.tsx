@@ -266,7 +266,7 @@ function ExperienzCTA() {
                     <p className="text-sm text-white/70">
                         Be part of the early access program for investors, analysts and
                         builders working with Artificial General Intelligence for global
-                        finance.
+                        finance. <a href="https://www.worldtradefactory.ai/">World Trade Factory</a>
                     </p>
                     <div className="pt-4">
                         <SignedOut>
