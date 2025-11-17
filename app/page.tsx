@@ -268,7 +268,8 @@ function ExperienzCTA() {
                         builders working with Artificial General Intelligence for global
                         finance. 
                         <br/>
-                       <a href="https://www.worldtradefactory.ai/" target="_blank" rel="noopener">Sign In</a>
+                         <br/>
+                       Sign In/Up : <a href="https://www.worldtradefactory.ai/" target="_blank" rel="noopener">World Trade Factory</a>
                     </p>
                     <div className="pt-4">
                         <SignedOut>
