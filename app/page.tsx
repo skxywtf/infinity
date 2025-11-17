@@ -331,12 +331,12 @@ function Footer() {
                         Terms
                     </a>
                     <a
-                        href="https://www.linkedin.com"
+                        href="https://www.skxywtf.com"
                         target="_blank"
                         rel="noreferrer"
                         className="hover:text-white"
                     >
-                        LinkedIn
+                        SKXYWTF
                     </a>
                 </div>
             </div>
