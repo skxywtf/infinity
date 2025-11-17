@@ -53,7 +53,7 @@ function NavBar() {
                         Essence
                     </a>
                     <a href="#experienz" className="hover:text-white">
-                        Experienz
+                        XperienZ    
                     </a>
                 </nav>
                 <SignedOut>
@@ -117,7 +117,7 @@ function Hero({ count }: { count: number }) {
                 </p>
                 <p className="text-white/60 text-sm md:text-base">
                     It connects human intuition with Artificial General Intelligence for
-                    global trade, policy and capital flows. Business at the speed of AI.
+                    global trade, policy and capital flows. Business @ the speed of AI.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
                     <a
@@ -213,7 +213,7 @@ function Essence() {
                 />
                 <EssenceCard
                     icon={<Users size={18} />}
-                    title="Experienz XZ"
+                    title="XperienZ"
                     text="A human and AI interface designed for decision speed and clarity."
                 />
                 <EssenceCard
