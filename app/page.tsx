@@ -330,19 +330,14 @@ function Footer() {
                     <span>Infinity AI - AGI for Global Finance</span>
                 </div>
                 <div className="flex gap-4">
-                    <a href="#" className="hover:text-white">
-                        Privacy
-                    </a>
-                    <a href="#" className="hover:text-white">
-                        Terms
-                    </a>
+Powered by
                     <a
                         href="https://www.skxywtf.com"
                         target="_blank"
                         rel="noreferrer"
                         className="hover:text-white"
                     >
-                        SKXYWTF
+                        <strong>SKXYWTF</a>strong>
                     </a>
                 </div>
             </div>
