@@ -1,4 +1,4 @@
-﻿'use client';
+﻿﻿'use client';
 
 import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
@@ -103,7 +103,7 @@ function Hero({ count }: { count: number }) {
         <section className="pt-16 md:pt-20 pb-10 grid md:grid-cols-2 gap-10 items-center">
             <div className="space-y-5">
                 <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-white/70">
-                    Financial AGI   World Trade Factory   Experienz Layer
+                    Financial AGI   World Trade Factory   XperienZ Layer
                 </p>
                 <h1 className="text-4xl md:text-5xl font-semibold leading-tight">
                     <span className="bg-gradient-to-r from-cyan-400 via-sky-400 to-indigo-400 bg-clip-text text-transparent">
@@ -111,7 +111,7 @@ function Hero({ count }: { count: number }) {
                     </span>
                 </h1>
                 <p className="text-white/75 text-sm md:text-base">
-                    InfinityXZ is the Experienz of superintelligence for global finance.
+                    InfinityXZ is the XperienZ of superintelligence for global finance.
                     It listens to markets, learns from data, and responds with clear,
                     actionable insight for investors and institutions.
                 </p>
@@ -139,9 +139,13 @@ function Hero({ count }: { count: number }) {
                     <Stat label="Markets" value="200+ live feeds" />
                 </div>
             </div>
-            <div className="relative h-64 md:h-80">
-                <Orb />
-            </div>
+<div className="relative h-64 md:h-80 w-full overflow-hidden rounded-xl">
+  <img
+    src="https://www.worldtradefactory.ai/content/images/2025/04/ChatGPT-Image-Apr-20--2025--09_23_13-PM.png"
+    alt="Infinity XZ AI Hero"
+    className="w-full h-full object-cover"
+  />
+</div>
         </section>
     );
 }
@@ -257,7 +261,7 @@ function ExperienzCTA() {
             <div className="grid md:grid-cols-2">
                 <div className="p-7 md:p-9 space-y-4">
                     <h3 className="text-2xl font-semibold">
-                        Enter InfinityXZ - The Experienz of Superintelligence
+                        Enter InfinityXZ - The XperienZ of Superintelligence
                     </h3>
                     <p className="text-sm text-white/70">
                         Be part of the early access program for investors, analysts and
@@ -292,7 +296,7 @@ function ExperienzCTA() {
                                 Infinity AI
                             </div>
                             <div className="font-semibold mb-1">
-                                Business at the speed of AI
+                                Business @ the speed of AI
                             </div>
                             <p className="text-xs text-white/65">
                                 A continuous intelligence loop across markets, trade and macro
