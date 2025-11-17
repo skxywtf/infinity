@@ -269,7 +269,14 @@ function ExperienzCTA() {
                         finance. 
                         <br/>
                          <br/>
-                       Sign In/Up : <a href="https://www.worldtradefactory.ai/" target="_blank" rel="noopener">World Trade Factory</a>
+                     <a href="https://www.worldtradefactory.ai/" target="_blank" rel="noopener">World Trade Factory</a>
+                                            <a
+                        href="https://www.worldtradefactory.ai/"
+                        className="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 bg-cyan-500 text-black font-semibold hover:bg-cyan-400"
+                    >
+                       World Trade Factory
+                        <ArrowRight size={16} />
+                    </a>
                     </p>
                     <div className="pt-4">
                         <SignedOut>
