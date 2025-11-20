@@ -365,7 +365,7 @@ function ExperienzCTA() {
                         <a
                             href="https://www.worldtradefactory.ai/"
                             target="_blank"
-                            className="inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 border border-white/10 bg-white/5 text-white font-medium hover:bg-white/10 transition-colors text-sm"
+                            className="inline-flex items-center justify-center gap-2 rounded-xl px-8 py-4 bg-cyan-500 text-black font-bold hover:bg-cyan-400 transition-all shadow-[0_0_30px_-10px_rgba(6,182,212,0.5)]"
                         >
                             World Trade Factory
                             <ArrowRight size={14} />
