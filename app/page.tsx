@@ -36,86 +36,115 @@ import {
 export default function InfinityXZ() {
     return (
         <div className="min-h-screen bg-[#060914] text-white overflow-x-hidden font-sans selection:bg-cyan-500/30">
+            {/* GLOBAL STYLES: Hide Vercel Toolbar & Custom Scrollbar Hiding */}
+            <style dangerouslySetInnerHTML={{__html: `
+                vercel-live-feedback { display: none !important; }
+                
+                /* Hide scrollbar for Chrome, Safari and Opera */
+                .no-scrollbar::-webkit-scrollbar {
+                    display: none;
+                }
+                /* Hide scrollbar for IE, Edge and Firefox */
+                .no-scrollbar {
+                    -ms-overflow-style: none;  /* IE and Edge */
+                    scrollbar-width: none;  /* Firefox */
+                }
+            `}} />
+            
             <AuroraBackground />
             <NavBar />
             
-            {/* Flex container to hold Main Content and Right Panel */}
-            <div className="flex justify-center">
+            {/* CENTERED CONTAINER: Holds Main Content + Sidebar together */}
+            <div className="mx-auto max-w-[1400px] flex items-start justify-center gap-10 px-6 pt-8">
                 
-                {/* Main Content - Added padding-right on large screens to make room for panel */}
-                <main className="relative w-full max-w-6xl px-6 pb-20 xl:mr-64 transition-all duration-300">
+                {/* MAIN CONTENT COLUMN */}
+                <main className="flex-1 w-full max-w-5xl pb-20 min-w-0">
                     <Hero />
                     <Essence />
                     <ExperienzCTA />
                     <Footer />
                 </main>
 
-                {/* The New Right Panel */}
+                {/* RIGHT SIDEBAR COLUMN (Sticky) */}
                 <RightPanel />
             </div>
         </div>
     );
 }
 
-/* RIGHT PANEL COMPONENT */
+/* RIGHT PANEL COMPONENT - TECH/TERMINAL STYLE */
 
 function RightPanel() {
     const menuItems = [
-        { label: "Pulse", href: "https://www.worldtradefactory.ai/pulse", icon: <Activity size={18} /> },
-        { label: "Tariffs", href: "https://www.worldtradefactory.ai/tariffs", icon: <FileText size={18} /> },
-        { label: "Prediction", href: "https://www.worldtradefactory.ai/prediction", icon: <BrainCircuit size={18} /> },
-        { label: "Economy", href: "https://www.worldtradefactory.ai/country", icon: <Globe size={18} /> },
-        { label: "Indices", href: "https://www.worldtradefactory.ai/indices", icon: <BarChart3 size={18} /> },
-        { label: "News", href: "https://www.worldtradefactory.ai/news", icon: <Newspaper size={18} /> },
-        { label: "Stocks", href: "https://www.worldtradefactory.ai/overview", icon: <CandlestickChart size={18} /> },
-        { label: "Screener", href: "https://www.worldtradefactory.ai/screeners", icon: <Filter size={18} /> },
-        { label: "Assets", href: "https://www.worldtradefactory.ai/stock", icon: <Briefcase size={18} /> },
-        { label: "StoX-RaY", href: "https://www.worldtradefactory.ai/stox-ray", icon: <ScanEye size={18} /> },
-        { label: "Charts", href: "https://www.worldtradefactory.ai/chart", icon: <LineChart size={18} /> },
-        { label: "Trend", href: "https://www.worldtradefactory.ai/trend", icon: <TrendingUp size={18} /> },
-        { label: "Rates", href: "https://www.worldtradefactory.ai/rates-and-bonds-dashboard/", icon: <Percent size={18} /> },
-        { label: "Yield", href: "https://www.worldtradefactory.ai/yield", icon: <ArrowDownUp size={18} /> },
-        { label: "Events", href: "https://www.worldtradefactory.ai/events", icon: <Calendar size={18} /> },
-        { label: "Crypto", href: "https://www.worldtradefactory.ai/cryptocurrencies", icon: <Bitcoin size={18} /> },
-        { label: "WTF Coin", href: "https://www.worldtradefactory.ai/future", icon: <Gem size={18} /> },
-        { label: "Forex", href: "https://www.worldtradefactory.ai/forex", icon: <RefreshCw size={18} /> },
-        { label: "FRED", href: "https://www.worldtradefactory.ai/fred", icon: <Database size={18} /> },
-        { label: "Clock", href: "https://www.worldtradefactory.ai/clock", icon: <Clock size={18} /> },
-        { label: "Map", href: "https://www.worldtradefactory.ai/map", icon: <MapIcon size={18} /> },
-        { label: "Advertise", href: "https://www.worldtradefactory.ai/advertise", icon: <Megaphone size={18} /> },
+        { label: "Pulse", href: "https://www.worldtradefactory.ai/pulse", icon: <Activity size={16} /> },
+        { label: "Tariffs", href: "https://www.worldtradefactory.ai/tariffs", icon: <FileText size={16} /> },
+        { label: "Prediction", href: "https://www.worldtradefactory.ai/prediction", icon: <BrainCircuit size={16} /> },
+        { label: "Economy", href: "https://www.worldtradefactory.ai/country", icon: <Globe size={16} /> },
+        { label: "Indices", href: "https://www.worldtradefactory.ai/indices", icon: <BarChart3 size={16} /> },
+        { label: "News", href: "https://www.worldtradefactory.ai/news", icon: <Newspaper size={16} /> },
+        { label: "Stocks", href: "https://www.worldtradefactory.ai/overview", icon: <CandlestickChart size={16} /> },
+        { label: "Screener", href: "https://www.worldtradefactory.ai/screeners", icon: <Filter size={16} /> },
+        { label: "Assets", href: "https://www.worldtradefactory.ai/stock", icon: <Briefcase size={16} /> },
+        { label: "StoX-RaY", href: "https://www.worldtradefactory.ai/stox-ray", icon: <ScanEye size={16} /> },
+        { label: "Charts", href: "https://www.worldtradefactory.ai/chart", icon: <LineChart size={16} /> },
+        { label: "Trend", href: "https://www.worldtradefactory.ai/trend", icon: <TrendingUp size={16} /> },
+        { label: "Rates", href: "https://www.worldtradefactory.ai/rates-and-bonds-dashboard/", icon: <Percent size={16} /> },
+        { label: "Yield", href: "https://www.worldtradefactory.ai/yield", icon: <ArrowDownUp size={16} /> },
+        { label: "Events", href: "https://www.worldtradefactory.ai/events", icon: <Calendar size={16} /> },
+        { label: "Crypto", href: "https://www.worldtradefactory.ai/cryptocurrencies", icon: <Bitcoin size={16} /> },
+        { label: "WTF Coin", href: "https://www.worldtradefactory.ai/future", icon: <Gem size={16} /> },
+        { label: "Forex", href: "https://www.worldtradefactory.ai/forex", icon: <RefreshCw size={16} /> },
+        { label: "FRED", href: "https://www.worldtradefactory.ai/fred", icon: <Database size={16} /> },
+        { label: "Clock", href: "https://www.worldtradefactory.ai/clock", icon: <Clock size={16} /> },
+        { label: "Map", href: "https://www.worldtradefactory.ai/map", icon: <MapIcon size={16} /> },
+        { label: "Advertise", href: "https://www.worldtradefactory.ai/advertise", icon: <Megaphone size={16} /> },
     ];
 
     return (
-        <aside className="hidden xl:flex fixed right-0 top-[65px] bottom-0 w-64 border-l border-white/10 bg-[#060914]/80 backdrop-blur-sm overflow-y-auto no-scrollbar z-10">
-            <nav className="w-full py-6 px-4">
-                <div className="text-[10px] uppercase tracking-widest text-white/30 mb-4 font-bold px-3 font-mono">
-                    Market Terminal
+        <aside className="hidden xl:block w-64 shrink-0 sticky top-24 h-[calc(100vh-6rem)] overflow-hidden">
+            {/* Glass Panel Container */}
+            <nav className="h-full w-full flex flex-col rounded-xl border border-white/10 bg-[#0B101F]/90 backdrop-blur-xl shadow-2xl shadow-black/40 overflow-hidden">
+                
+                {/* Header */}
+                <div className="flex items-center gap-2 px-5 pt-5 pb-3 border-b border-white/5 bg-black/20">
+                    <div className="h-1.5 w-1.5 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.8)] animate-pulse" />
+                    <div className="text-[10px] uppercase tracking-[0.2em] font-mono font-bold text-white/60">
+                        Market Terminal
+                    </div>
                 </div>
-                <ul className="space-y-1">
+
+                {/* Scrollable List with Hidden Scrollbar */}
+                <ul className="flex-1 overflow-y-auto no-scrollbar py-2 space-y-0.5">
                     {menuItems.map((item, index) => (
-                        <li key={index}>
+                        <li key={index} className="px-2">
                             <a
                                 href={item.href}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/60 hover:text-cyan-300 hover:bg-white/5 transition-all duration-200 group"
+                                className="group flex items-center gap-3 px-3 py-2.5 rounded-md text-[11px] font-mono uppercase tracking-wide text-white/50 hover:text-white hover:bg-white/[0.03] transition-all duration-200 relative overflow-hidden"
                             >
-                                <span className="text-white/40 group-hover:text-cyan-400 transition-colors">
+                                {/* Hover Accent Bar on Left */}
+                                <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                
+                                <span className="text-white/30 group-hover:text-cyan-400 transition-colors group-hover:scale-110 duration-200">
                                     {item.icon}
                                 </span>
-                                <span className="font-medium tracking-wide">{item.label}</span>
+                                <span className="group-hover:translate-x-1 transition-transform duration-200">
+                                    {item.label}
+                                </span>
                             </a>
                         </li>
                     ))}
                 </ul>
                 
-                <div className="mt-8 px-3 py-4 rounded-xl bg-gradient-to-br from-cyan-900/20 to-transparent border border-white/5">
-                     <div className="flex items-center gap-2 text-cyan-400 mb-2">
-                        <Zap size={14} />
-                        <span className="text-[10px] font-bold uppercase font-mono tracking-wider">Pro Feature</span>
+                {/* Pro Feature Box (Bottom pinned) */}
+                <div className="p-4 bg-gradient-to-t from-cyan-900/20 to-transparent border-t border-white/5">
+                     <div className="flex items-center gap-2 text-cyan-400 mb-1.5">
+                        <Zap size={12} />
+                        <span className="text-[9px] font-bold uppercase font-mono tracking-widest">Pro Feature</span>
                      </div>
-                     <p className="text-xs text-white/50 leading-relaxed font-mono">
-                        Live trade execution capabilities arriving in a future update.
+                     <p className="text-[10px] text-white/40 leading-relaxed font-mono">
+                        &gt; Live trade execution arriving in v2.0 update.
                      </p>
                 </div>
             </nav>
@@ -128,7 +157,7 @@ function RightPanel() {
 function NavBar() {
     return (
         <header className="sticky top-0 z-30 border-b border-white/10 bg-black/60 backdrop-blur-md">
-            <div className="mx-auto max-w-7xl px-6 py-3 flex items-center justify-between">
+            <div className="mx-auto max-w-[1400px] px-6 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <InfinityMark />
                     <span className="font-bold tracking-wide text-lg">
@@ -187,7 +216,7 @@ function InfinityMark() {
 
 function Hero() {
     return (
-        <section className="pt-16 md:pt-20 pb-10 grid md:grid-cols-2 gap-12 items-center">
+        <section className="pt-12 md:pt-20 pb-10 grid md:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
                 {/* Badge using Mono font for tech vibe */}
                 <p className="inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/5 px-3 py-1 text-[11px] text-cyan-200 font-mono tracking-wider uppercase">
