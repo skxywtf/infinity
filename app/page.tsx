@@ -1,38 +1,125 @@
-﻿﻿'use client';
+'use client';
 
 import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
-import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
     ArrowRight,
     Infinity as InfinityIcon,
-    Cpu,
-    LineChart,
-    Users,
+    BrainCircuit,
+    Network,
+    ShieldCheck,
     Zap,
+    // New icons for Right Panel
+    Activity,
+    FileText,
+    TrendingUp,
+    Globe,
+    BarChart3,
+    Newspaper,
+    CandlestickChart,
+    Filter,
+    Briefcase,
+    ScanEye,
+    LineChart,
+    Percent,
+    ArrowDownUp,
+    Calendar,
+    Bitcoin,
+    Gem,
+    RefreshCw,
+    Database,
+    Clock,
+    Map as MapIcon,
+    Megaphone
 } from "lucide-react";
 
 export default function InfinityXZ() {
-    const [count, setCount] = useState(1289);
-
-    useEffect(() => {
-        const id = setInterval(() => {
-            setCount((c) => c + Math.floor(Math.random() * 3));
-        }, 3000);
-        return () => clearInterval(id);
-    }, []);
-
     return (
-        <div className="min-h-screen bg-[#060914] text-white overflow-x-hidden">
+        <div className="min-h-screen bg-[#060914] text-white overflow-x-hidden font-sans selection:bg-cyan-500/30">
             <AuroraBackground />
             <NavBar />
-            <main className="relative mx-auto max-w-6xl px-6 pb-20">
-                <Hero count={count} />
-                <Essence />
-                <ExperienzCTA />
-            </main>
-            <Footer />
+            
+            {/* Flex container to hold Main Content and Right Panel */}
+            <div className="flex justify-center">
+                
+                {/* Main Content - Added padding-right on large screens to make room for panel */}
+                <main className="relative w-full max-w-6xl px-6 pb-20 xl:mr-64 transition-all duration-300">
+                    <Hero />
+                    <Essence />
+                    <ExperienzCTA />
+                    <Footer />
+                </main>
+
+                {/* The New Right Panel */}
+                <RightPanel />
+            </div>
         </div>
+    );
+}
+
+/* RIGHT PANEL COMPONENT */
+
+function RightPanel() {
+    const menuItems = [
+        { label: "Pulse", href: "https://www.worldtradefactory.ai/pulse", icon: <Activity size={18} /> },
+        { label: "Tariffs", href: "https://www.worldtradefactory.ai/tariffs", icon: <FileText size={18} /> },
+        { label: "Prediction", href: "https://www.worldtradefactory.ai/prediction", icon: <BrainCircuit size={18} /> },
+        { label: "Economy", href: "https://www.worldtradefactory.ai/country", icon: <Globe size={18} /> },
+        { label: "Indices", href: "https://www.worldtradefactory.ai/indices", icon: <BarChart3 size={18} /> },
+        { label: "News", href: "https://www.worldtradefactory.ai/news", icon: <Newspaper size={18} /> },
+        { label: "Stocks", href: "https://www.worldtradefactory.ai/overview", icon: <CandlestickChart size={18} /> },
+        { label: "Screener", href: "https://www.worldtradefactory.ai/screeners", icon: <Filter size={18} /> },
+        { label: "Assets", href: "https://www.worldtradefactory.ai/stock", icon: <Briefcase size={18} /> },
+        { label: "StoX-RaY", href: "https://www.worldtradefactory.ai/stox-ray", icon: <ScanEye size={18} /> },
+        { label: "Charts", href: "https://www.worldtradefactory.ai/chart", icon: <LineChart size={18} /> },
+        { label: "Trend", href: "https://www.worldtradefactory.ai/trend", icon: <TrendingUp size={18} /> },
+        { label: "Rates", href: "https://www.worldtradefactory.ai/rates-and-bonds-dashboard/", icon: <Percent size={18} /> },
+        { label: "Yield", href: "https://www.worldtradefactory.ai/yield", icon: <ArrowDownUp size={18} /> },
+        { label: "Events", href: "https://www.worldtradefactory.ai/events", icon: <Calendar size={18} /> },
+        { label: "Crypto", href: "https://www.worldtradefactory.ai/cryptocurrencies", icon: <Bitcoin size={18} /> },
+        { label: "WTF Coin", href: "https://www.worldtradefactory.ai/future", icon: <Gem size={18} /> },
+        { label: "Forex", href: "https://www.worldtradefactory.ai/forex", icon: <RefreshCw size={18} /> },
+        { label: "FRED", href: "https://www.worldtradefactory.ai/fred", icon: <Database size={18} /> },
+        { label: "Clock", href: "https://www.worldtradefactory.ai/clock", icon: <Clock size={18} /> },
+        { label: "Map", href: "https://www.worldtradefactory.ai/map", icon: <MapIcon size={18} /> },
+        { label: "Advertise", href: "https://www.worldtradefactory.ai/advertise", icon: <Megaphone size={18} /> },
+    ];
+
+    return (
+        <aside className="hidden xl:flex fixed right-0 top-[65px] bottom-0 w-64 border-l border-white/10 bg-[#060914]/80 backdrop-blur-sm overflow-y-auto no-scrollbar z-10">
+            <nav className="w-full py-6 px-4">
+                <div className="text-[10px] uppercase tracking-widest text-white/30 mb-4 font-bold px-3 font-mono">
+                    Market Terminal
+                </div>
+                <ul className="space-y-1">
+                    {menuItems.map((item, index) => (
+                        <li key={index}>
+                            <a
+                                href={item.href}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/60 hover:text-cyan-300 hover:bg-white/5 transition-all duration-200 group"
+                            >
+                                <span className="text-white/40 group-hover:text-cyan-400 transition-colors">
+                                    {item.icon}
+                                </span>
+                                <span className="font-medium tracking-wide">{item.label}</span>
+                            </a>
+                        </li>
+                    ))}
+                </ul>
+                
+                <div className="mt-8 px-3 py-4 rounded-xl bg-gradient-to-br from-cyan-900/20 to-transparent border border-white/5">
+                     <div className="flex items-center gap-2 text-cyan-400 mb-2">
+                        <Zap size={14} />
+                        <span className="text-[10px] font-bold uppercase font-mono tracking-wider">Pro Feature</span>
+                     </div>
+                     <p className="text-xs text-white/50 leading-relaxed font-mono">
+                        Live trade execution capabilities arriving in a future update.
+                     </p>
+                </div>
+            </nav>
+        </aside>
     );
 }
 
@@ -40,26 +127,26 @@ export default function InfinityXZ() {
 
 function NavBar() {
     return (
-        <header className="sticky top-0 z-20 border-b border-white/10 bg-black/40 backdrop-blur">
-            <div className="mx-auto max-w-6xl px-6 py-3 flex items-center justify-between">
+        <header className="sticky top-0 z-30 border-b border-white/10 bg-black/60 backdrop-blur-md">
+            <div className="mx-auto max-w-7xl px-6 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <InfinityMark />
-                    <span className="font-semibold tracking-wide">
+                    <span className="font-bold tracking-wide text-lg">
                         Infinity<span className="text-cyan-300">XZ</span>
                     </span>
                 </div>
-                <nav className="hidden md:flex gap-6 text-sm text-white/70">
-                    <a href="#essence" className="hover:text-white">
+                <nav className="hidden md:flex gap-6 text-sm text-white/70 font-medium">
+                    <a href="#essence" className="hover:text-white transition-colors">
                         Essence
                     </a>
-                    <a href="#experienz" className="hover:text-white">
+                    <a href="#experienz" className="hover:text-white transition-colors">
                         XperienZ    
                     </a>
                 </nav>
                 <SignedOut>
                     <a
                         href="#experienz"
-                        className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 bg-cyan-500 text-black text-sm font-semibold hover:bg-cyan-400"
+                        className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 bg-cyan-500 text-black text-sm font-bold hover:bg-cyan-400 transition-colors"
                     >
                         Join early access
                         <ArrowRight size={14} />
@@ -68,8 +155,8 @@ function NavBar() {
 
                 <SignedIn>
                     <div className="flex items-center gap-3">
-                        <span className="text-xs text-white/70 hidden sm:inline">
-                            Signed in to InfinityXZ
+                        <span className="text-xs text-white/70 hidden sm:inline font-mono">
+                            STATUS: CONNECTED
                         </span>
                         <UserButton afterSignOutUrl="/" />
                     </div>
@@ -98,87 +185,57 @@ function InfinityMark() {
 
 /* HERO */
 
-function Hero({ count }: { count: number }) {
+function Hero() {
     return (
-        <section className="pt-16 md:pt-20 pb-10 grid md:grid-cols-2 gap-10 items-center">
-            <div className="space-y-5">
-                <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-white/70">
-                    Financial AGI   World Trade Factory   XperienZ Layer
+        <section className="pt-16 md:pt-20 pb-10 grid md:grid-cols-2 gap-12 items-center">
+            <div className="space-y-8">
+                {/* Badge using Mono font for tech vibe */}
+                <p className="inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/5 px-3 py-1 text-[11px] text-cyan-200 font-mono tracking-wider uppercase">
+                    Applied Strategic Intelligence  //  World Trade Factory
                 </p>
-                <h1 className="text-4xl md:text-5xl font-semibold leading-tight">
+                
+                <h1 className="text-5xl md:text-6xl font-bold leading-[1.1] tracking-tight">
                     <span className="bg-gradient-to-r from-cyan-400 via-sky-400 to-indigo-400 bg-clip-text text-transparent">
-                        The Future Is Thinking
+                        The Future Is Thinking.
                     </span>
                 </h1>
-                <p className="text-white/75 text-sm md:text-base">
-                    InfinityXZ is the XperienZ of superintelligence for global finance.
-                    It listens to markets, learns from data, and responds with clear,
-                    actionable insight for investors and institutions.
-                </p>
-                <p className="text-white/60 text-sm md:text-base">
-                    It connects human intuition with Artificial General Intelligence for
-                    global trade, policy and capital flows. Business @ the speed of AI.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3 pt-2">
+
+                <div className="space-y-5">
+                    <p className="text-white/90 text-lg md:text-xl leading-relaxed font-light">
+                        Go beyond simple computation. InfinityXZ provides <strong className="font-semibold text-white">True Market Reasoning</strong>—an intelligence that understands the structural causality of global finance.
+                    </p>
+                    <p className="text-white/50 text-sm md:text-base leading-relaxed max-w-md">
+                        Designed for investors who need grounded, verifiable insight—not hallucinations. 
+                        This is business intelligence that thinks before it speaks.
+                    </p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-4 pt-2">
                     <a
                         href="#experienz"
-                        className="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 bg-cyan-500 text-black font-semibold hover:bg-cyan-400"
+                        className="inline-flex items-center justify-center gap-2 rounded-xl px-8 py-4 bg-cyan-500 text-black font-bold hover:bg-cyan-400 transition-all shadow-[0_0_30px_-10px_rgba(6,182,212,0.5)]"
                     >
-                        Get early access
-                        <ArrowRight size={16} />
+                        Request Access
+                        <ArrowRight size={18} />
                     </a>
                     <a
                         href="#essence"
-                        className="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 border border-white/20 bg-white/5 hover:bg-white/10 text-sm"
+                        className="inline-flex items-center justify-center gap-2 rounded-xl px-8 py-4 border border-white/10 bg-white/5 hover:bg-white/10 text-sm font-medium transition-colors"
                     >
-                        Learn more
+                        How it reasons
                     </a>
                 </div>
-                <div className="flex gap-6 pt-3 text-xs text-white/60">
-                    <Stat label="Pioneers joined" value={count.toLocaleString()} />
-                    <Stat label="Markets" value="200+ live feeds" />
-                </div>
             </div>
-<div className="relative h-64 md:h-80 w-full overflow-hidden rounded-xl">
-  <img
-    src="https://www.worldtradefactory.ai/content/images/2025/04/ChatGPT-Image-Apr-20--2025--09_23_13-PM.png"
-    alt="Infinity XZ AI Hero"
-    className="w-full h-full object-cover"
-  />
-</div>
-        </section>
-    );
-}
 
-function Stat({ label, value }: { label: string; value: string }) {
-    return (
-        <div>
-            <div className="uppercase tracking-wide text-[10px] text-white/40">
-                {label}
-            </div>
-            <div className="text-sm font-semibold">{value}</div>
-        </div>
-    );
-}
-
-function Orb() {
-    return (
-        <div className="absolute inset-0 grid place-items-center">
-            <div className="relative w-56 h-56 md:w-64 md:h-64">
-                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-cyan-500/30 to-indigo-600/20 blur-2xl" />
-                <div className="absolute inset-3 rounded-full border border-cyan-300/40" />
-                <motion.div
-                    className="absolute inset-6 rounded-full border border-white/15"
-                    initial={{ rotate: 0 }}
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 32, repeat: Infinity, ease: "linear" }}
+            <div className="relative h-64 md:h-96 w-full overflow-hidden rounded-2xl border border-white/10 shadow-2xl shadow-cyan-900/20 group">
+                <div className="absolute inset-0 bg-gradient-to-t from-[#060914] via-transparent to-transparent z-10 transition-opacity duration-500 group-hover:opacity-0" />
+                <img
+                    src="https://www.worldtradefactory.ai/content/images/2025/04/ChatGPT-Image-Apr-20--2025--09_23_13-PM.png"
+                    alt="Infinity XZ AI Hero"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
-                <div className="absolute inset-10 rounded-full border border-white/10" />
-                <div className="absolute inset-0 grid place-items-center">
-                    <InfinityIcon className="text-cyan-300" size={40} />
-                </div>
             </div>
-        </div>
+        </section>
     );
 }
 
@@ -188,38 +245,39 @@ function Essence() {
     return (
         <section
             id="essence"
-            className="pt-8 md:pt-12 grid md:grid-cols-3 gap-8 items-start"
+            className="pt-16 md:pt-24 grid md:grid-cols-3 gap-10 items-start border-t border-white/5"
         >
-            <div className="md:col-span-1 space-y-3">
-                <h2 className="text-2xl md:text-3xl font-semibold">
-                    The Essence of Financial AGI
+            <div className="md:col-span-1 space-y-4">
+                <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
+                    The Essence of <br/>
+                    <span className="text-cyan-400">Rational Intelligence</span>
                 </h2>
-                <p className="text-white/70 text-sm">
-                    Infinity AI is a living intelligence fabric for markets, policy and
-                    trade. It does not just answer questions. It builds a view of the
-                    world and acts on it.
+                <p className="text-white/60 text-base leading-relaxed">
+                    Most AI models guess. Infinity defines. It is a living intelligence fabric 
+                    that connects human intuition with rigorous data validation. 
+                    No superfluous features—just pure, actionable clarity.
                 </p>
             </div>
             <div className="md:col-span-2 grid sm:grid-cols-2 gap-5">
                 <EssenceCard
-                    icon={<Cpu size={18} />}
-                    title="Cognition Fabric"
-                    text="Deep reasoning over macro, sectors and microstructure signals."
+                    icon={<BrainCircuit size={20} />}
+                    title="Causal Logic Engine"
+                    text="Beyond pattern matching. Infinity identifies the 'why' behind market movements using structural macro analysis."
                 />
                 <EssenceCard
-                    icon={<LineChart size={18} />}
-                    title="Market Synthesis"
-                    text="Streams of prices and data fused into single, clean narratives."
+                    icon={<Network size={20} />}
+                    title="Signal Synthesis"
+                    text="Filters out the noise of the internet to deliver a single, clean narrative derived from 200+ verified data streams."
                 />
                 <EssenceCard
-                    icon={<Users size={18} />}
-                    title="XperienZ"
-                    text="A human and AI interface designed for decision speed and clarity."
+                    icon={<ShieldCheck size={20} />}
+                    title="Grounded Reality"
+                    text="Built with guardrails against hallucination. If the data isn't verified, Infinity doesn't trade on it."
                 />
                 <EssenceCard
-                    icon={<Zap size={18} />}
-                    title="Action Loop"
-                    text="From signal to execution. Business at the speed of AI."
+                    icon={<Zap size={20} />}
+                    title="Execution Velocity"
+                    text="From insight to decision in milliseconds. The XperienZ interface removes friction between thought and action."
                 />
             </div>
         </section>
@@ -233,19 +291,19 @@ function EssenceCard(props: {
 }) {
     return (
         <motion.div
-            className="rounded-2xl border border-white/15 bg-white/5 p-4 hover:bg-white/10"
+            className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 hover:bg-white/[0.05] transition-colors group"
             initial={{ opacity: 0, y: 12 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.4 }}
         >
-            <div className="flex items-center gap-2 text-cyan-300">
-                <div className="h-8 w-8 rounded-xl border border-cyan-400/30 bg-cyan-500/10 grid place-items-center">
+            <div className="flex items-center gap-3 text-cyan-300 mb-4">
+                <div className="h-10 w-10 rounded-lg border border-cyan-500/20 bg-cyan-500/10 grid place-items-center group-hover:border-cyan-400/40 transition-colors">
                     {props.icon}
                 </div>
-                <div className="text-sm font-semibold">{props.title}</div>
+                <div className="text-sm font-bold tracking-wide text-white uppercase font-mono">{props.title}</div>
             </div>
-            <p className="mt-2 text-xs text-white/70">{props.text}</p>
+            <p className="text-sm text-white/60 leading-relaxed">{props.text}</p>
         </motion.div>
     );
 }
@@ -256,62 +314,74 @@ function ExperienzCTA() {
     return (
         <section
             id="experienz"
-            className="mt-14 rounded-3xl border border-white/15 bg-white/5 overflow-hidden"
+            className="mt-24 rounded-3xl border border-white/10 bg-[#0B101F] overflow-hidden relative"
         >
-            <div className="grid md:grid-cols-2">
-                <div className="p-7 md:p-9 space-y-4">
-                    <h3 className="text-2xl font-semibold">
-                        Enter InfinityXZ - The XperienZ of Superintelligence
+            {/* Subtle background glow for the card */}
+            <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 blur-[100px] rounded-full pointer-events-none"/>
+            
+            <div className="grid md:grid-cols-2 relative z-10">
+                <div className="p-8 md:p-16 space-y-8">
+                    <h3 className="text-3xl md:text-4xl font-bold tracking-tight">
+                        Enter InfinityXZ
                     </h3>
-                    <p className="text-sm text-white/70">
-                        Be part of the early access program for investors, analysts and
-                        builders working with Artificial General Intelligence for global
-                        finance. 
-                        <br/>
-                         <br/>
-                                                      <a
-                        href="https://www.worldtradefactory.ai/"
-                        className="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 bg-cyan-500 text-black font-semibold hover:bg-cyan-400"
-                    >
-                       World Trade Factory
-                        <ArrowRight size={16} />
-                    </a>
+                    <p className="text-white/70 text-base leading-relaxed max-w-md">
+                        Join the closed beta for the XperienZ layer. This is for professionals 
+                        who demand an AI partner that respects the gravity of financial decisions.
+                        <br /><br />
+                        Experience the difference between a chatbot and a 
+                        <strong className="text-white"> World Trade Factory</strong> analyst.
                     </p>
-                    <div className="pt-4">
+                    
+                    <div className="pt-2 flex gap-4">
+                        <a
+                            href="https://www.worldtradefactory.ai/"
+                            target="_blank"
+                            className="inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 border border-white/10 bg-white/5 text-white font-medium hover:bg-white/10 transition-colors text-sm"
+                        >
+                            World Trade Factory
+                            <ArrowRight size={14} />
+                        </a>
+                    </div>
+
+                    <div className="pt-8 border-t border-white/5">
                         <SignedOut>
                             <SignInButton mode="modal">
-                                <button className="w-full sm:w-auto rounded-xl bg-cyan-500 text-black font-semibold px-6 py-3 shadow-lg shadow-cyan-500/20 hover:bg-cyan-400 hover:shadow-cyan-400/30 transition">
-                                    Enter InfinityXZ
+                                <button className="w-full sm:w-auto rounded-xl bg-cyan-500 text-[#060914] font-bold px-8 py-4 shadow-[0_0_30px_-10px_rgba(6,182,212,0.6)] hover:bg-cyan-400 hover:shadow-[0_0_40px_-5px_rgba(6,182,212,0.7)] transition-all transform hover:-translate-y-0.5">
+                                    Authenticate Access
                                 </button>
                             </SignInButton>
-                            <p className="mt-3 text-xs text-white/50">
-                                Sign in with Google
+                            <p className="mt-4 text-[10px] text-white/40 uppercase tracking-widest font-mono">
+                                // Professional Credentials Required
                             </p>
                         </SignedOut>
 
                         <SignedIn>
-                            <p className="mt-3 text-xs text-white/60">
-                                You’re already inside InfinityXZ. Use the menu above to access your
-                                workspace or sign out.
+                            <p className="mt-3 text-xs text-cyan-300 font-mono">
+                                ● SYSTEM STATUS: ONLINE. AUTHENTICATED.
                             </p>
                         </SignedIn>
                     </div>
 
                 </div>
-                <div className="relative bg-gradient-to-br from-cyan-500/15 via-indigo-500/10 to-transparent p-7 md:p-0 min-h-[220px]">
-                    <div className="absolute inset-0 grid place-items-center">
-                        <div className="rounded-2xl border border-white/15 bg-black/40 backdrop-blur-xl p-5 max-w-xs text-sm text-white/75">
-                            <div className="text-xs uppercase tracking-wide text-white/50 mb-2">
-                                Infinity AI
-                            </div>
-                            <div className="font-semibold mb-1">
-                                Business @ the speed of AI
-                            </div>
-                            <p className="text-xs text-white/65">
-                                A continuous intelligence loop across markets, trade and macro
-                                powering the World Trade Factory.
-                            </p>
+                <div className="relative bg-gradient-to-br from-cyan-900/20 to-[#060914] p-8 md:p-0 min-h-[300px] flex items-center justify-center">
+                    <div className="rounded-2xl border border-white/10 bg-black/40 backdrop-blur-md p-8 max-w-sm text-sm shadow-2xl">
+                        <div className="flex items-center gap-3 mb-6">
+                             <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"/>
+                             <div className="text-[10px] uppercase tracking-widest text-white/50 font-mono">Live Inference</div>
                         </div>
+                        
+                        {/* CORRECTED: Using HTML entities */}
+                        <div className="font-mono text-xs text-cyan-300 mb-3">
+                            &gt; Analyzing Macro Correlations...
+                        </div>
+                        <div className="font-mono text-xs text-white/50 mb-6 leading-relaxed">
+                             &gt; Removing noise from 214 feeds.<br/>
+                             &gt; Validating causal link: Oil &lt;&gt; Yields.
+                        </div>
+                        
+                        <p className="text-white/90 font-medium border-t border-white/10 pt-4 leading-relaxed italic">
+                            &quot;Market structure suggests accumulation, not distribution. High confidence in structural support at current levels.&quot;
+                        </p>
                     </div>
                 </div>
             </div>
@@ -319,38 +389,116 @@ function ExperienzCTA() {
     );
 }
 
-/* FOOTER AND BACKGROUND */
+/* FOOTER */
 
 function Footer() {
     return (
-        <footer className="border-t border-white/15 mt-12">
-            <div className="mx-auto max-w-6xl px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-white/60">
-                <div className="flex items-center gap-2">
+        <footer className="border-t border-white/10 mt-12 bg-[#03050a]">
+            <div className="mx-auto max-w-7xl px-6 py-12 flex flex-col xl:flex-row items-center justify-between gap-10 text-xs text-white/40">
+                
+                {/* Left: Logo */}
+                <div className="flex items-center gap-3 xl:w-1/3">
                     <InfinityMark />
-                    <span>Infinity AI - AGI for Global Finance</span>
+                    <span className="font-bold text-white/60 text-sm tracking-wide">InfinityXZ</span>
                 </div>
-                <div className="flex gap-4">
-Powered by
-                    <a
-                        href="https://www.skxywtf.com"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="hover:text-white"
+
+                {/* Middle: Social Icons (Small) */}
+                <div className="flex justify-center gap-4 xl:w-1/3">
+                    <SocialIcon 
+                        href="https://instagram.com/skxywtf" 
+                        img="https://worldtradefactory.ghost.io/content/images/2025/04/Instagram.JPG" 
+                        alt="Instagram"
+                        size={20}
+                    />
+                    <SocialIcon 
+                        href="https://www.facebook.com/profile.php?id=61575285152608" 
+                        img="https://worldtradefactory.ghost.io/content/images/2025/04/Meta-1.JPG" 
+                        alt="Meta"
+                        size={22}
+                    />
+                    <SocialIcon 
+                        href="https://x.com/skxywtf" 
+                        img="https://worldtradefactory.ghost.io/content/images/2025/04/X.JPG" 
+                        alt="X"
+                        size={18} 
+                    />
+                    <SocialIcon 
+                        href="https://www.linkedin.com/in/sajeeshkakkat/" 
+                        img="https://worldtradefactory.ghost.io/content/images/2025/04/linked.JPG" 
+                        alt="LinkedIn"
+                        size={22}
+                    />
+                    <SocialIcon 
+                        href="https://wa.me/14802802924" 
+                        img="https://worldtradefactory.ghost.io/content/images/2025/04/whatsapp.JPG" 
+                        alt="WhatsApp"
+                        size={20}
+                    />
+                </div>
+
+                {/* Right: Address Block (Bright) */}
+                <div className="text-center xl:text-right leading-relaxed xl:w-1/3 font-medium">
+                    <strong className="text-white block mb-2 text-sm tracking-wide">World Trade Factory™</strong>
+                    
+                    <a 
+                        href="https://maps.google.com/?q=2390+E+Camelback+Rd,+STE+130,+Phoenix,+AZ+85016" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-white/80 hover:text-cyan-400 transition-colors block"
                     >
-                        <strong>SKXYWTF</a>strong>
+                        2390 E Camelback Rd, STE 130, Phoenix, AZ 85016
                     </a>
+                    
+                    <div className="mt-2 space-y-1">
+                        <div>
+                            <span className="text-white/50 mr-2">Phone:</span>
+                            <a href="tel:+14802802924" className="text-white/90 hover:text-cyan-400 transition-colors">
+                                +1 (480) 280-2924
+                            </a>
+                        </div>
+                        <div>
+                            <span className="text-white/50 mr-2">Email:</span>
+                            <a href="mailto:sage@worldtradefactory.com" className="text-white/90 hover:text-cyan-400 transition-colors">
+                                sage@worldtradefactory.com
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div className="mt-4 pt-4 border-t border-white/10 text-white/50">
+                        © 2025 <a href="https://www.skxywtf.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">SKXYWTF LLC</a> | All Rights Reserved
+                    </div>
                 </div>
             </div>
         </footer>
     );
 }
 
+function SocialIcon({ href, img, alt, size }: { href: string, img: string, alt: string, size: number }) {
+    return (
+        <a 
+            href={href} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="w-10 h-10 flex items-center justify-center bg-[#1a1a1a] rounded-lg hover:bg-[#252525] hover:scale-105 transition-all duration-300 shadow-lg shadow-black/20 border border-white/5"
+        >
+            <img 
+                src={img} 
+                alt={alt} 
+                style={{ width: size, height: size }} 
+                className="object-contain opacity-90 hover:opacity-100"
+            />
+        </a>
+    );
+}
+
+/* BACKGROUND */
+
 function AuroraBackground() {
     return (
         <div className="pointer-events-none fixed inset-0 -z-10">
             <div className="absolute inset-0 bg-[#060914]" />
-            <div className="absolute -top-40 left-1/2 h-[60vh] w-[120vw] -translate-x-1/2 rounded-full bg-cyan-500/20 blur-[100px]" />
-            <div className="absolute top-1/3 left-1/4 h-[40vh] w-[60vw] rounded-full bg-indigo-500/20 blur-[100px]" />
+            <div className="absolute -top-40 left-1/2 h-[60vh] w-[120vw] -translate-x-1/2 rounded-full bg-cyan-600/10 blur-[120px]" />
+            <div className="absolute top-1/3 right-0 h-[40vh] w-[50vw] rounded-full bg-blue-600/10 blur-[120px]" />
         </div>
     );
 }
