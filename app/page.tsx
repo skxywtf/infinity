@@ -346,8 +346,9 @@ function ExperienzCTA() {
             className="mt-24 rounded-3xl border border-white/10 bg-[#0B101F] overflow-hidden relative"
         >
             <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 blur-[100px] rounded-full pointer-events-none" />
+<div className="grid md:grid-cols-[1fr_1.4fr] relative z-10">
 
-            <div className="grid md:grid-cols-2 relative z-10">
+   
                 {/* LEFT: text + buttons (unchanged) */}
                 <div className="p-8 md:p-16 space-y-8">
                     <h3 className="text-3xl md:text-4xl font-bold tracking-tight">
