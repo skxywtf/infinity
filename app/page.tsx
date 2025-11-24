@@ -345,10 +345,10 @@ function ExperienzCTA() {
             id="experienz"
             className="mt-24 rounded-3xl border border-white/10 bg-[#0B101F] overflow-hidden relative"
         >
-            {/* Subtle background glow for the card */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 blur-[100px] rounded-full pointer-events-none"/>
-            
+            <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 blur-[100px] rounded-full pointer-events-none" />
+
             <div className="grid md:grid-cols-2 relative z-10">
+                {/* LEFT: text + buttons (unchanged) */}
                 <div className="p-8 md:p-16 space-y-8">
                     <h3 className="text-3xl md:text-4xl font-bold tracking-tight">
                         Enter InfinityXZ
@@ -390,34 +390,23 @@ function ExperienzCTA() {
                             </p>
                         </SignedIn>
                     </div>
-
                 </div>
-                <div className="relative bg-gradient-to-br from-cyan-900/20 to-[#060914] p-8 md:p-0 min-h-[300px] flex items-center justify-center">
-                    <div className="rounded-2xl border border-white/10 bg-black/40 backdrop-blur-md p-8 max-w-sm text-sm shadow-2xl">
-                        <div className="flex items-center gap-3 mb-6">
-                             <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"/>
-                             <div className="text-[10px] uppercase tracking-widest text-white/50 font-mono">Live Inference</div>
-                        </div>
-                        
-                        {/* CORRECTED: Using HTML entities */}
-                        <div className="font-mono text-xs text-cyan-300 mb-3">
-                            &gt; Analyzing Macro Correlations...
-                        </div>
-                        <div className="font-mono text-xs text-white/50 mb-6 leading-relaxed">
-                             &gt; Removing noise from 214 feeds.<br/>
-                             &gt; Validating causal link: Oil &lt;&gt; Yields.
-                        </div>
-                        
-                        <p className="text-white/90 font-medium border-t border-white/10 pt-4 leading-relaxed italic">
-                            &quot;Market structure suggests accumulation, not distribution. High confidence in structural support at current levels.&quot;
-                        </p>
+
+                {/* RIGHT: replaced static “Live Inference” card with StockBot iframe */}
+                <div className="relative bg-gradient-to-br from-cyan-900/20 to-[#060914] p-4 md:p-6 min-h-[300px] flex items-center justify-center">
+                    <div className="rounded-2xl border border-white/10 bg-black/40 backdrop-blur-md w-full max-w-md h-[360px] md:h-[420px] overflow-hidden shadow-2xl">
+                        <iframe
+                            src="https://stockbot-sigma.vercel.app/"
+                            title="Infinity AI"
+                            className="w-full h-full border-0"
+                            loading="lazy"
+                        />
                     </div>
                 </div>
             </div>
         </section>
     );
 }
-
 /* FOOTER */
 
 function Footer() {
