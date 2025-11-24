@@ -393,16 +393,17 @@ function ExperienzCTA() {
                 </div>
 
                 {/* RIGHT: replaced static “Live Inference” card with StockBot iframe */}
-                <div className="relative bg-gradient-to-br from-cyan-900/20 to-[#060914] p-4 md:p-6 min-h-[300px] flex items-center justify-center">
-                    <div className="rounded-2xl border border-white/10 bg-black/40 backdrop-blur-md w-full max-w-md h-[360px] md:h-[420px] overflow-hidden shadow-2xl">
+                <div className="relative bg-gradient-to-br from-cyan-900/20 to-[#060914] p-4 md:p-8 min-h-[320px] flex items-center justify-center">
+                    <div className="w-full h-[460px] md:h-[520px] rounded-2xl border border-white/10 bg-black/40 backdrop-blur-md overflow-hidden shadow-2xl">
                         <iframe
                             src="https://stockbot-sigma.vercel.app/"
-                            title="Infinity AI"
+                            title="InfinityXZ StockBot"
                             className="w-full h-full border-0"
                             loading="lazy"
                         />
                     </div>
                 </div>
+For a much richer XperienZ login to World Trade Factory
             </div>
         </section>
     );
