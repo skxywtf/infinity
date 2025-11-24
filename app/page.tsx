@@ -404,7 +404,7 @@ function ExperienzCTA() {
                         />
                     </div>
                 </div>
-For a much richer XperienZ login to World Trade Factory
+
             </div>
         </section>
     );
