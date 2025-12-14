@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from 'react';
 import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { motion } from "framer-motion";
 import {
@@ -33,13 +34,20 @@ import {
 } from "lucide-react";
 
 export default function InfinityXZ() {
+    // Prevent page from jumping to hash on load
+    React.useEffect(() => {
+        if (window.location.hash) {
+            window.history.replaceState(null, '', window.location.pathname);
+        }
+    }, []);
+
     return (
         <div className="min-h-screen bg-[#060914] text-white font-sans selection:bg-cyan-500/30">
             {/* GLOBAL STYLES */}
             <style dangerouslySetInnerHTML={{__html: `
                 vercel-live-feedback { display: none !important; }
                 
-                /* Smooth scrolling */
+                /* Smooth scrolling WITHOUT auto-scroll to hash */
                 html {
                     scroll-behavior: smooth;
                     overflow-x: hidden;
@@ -49,6 +57,11 @@ export default function InfinityXZ() {
                     overflow-x: hidden;
                 }
                 
+                /* Prevent jump to hash on page load */
+                html:target {
+                    scroll-behavior: auto;
+                }
+                
                 /* Hide scrollbar */
                 .no-scrollbar::-webkit-scrollbar {
                     display: none;
@@ -56,6 +69,11 @@ export default function InfinityXZ() {
                 .no-scrollbar {
                     -ms-overflow-style: none;
                     scrollbar-width: none;
+                }
+                
+                /* Fix sticky positioning calculations */
+                * {
+                    scroll-margin-top: 100px;
                 }
             `}} />
             
@@ -112,8 +130,8 @@ function RightPanel() {
 
     return (
         <aside className="hidden xl:block w-64 flex-shrink-0">
-            <div className="sticky top-[88px]">
-                <nav className="h-[calc(100vh-120px)] w-full flex flex-col rounded-xl border border-white/10 bg-[#0B101F]/90 backdrop-blur-xl shadow-2xl shadow-black/40 overflow-hidden">
+            <div className="sticky top-[88px] will-change-transform">
+                <nav className="h-[calc(100vh-120px)] w-full flex flex-col rounded-xl border border-white/10 bg-[#0B101F]/90 backdrop-blur-xl shadow-2xl shadow-black/40 overflow-hidden transform-gpu">
                     
                     {/* Header */}
                     <div className="flex items-center gap-2 px-5 pt-5 pb-3 border-b border-white/5 bg-black/20">
