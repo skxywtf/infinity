@@ -1,61 +1,67 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-:root {
-    /* Existing Infinity Vars */
-    --background: #060914;
-    --foreground: #ededed;
+@theme {
+  --color-background: #050511;
+  --color-foreground: #f8fafc;
 
-    /* TradingAgent Vars */
-    --color-background: #050511;
-    --color-foreground: #f8fafc;
-    --color-card: #0A0C14;
-    --color-card-foreground: #f8fafc;
-    --color-popover: #0A0C14;
-    --color-popover-foreground: #f8fafc;
-    --color-primary: #06b6d4;
-    --color-primary-foreground: #000000;
-    --color-secondary: #1e293b;
-    --color-secondary-foreground: #f8fafc;
-    --color-muted: #1e293b;
-    --color-muted-foreground: #94a3b8;
-    --color-accent: #06b6d4;
-    --color-accent-foreground: #000000;
-    --color-destructive: #ef4444;
-    --color-destructive-foreground: #f8fafc;
-    --color-border: #1e293b;
-    --color-input: #1e293b;
-    --color-ring: #06b6d4;
-    --radius: 0.5rem;
-}
+  --color-card: #0A0C14;
+  --color-card-foreground: #f8fafc;
 
-body {
-    background: var(--background);
-    color: var(--foreground);
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --color-popover: #0A0C14;
+  --color-popover-foreground: #f8fafc;
+
+  --color-primary: #06b6d4;
+  --color-primary-foreground: #000000;
+
+  --color-secondary: #1e293b;
+  --color-secondary-foreground: #f8fafc;
+
+  --color-muted: #1e293b;
+  --color-muted-foreground: #94a3b8;
+
+  --color-accent: #06b6d4;
+  --color-accent-foreground: #000000;
+
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #f8fafc;
+
+  --color-border: #1e293b;
+  --color-input: #1e293b;
+  --color-ring: #06b6d4;
+
+  --radius: 0.5rem;
 }
 
 /* Light Mode Overrides */
 :root.light {
   --color-background: #f0f4f8;
+  /* Soft blue-grey */
   --color-foreground: #0f172a;
+
   --color-card: #ffffff;
   --color-card-foreground: #0f172a;
+
   --color-popover: #ffffff;
   --color-popover-foreground: #0f172a;
+
   --color-primary: #0891b2;
+  /* Darker Cyan */
   --color-primary-foreground: #ffffff;
+
   --color-secondary: #e2e8f0;
   --color-secondary-foreground: #0f172a;
+
   --color-muted: #f1f5f9;
   --color-muted-foreground: #64748b;
+
   --color-accent: #0891b2;
   --color-accent-foreground: #ffffff;
+
   --color-border: #cbd5e1;
   --color-input: #cbd5e1;
   --color-ring: #0891b2;
 }
+
 
 /* Custom utilities */
 
