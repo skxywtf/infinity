@@ -1,8 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
-import { motion } from 'framer-motion';
+import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { motion } from "framer-motion";
 import {
   ArrowRight,
   Infinity as InfinityIcon,
@@ -10,43 +10,115 @@ import {
   Network,
   ShieldCheck,
   Zap,
-} from 'lucide-react';
+  Activity,
+  FileText,
+  TrendingUp,
+  Globe,
+  BarChart3,
+  Newspaper,
+  CandlestickChart,
+  Filter,
+  Briefcase,
+  ScanEye,
+  LineChart,
+  Percent,
+  ArrowDownUp,
+  Calendar,
+  Bitcoin,
+  Gem,
+  RefreshCw,
+  Database,
+  Clock,
+  Map as MapIcon,
+  Megaphone
+} from "lucide-react";
 
 export default function InfinityXZ() {
-  // Prevent page from jumping to hash on load
-  React.useEffect(() => {
-    if (window.location.hash) {
-      window.history.replaceState(null, '', window.location.pathname);
+  /**
+   * FIX #1: Stop hash-anchor auto-jump + stop scroll restoration
+   * - useLayoutEffect runs before paint on client
+   * - removes #hash from URL (if present) and forces top
+   */
+  React.useLayoutEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    // Stop browser from restoring previous scroll position
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
     }
+
+    // Remove hash BEFORE paint to prevent anchor snap/jump
+    if (window.location.hash) {
+      window.history.replaceState(
+        null,
+        '',
+        window.location.pathname + window.location.search
+      );
+    }
+
+    // Force top immediately
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    });
+  }, []);
+
+  /**
+   * FIX #2: Smooth-scroll ONLY on click (not globally).
+   * Global `html{scroll-behavior:smooth}` can create "fighting scroll" vibes.
+   */
+  React.useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      const a = (e.target as HTMLElement)?.closest?.('a[href^="#"]') as HTMLAnchorElement | null;
+      if (!a) return;
+
+      const href = a.getAttribute('href') || '';
+      const id = href.startsWith('#') ? href.slice(1) : '';
+      if (!id) return;
+
+      const el = document.getElementById(id);
+      if (!el) return;
+
+      e.preventDefault();
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    document.addEventListener('click', onClick);
+    return () => document.removeEventListener('click', onClick);
   }, []);
 
   return (
     <div className="min-h-screen bg-[#060914] text-white font-sans selection:bg-cyan-500/30">
       {/* GLOBAL STYLES */}
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-            vercel-live-feedback { display: none !important; }
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          vercel-live-feedback { display: none !important; }
 
-            html { scroll-behavior: smooth; overflow-x: hidden; }
-            body { overflow-x: hidden; }
+          /* IMPORTANT: keep this AUTO, not smooth */
+          html {
+            scroll-behavior: auto;
+            overflow-x: hidden;
+          }
 
-            html:target { scroll-behavior: auto; }
+          body { overflow-x: hidden; }
 
-            .no-scrollbar::-webkit-scrollbar { display: none; }
-            .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+          /* Hide scrollbar */
+          .no-scrollbar::-webkit-scrollbar { display: none; }
+          .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-            * { scroll-margin-top: 100px; }
-          `,
-        }}
-      />
+          /* Fix sticky positioning calculations */
+          * { scroll-margin-top: 100px; }
+        `
+      }} />
 
       <AuroraBackground />
       <NavBar />
 
-      {/* ✅ Removed RightPanel completely for a smoother bot experience */}
-      <div className="mx-auto max-w-[1600px] px-6 pt-8">
-        <main className="w-full pb-20 min-w-0">
+      {/* WIDER CONTAINER + BOT-FIRST LAYOUT
+          - Remove RightPanel completely (smoothest experience)
+          - Give iframe area full width
+      */}
+      <div className="mx-auto max-w-[1600px] px-4 sm:px-6 pt-8">
+        <main className="w-full pb-20">
           <Hero />
           <Essence />
           <ExperienzCTA />
@@ -62,7 +134,7 @@ export default function InfinityXZ() {
 function NavBar() {
   return (
     <header className="sticky top-0 z-30 border-b border-white/10 bg-black/60 backdrop-blur-md">
-      <div className="mx-auto max-w-[1600px] px-6 py-3 flex items-center justify-between">
+      <div className="mx-auto max-w-[1600px] px-4 sm:px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <InfinityMark />
           <span className="font-bold tracking-wide text-lg">
@@ -71,12 +143,8 @@ function NavBar() {
         </div>
 
         <nav className="hidden md:flex gap-6 text-sm text-white/70 font-medium">
-          <a href="#essence" className="hover:text-white transition-colors">
-            Essence
-          </a>
-          <a href="#experienz" className="hover:text-white transition-colors">
-            XperienZ
-          </a>
+          <a href="#essence" className="hover:text-white transition-colors">Essence</a>
+          <a href="#experienz" className="hover:text-white transition-colors">XperienZ</a>
         </nav>
 
         <SignedOut>
@@ -109,7 +177,7 @@ function InfinityMark() {
         className="absolute inset-0 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-500 blur-sm"
         initial={{ scale: 0.9, rotate: 0 }}
         animate={{ scale: 1, rotate: 360 }}
-        transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
+        transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
       />
       <div className="absolute inset-[2px] rounded-full border border-white/20 bg-[#060914] grid place-items-center">
         <InfinityIcon size={18} className="text-cyan-300" />
@@ -125,7 +193,7 @@ function Hero() {
     <section className="pt-12 md:pt-20 pb-10 grid md:grid-cols-2 gap-12 items-center">
       <div className="space-y-8">
         <p className="inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/5 px-3 py-1 text-[11px] text-cyan-200 font-mono tracking-wider uppercase">
-          Applied Strategic Intelligence // World Trade Factory
+          Applied Strategic Intelligence  //  World Trade Factory
         </p>
 
         <h1 className="text-5xl md:text-6xl font-bold leading-[1.1] tracking-tight">
@@ -136,13 +204,11 @@ function Hero() {
 
         <div className="space-y-5">
           <p className="text-white/90 text-lg md:text-xl leading-relaxed font-light">
-            Go beyond simple computation. InfinityXZ provides{' '}
-            <strong className="font-semibold text-white">True Market Reasoning</strong>—an intelligence
-            that understands the structural causality of global finance.
+            Go beyond simple computation. InfinityXZ provides <strong className="font-semibold text-white">True Market Reasoning</strong>—an intelligence that understands the structural causality of global finance.
           </p>
           <p className="text-white/50 text-sm md:text-base leading-relaxed max-w-md">
-            Designed for investors who need grounded, verifiable insight—not hallucinations. This is
-            business intelligence that thinks before it speaks.
+            Designed for investors who need grounded, verifiable insight—not hallucinations.
+            This is business intelligence that thinks before it speaks.
           </p>
         </div>
 
@@ -166,7 +232,7 @@ function Hero() {
       <div className="relative h-64 md:h-96 w-full overflow-hidden rounded-2xl border border-white/10 shadow-2xl shadow-cyan-900/20 group">
         <div className="absolute inset-0 bg-gradient-to-t from-[#060914] via-transparent to-transparent z-10 transition-opacity duration-500 group-hover:opacity-0" />
         <img
-          src="Screenshot 2025-11-16 193950.png"
+          src="infinity.png"
           alt="Infinity XZ AI Hero"
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
         />
@@ -189,9 +255,9 @@ function Essence() {
           <span className="text-cyan-400">Rational Intelligence</span>
         </h2>
         <p className="text-white/60 text-base leading-relaxed">
-          Most AI models guess. Infinity defines. It is a living intelligence fabric that connects
-          human intuition with rigorous data validation. No superfluous features—just pure,
-          actionable clarity.
+          Most AI models guess. Infinity defines. It is a living intelligence fabric
+          that connects human intuition with rigorous data validation.
+          No superfluous features—just pure, actionable clarity.
         </p>
       </div>
 
@@ -221,7 +287,7 @@ function Essence() {
   );
 }
 
-function EssenceCard(props: { icon: React.ReactNode; title: string; text: string }) {
+function EssenceCard(props: { icon: React.ReactNode; title: string; text: string; }) {
   return (
     <motion.div
       className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 hover:bg-white/[0.05] transition-colors group"
@@ -243,7 +309,7 @@ function EssenceCard(props: { icon: React.ReactNode; title: string; text: string
   );
 }
 
-/* EXPERIENZ CTA */
+/* EXPERIENZ CTA (BOT WIDTH FIXED) */
 
 function ExperienzCTA() {
   return (
@@ -252,17 +318,16 @@ function ExperienzCTA() {
       className="mt-24 rounded-3xl border border-white/10 bg-[#0B101F] overflow-hidden relative"
     >
       <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 blur-[100px] rounded-full pointer-events-none" />
-
-      {/* ✅ Make the bot side wider */}
-      <div className="grid lg:grid-cols-[1fr_2fr] xl:grid-cols-[1fr_2.2fr] relative z-10">
+      {/* Make bot side bigger */}
+      <div className="grid lg:grid-cols-[1fr_1.8fr] relative z-10">
         <div className="p-8 md:p-16 space-y-8">
-          <h3 className="text-3xl md:text-4xl font-bold tracking-tight">Enter InfinityXZ</h3>
-
+          <h3 className="text-3xl md:text-4xl font-bold tracking-tight">
+            Enter InfinityXZ
+          </h3>
           <p className="text-white/70 text-base leading-relaxed max-w-md">
-            Join the closed beta for the XperienZ layer. This is for professionals who demand an AI
-            partner that respects the gravity of financial decisions.
-            <br />
-            <br />
+            Join the closed beta for the XperienZ layer. This is for professionals
+            who demand an AI partner that respects the gravity of financial decisions.
+            <br /><br />
             Experience the difference between a chatbot and a
             <strong className="text-white"> World Trade Factory</strong> analyst.
           </p>
@@ -299,16 +364,14 @@ function ExperienzCTA() {
           </div>
         </div>
 
-        {/* ✅ Wider + taller bot container, less padding, more usable */}
-        <div className="relative bg-gradient-to-br from-cyan-900/20 to-[#060914] p-3 sm:p-4 md:p-6 lg:p-6 flex items-center justify-center">
-          <div className="w-full h-[520px] sm:h-[560px] md:h-[640px] xl:h-[700px] rounded-2xl border border-white/10 bg-black/40 backdrop-blur-md overflow-hidden shadow-2xl">
+        {/* BIGGER BOT PANEL */}
+        <div className="relative bg-gradient-to-br from-cyan-900/20 to-[#060914] p-4 md:p-10 min-h-[360px] flex items-center justify-center">
+          <div className="w-full h-[520px] md:h-[640px] rounded-2xl border border-white/10 bg-black/40 backdrop-blur-md overflow-hidden shadow-2xl">
             <iframe
               src="https://stockbot-sigma.vercel.app/"
               title="InfinityXZ StockBot"
               className="w-full h-full border-0"
               loading="lazy"
-              // helps some embeds behave better on iOS
-              allow="clipboard-read; clipboard-write"
             />
           </div>
         </div>
@@ -322,7 +385,7 @@ function ExperienzCTA() {
 function Footer() {
   return (
     <footer className="border-t border-white/10 mt-12 bg-[#03050a]">
-      <div className="mx-auto max-w-7xl px-6 py-12 flex flex-col xl:flex-row items-center justify-between gap-10 text-xs text-white/40">
+      <div className="mx-auto max-w-[1600px] px-4 sm:px-6 py-12 flex flex-col xl:flex-row items-center justify-between gap-10 text-xs text-white/40">
         <div className="flex items-center gap-3 xl:w-1/3">
           <InfinityMark />
           <span className="font-bold text-white/60 text-sm tracking-wide">InfinityXZ</span>
@@ -382,26 +445,14 @@ function Footer() {
             </div>
             <div>
               <span className="text-white/50 mr-2">Email:</span>
-              <a
-                href="mailto:sage@worldtradefactory.com"
-                className="text-white/90 hover:text-cyan-400 transition-colors"
-              >
+              <a href="mailto:sage@worldtradefactory.com" className="text-white/90 hover:text-cyan-400 transition-colors">
                 sage@worldtradefactory.com
               </a>
             </div>
           </div>
 
           <div className="mt-4 pt-4 border-t border-white/10 text-white/50">
-            © 2025{' '}
-            <a
-              href="https://www.skxywtf.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-white transition-colors"
-            >
-              SKXYWTF LLC
-            </a>{' '}
-            | All Rights Reserved
+            © 2025 <a href="https://www.skxywtf.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">SKXYWTF LLC</a> | All Rights Reserved
           </div>
         </div>
       </div>
@@ -427,7 +478,7 @@ function SocialIcon({ href, img, alt, size }: { href: string; img: string; alt: 
   );
 }
 
-/* BACKGROUND */
+/* BACKGROUND (included to fix your AuroraBackground build error) */
 
 function AuroraBackground() {
   return (
