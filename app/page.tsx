@@ -285,7 +285,7 @@ function Hero() {
             <div className="relative h-64 md:h-96 w-full overflow-hidden rounded-2xl border border-white/10 shadow-2xl shadow-cyan-900/20 group">
                 <div className="absolute inset-0 bg-gradient-to-t from-[#060914] via-transparent to-transparent z-10 transition-opacity duration-500 group-hover:opacity-0" />
                 <img
-                    src="https://www.worldtradefactory.ai/content/images/2025/04/ChatGPT-Image-Apr-20--2025--09_23_13-PM.png"
+                    src="Screenshot 2025-11-16 193950.png"
                     alt="Infinity XZ AI Hero"
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
