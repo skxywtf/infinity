@@ -1,5 +1,10 @@
-import chromadb
-from chromadb.config import Settings
+try:
+    import chromadb
+    from chromadb.config import Settings
+except ImportError:
+    chromadb = None
+    Settings = None
+
 from openai import OpenAI
 
 
@@ -10,9 +15,14 @@ class FinancialSituationMemory:
         else:
             self.embedding = "text-embedding-3-small"
         self.client = OpenAI(base_url=config["backend_url"])
-        self.chroma_client = chromadb.Client(Settings(allow_reset=True))
-        # Changed from create_collection to get_or_create_collection to avoid InternalError
-        self.situation_collection = self.chroma_client.get_or_create_collection(name=name)
+        
+        if chromadb:
+            self.chroma_client = chromadb.Client(Settings(allow_reset=True))
+            self.situation_collection = self.chroma_client.get_or_create_collection(name=name)
+        else:
+            self.chroma_client = None
+            self.situation_collection = None
+            print("Warning: ChromaDB not installed. Memory features disabled.")
 
     def get_embedding(self, text):
         """Get OpenAI embedding for a text"""
@@ -24,6 +34,8 @@ class FinancialSituationMemory:
 
     def add_situations(self, situations_and_advice):
         """Add financial situations and their corresponding advice. Parameter is a list of tuples (situation, rec)"""
+        if not self.situation_collection:
+            return
 
         situations = []
         advice = []
@@ -47,6 +59,9 @@ class FinancialSituationMemory:
 
     def get_memories(self, current_situation, n_matches=1):
         """Find matching recommendations using OpenAI embeddings"""
+        if not self.situation_collection:
+            return []
+
         query_embedding = self.get_embedding(current_situation)
 
         results = self.situation_collection.query(
@@ -56,14 +71,15 @@ class FinancialSituationMemory:
         )
 
         matched_results = []
-        for i in range(len(results["documents"][0])):
-            matched_results.append(
-                {
-                    "matched_situation": results["documents"][0][i],
-                    "recommendation": results["metadatas"][0][i]["recommendation"],
-                    "similarity_score": 1 - results["distances"][0][i],
-                }
-            )
+        if results and results["documents"] and len(results["documents"]) > 0:
+            for i in range(len(results["documents"][0])):
+                matched_results.append(
+                    {
+                        "matched_situation": results["documents"][0][i],
+                        "recommendation": results["metadatas"][0][i]["recommendation"],
+                        "similarity_score": 1 - results["distances"][0][i],
+                    }
+                )
 
         return matched_results
 
