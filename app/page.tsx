@@ -9,7 +9,6 @@ import {
     Network,
     ShieldCheck,
     Zap,
-    // New icons for Right Panel
     Activity,
     FileText,
     TrendingUp,
@@ -35,44 +34,55 @@ import {
 
 export default function InfinityXZ() {
     return (
-        <div className="min-h-screen bg-[#060914] text-white overflow-x-hidden font-sans selection:bg-cyan-500/30">
-            {/* GLOBAL STYLES: Hide Vercel Toolbar & Custom Scrollbar Hiding */}
+        <div className="min-h-screen bg-[#060914] text-white font-sans selection:bg-cyan-500/30">
+            {/* GLOBAL STYLES */}
             <style dangerouslySetInnerHTML={{__html: `
                 vercel-live-feedback { display: none !important; }
                 
-                /* Hide scrollbar for Chrome, Safari and Opera */
+                /* Smooth scrolling */
+                html {
+                    scroll-behavior: smooth;
+                    overflow-x: hidden;
+                }
+                
+                body {
+                    overflow-x: hidden;
+                }
+                
+                /* Hide scrollbar */
                 .no-scrollbar::-webkit-scrollbar {
                     display: none;
                 }
-                /* Hide scrollbar for IE, Edge and Firefox */
                 .no-scrollbar {
-                    -ms-overflow-style: none;  /* IE and Edge */
-                    scrollbar-width: none;  /* Firefox */
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
                 }
             `}} />
             
             <AuroraBackground />
             <NavBar />
             
-            {/* CENTERED CONTAINER: Holds Main Content + Sidebar together */}
-            <div className="mx-auto max-w-[1400px] flex items-start justify-center gap-10 px-6 pt-8">
-                
-                {/* MAIN CONTENT COLUMN */}
-                <main className="flex-1 w-full max-w-5xl pb-20 min-w-0">
-                    <Hero />
-                    <Essence />
-                    <ExperienzCTA />
-                    <Footer />
-                </main>
+            {/* CENTERED CONTAINER with proper spacing */}
+            <div className="mx-auto max-w-[1400px] px-6 pt-8">
+                <div className="flex items-start gap-10">
+                    
+                    {/* MAIN CONTENT COLUMN */}
+                    <main className="flex-1 w-full max-w-5xl pb-20 min-w-0">
+                        <Hero />
+                        <Essence />
+                        <ExperienzCTA />
+                        <Footer />
+                    </main>
 
-                {/* RIGHT SIDEBAR COLUMN (Sticky) */}
-                <RightPanel />
+                    {/* RIGHT SIDEBAR COLUMN (Sticky with proper offset) */}
+                    <RightPanel />
+                </div>
             </div>
         </div>
     );
 }
 
-/* RIGHT PANEL COMPONENT - TECH/TERMINAL STYLE */
+/* RIGHT PANEL COMPONENT */
 
 function RightPanel() {
     const menuItems = [
@@ -101,53 +111,53 @@ function RightPanel() {
     ];
 
     return (
-        <aside className="hidden xl:block w-64 shrink-0 sticky top-24 h-[calc(100vh-6rem)] overflow-hidden">
-            {/* Glass Panel Container */}
-            <nav className="h-full w-full flex flex-col rounded-xl border border-white/10 bg-[#0B101F]/90 backdrop-blur-xl shadow-2xl shadow-black/40 overflow-hidden">
-                
-                {/* Header */}
-                <div className="flex items-center gap-2 px-5 pt-5 pb-3 border-b border-white/5 bg-black/20">
-                    <div className="h-1.5 w-1.5 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.8)] animate-pulse" />
-                    <div className="text-[10px] uppercase tracking-[0.2em] font-mono font-bold text-white/60">
-                        Market Terminal
+        <aside className="hidden xl:block w-64 flex-shrink-0">
+            <div className="sticky top-[88px]">
+                <nav className="h-[calc(100vh-120px)] w-full flex flex-col rounded-xl border border-white/10 bg-[#0B101F]/90 backdrop-blur-xl shadow-2xl shadow-black/40 overflow-hidden">
+                    
+                    {/* Header */}
+                    <div className="flex items-center gap-2 px-5 pt-5 pb-3 border-b border-white/5 bg-black/20">
+                        <div className="h-1.5 w-1.5 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.8)] animate-pulse" />
+                        <div className="text-[10px] uppercase tracking-[0.2em] font-mono font-bold text-white/60">
+                            Market Terminal
+                        </div>
                     </div>
-                </div>
 
-                {/* Scrollable List with Hidden Scrollbar */}
-                <ul className="flex-1 overflow-y-auto no-scrollbar py-2 space-y-0.5">
-                    {menuItems.map((item, index) => (
-                        <li key={index} className="px-2">
-                            <a
-                                href={item.href}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="group flex items-center gap-3 px-3 py-2.5 rounded-md text-[11px] font-mono uppercase tracking-wide text-white/50 hover:text-white hover:bg-white/[0.03] transition-all duration-200 relative overflow-hidden"
-                            >
-                                {/* Hover Accent Bar on Left */}
-                                <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                
-                                <span className="text-white/30 group-hover:text-cyan-400 transition-colors group-hover:scale-110 duration-200">
-                                    {item.icon}
-                                </span>
-                                <span className="group-hover:translate-x-1 transition-transform duration-200">
-                                    {item.label}
-                                </span>
-                            </a>
-                        </li>
-                    ))}
-                </ul>
-                
-                {/* Pro Feature Box (Bottom pinned) */}
-                <div className="p-4 bg-gradient-to-t from-cyan-900/20 to-transparent border-t border-white/5">
-                     <div className="flex items-center gap-2 text-cyan-400 mb-1.5">
-                        <Zap size={12} />
-                        <span className="text-[9px] font-bold uppercase font-mono tracking-widest">Pro Feature</span>
-                     </div>
-                     <p className="text-[10px] text-white/40 leading-relaxed font-mono">
-                        &gt; Live trade execution arriving in v2.0 update.
-                     </p>
-                </div>
-            </nav>
+                    {/* Scrollable List */}
+                    <ul className="flex-1 overflow-y-auto no-scrollbar py-2 space-y-0.5">
+                        {menuItems.map((item, index) => (
+                            <li key={index} className="px-2">
+                                <a
+                                    href={item.href}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="group flex items-center gap-3 px-3 py-2.5 rounded-md text-[11px] font-mono uppercase tracking-wide text-white/50 hover:text-white hover:bg-white/[0.03] transition-all duration-200 relative overflow-hidden"
+                                >
+                                    <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    
+                                    <span className="text-white/30 group-hover:text-cyan-400 transition-colors group-hover:scale-110 duration-200">
+                                        {item.icon}
+                                    </span>
+                                    <span className="group-hover:translate-x-1 transition-transform duration-200">
+                                        {item.label}
+                                    </span>
+                                </a>
+                            </li>
+                        ))}
+                    </ul>
+                    
+                    {/* Pro Feature Box */}
+                    <div className="p-4 bg-gradient-to-t from-cyan-900/20 to-transparent border-t border-white/5">
+                         <div className="flex items-center gap-2 text-cyan-400 mb-1.5">
+                            <Zap size={12} />
+                            <span className="text-[9px] font-bold uppercase font-mono tracking-widest">Pro Feature</span>
+                         </div>
+                         <p className="text-[10px] text-white/40 leading-relaxed font-mono">
+                            &gt; Live trade execution arriving in v2.0 update.
+                         </p>
+                    </div>
+                </nav>
+            </div>
         </aside>
     );
 }
@@ -190,7 +200,6 @@ function NavBar() {
                         <UserButton afterSignOutUrl="/" />
                     </div>
                 </SignedIn>
-
             </div>
         </header>
     );
@@ -218,9 +227,8 @@ function Hero() {
     return (
         <section className="pt-12 md:pt-20 pb-10 grid md:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
-                {/* Badge using Mono font for tech vibe */}
                 <p className="inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/5 px-3 py-1 text-[11px] text-cyan-200 font-mono tracking-wider uppercase">
-                    Applied Strategic Intelligence  //  World Trade Factory
+                    Applied Strategic Intelligence  //  World Trade Factory
                 </p>
                 
                 <h1 className="text-5xl md:text-6xl font-bold leading-[1.1] tracking-tight">
@@ -346,10 +354,7 @@ function ExperienzCTA() {
             className="mt-24 rounded-3xl border border-white/10 bg-[#0B101F] overflow-hidden relative"
         >
             <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 blur-[100px] rounded-full pointer-events-none" />
-<div className="grid md:grid-cols-[1fr_1.4fr] relative z-10">
-
-   
-                {/* LEFT: text + buttons (unchanged) */}
+            <div className="grid md:grid-cols-[1fr_1.4fr] relative z-10">
                 <div className="p-8 md:p-16 space-y-8">
                     <h3 className="text-3xl md:text-4xl font-bold tracking-tight">
                         Enter InfinityXZ
@@ -393,7 +398,6 @@ function ExperienzCTA() {
                     </div>
                 </div>
 
-                {/* RIGHT: replaced static “Live Inference” card with StockBot iframe */}
                 <div className="relative bg-gradient-to-br from-cyan-900/20 to-[#060914] p-4 md:p-8 min-h-[320px] flex items-center justify-center">
                     <div className="w-full h-[460px] md:h-[520px] rounded-2xl border border-white/10 bg-black/40 backdrop-blur-md overflow-hidden shadow-2xl">
                         <iframe
@@ -404,11 +408,11 @@ function ExperienzCTA() {
                         />
                     </div>
                 </div>
-
             </div>
         </section>
     );
 }
+
 /* FOOTER */
 
 function Footer() {
@@ -416,13 +420,11 @@ function Footer() {
         <footer className="border-t border-white/10 mt-12 bg-[#03050a]">
             <div className="mx-auto max-w-7xl px-6 py-12 flex flex-col xl:flex-row items-center justify-between gap-10 text-xs text-white/40">
                 
-                {/* Left: Logo */}
                 <div className="flex items-center gap-3 xl:w-1/3">
                     <InfinityMark />
                     <span className="font-bold text-white/60 text-sm tracking-wide">InfinityXZ</span>
                 </div>
 
-                {/* Middle: Social Icons (Small) */}
                 <div className="flex justify-center gap-4 xl:w-1/3">
                     <SocialIcon 
                         href="https://instagram.com/skxywtf" 
@@ -456,7 +458,6 @@ function Footer() {
                     />
                 </div>
 
-                {/* Right: Address Block (Bright) */}
                 <div className="text-center xl:text-right leading-relaxed xl:w-1/3 font-medium">
                     <strong className="text-white block mb-2 text-sm tracking-wide">World Trade Factory™</strong>
                     
