@@ -9,3 +9,4 @@ requests
 pytz
 fastapi
 uvicorn
+python-dotenv
