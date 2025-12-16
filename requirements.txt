@@ -1,7 +1,6 @@
 typing-extensions
 langchain-core
 langchain-openai
-langchain-experimental
 pandas
 yfinance
 feedparser
@@ -11,9 +10,6 @@ langgraph
 requests
 tqdm
 pytz
-chainlit
-rich
-questionary
 langchain_anthropic
 langchain-google-genai
 fastapi
