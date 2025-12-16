@@ -10,3 +10,5 @@ pytz
 fastapi
 uvicorn
 python-dotenv
+langchain_anthropic
+langchain-google-genai
