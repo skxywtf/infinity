@@ -74,12 +74,16 @@ def get_news_finnhub(
         
     return "\n".join(formatted_news)
 
-def get_fundamentals_finnhub(ticker: Annotated[str, "Ticker symbol"]) -> Dict[str, Any]:
+def get_fundamentals_finnhub(ticker: Annotated[str, "Ticker symbol"], *args, **kwargs) -> Dict[str, Any]:
     """Get basic financials from Finnhub."""
     client = _get_client()
     
     # metric='all' returns a huge blob of data
-    basic = client.company_basic_financials(ticker, metric='all')
+    try:
+        basic = client.company_basic_financials(ticker, metric='all')
+    except Exception as e:
+        print(f"Finnhub Fundamentals Error: {e}")
+        return {}
     
     if not basic or 'metric' not in basic:
         return {}

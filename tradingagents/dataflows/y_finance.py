@@ -3,6 +3,11 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import yfinance as yf
 import os
+
+# Set cache to /tmp for serverless environments
+if os.environ.get("VERCEL"):
+    yf.set_tz_cache_location("/tmp/py-yfinance")
+import os
 from .stockstats_utils import StockstatsUtils
 
 def get_YFin_data_online(
