@@ -16,6 +16,12 @@ from .alpha_vantage import (
     get_news as get_alpha_vantage_news
 )
 from .alpha_vantage_common import AlphaVantageRateLimitError
+from .finnhub_data import (
+    get_stock_data_finnhub,
+    get_news_finnhub,
+    get_fundamentals_finnhub,
+    get_insider_sentiment_finnhub
+)
 
 # Configuration and routing logic
 from .config import get_config
@@ -58,13 +64,15 @@ VENDOR_LIST = [
     "local",
     "yfinance",
     "openai",
-    "google"
+    "google",
+    "finnhub"
 ]
 
 # Mapping of methods to their vendor-specific implementations
 VENDOR_METHODS = {
     # core_stock_apis
     "get_stock_data": {
+        "finnhub": get_stock_data_finnhub,
         "alpha_vantage": get_alpha_vantage_stock,
         "yfinance": get_YFin_data_online,
         "local": get_YFin_data,
@@ -77,6 +85,7 @@ VENDOR_METHODS = {
     },
     # fundamental_data
     "get_fundamentals": {
+        "finnhub": get_fundamentals_finnhub,
         "alpha_vantage": get_alpha_vantage_fundamentals,
         "openai": get_fundamentals_openai,
     },
@@ -97,6 +106,7 @@ VENDOR_METHODS = {
     },
     # news_data
     "get_news": {
+        "finnhub": get_news_finnhub,
         "alpha_vantage": get_alpha_vantage_news,
         "openai": get_stock_news_openai,
         "google": get_google_news,
@@ -107,6 +117,7 @@ VENDOR_METHODS = {
         "local": get_reddit_global_news
     },
     "get_insider_sentiment": {
+        "finnhub": get_insider_sentiment_finnhub,
         "local": get_finnhub_company_insider_sentiment
     },
     "get_insider_transactions": {

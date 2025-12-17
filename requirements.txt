@@ -10,5 +10,6 @@ pytz
 fastapi
 uvicorn
 python-dotenv
+finnhub-python
 langchain_anthropic
 langchain-google-genai
