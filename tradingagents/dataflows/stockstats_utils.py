@@ -80,3 +80,23 @@ class StockstatsUtils:
             return indicator_value
         else:
             return "N/A: Not a trading day (weekend or holiday)"
+
+    @staticmethod
+    def get_indicator_from_df(df: pd.DataFrame, indicator: str) -> str:
+        """Calculate indicator from an existing DataFrame."""
+        try:
+            # Stockstats requires lowercase columns
+            df = df.copy()
+            df.columns = [c.lower() for c in df.columns]
+            
+            # Ensure index is datetime? Finnhub DF has 'Date' as index.
+            # wrap() usually handles it.
+            
+            stat_df = wrap(df)
+            stat_df[indicator] # Trigger calc
+            
+            # Return latest value
+            val = stat_df[indicator].iloc[-1]
+            return str(val)
+        except Exception as e:
+            return f"Error: {str(e)}"

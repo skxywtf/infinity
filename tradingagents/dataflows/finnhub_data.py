@@ -21,8 +21,19 @@ def get_stock_data_finnhub(
     client = _get_client()
     
     # Convert dates to unix timestamp
-    start_ts = int(datetime.strptime(start_date, "%Y-%m-%d").timestamp())
-    end_ts = int(datetime.strptime(end_date, "%Y-%m-%d").timestamp())
+    try:
+        if isinstance(start_date, (int, float)):
+            start_ts = int(start_date)
+        else:
+            start_ts = int(datetime.strptime(str(start_date), "%Y-%m-%d").timestamp())
+            
+        if isinstance(end_date, (int, float)):
+            end_ts = int(end_date)
+        else:
+            end_ts = int(datetime.strptime(str(end_date), "%Y-%m-%d").timestamp())
+    except Exception as e:
+        print(f"Date conversion error: {e}")
+        return pd.DataFrame()
     
     # Resolution 'D' for daily
     res = client.stock_candles(ticker, 'D', start_ts, end_ts)
