@@ -129,4 +129,25 @@ def get_insider_sentiment_finnhub(ticker: Annotated[str, "Ticker symbol"]) -> st
             
         return report
     except Exception as e:
-        return f"Error fetching insider sentiment: {str(e)}"
+from .stockstats_utils import StockstatsUtils
+
+def get_indicators_finnhub(
+    ticker: Annotated[str, "Ticker symbol"],
+    indicator_name: Annotated[str, "Indicator name (e.g. rsi, macd)"],
+    start_date: Annotated[str, "Start date (YYYY-MM-DD)"],
+    end_date: Annotated[str, "End date (YYYY-MM-DD)"]
+) -> str:
+    """Calculate technical indicators using Finnhub data."""
+    # Fetch price data first
+    df = get_stock_data_finnhub(ticker, start_date, end_date)
+    
+    if df.empty:
+        return f"Error: No data found for {ticker} on Finnhub to calculate {indicator_name}"
+        
+    # Use generic calculation util
+    try:
+        # StockstatsUtils expects a DataFrame
+        result = StockstatsUtils.get_indicator_from_df(df, indicator_name)
+        return result
+    except Exception as e:
+        return f"Error calculating {indicator_name}: {str(e)}"

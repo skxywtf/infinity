@@ -20,7 +20,8 @@ from .finnhub_data import (
     get_stock_data_finnhub,
     get_news_finnhub,
     get_fundamentals_finnhub,
-    get_insider_sentiment_finnhub
+    get_insider_sentiment_finnhub,
+    get_indicators_finnhub
 )
 
 # Configuration and routing logic
@@ -79,6 +80,7 @@ VENDOR_METHODS = {
     },
     # technical_indicators
     "get_indicators": {
+        "finnhub": get_indicators_finnhub,
         "alpha_vantage": get_alpha_vantage_indicator,
         "yfinance": get_stock_stats_indicators_window,
         "local": get_stock_stats_indicators_window
