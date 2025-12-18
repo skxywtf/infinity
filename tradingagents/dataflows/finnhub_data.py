@@ -129,6 +129,8 @@ def get_insider_sentiment_finnhub(ticker: Annotated[str, "Ticker symbol"]) -> st
             
         return report
     except Exception as e:
+        return f"Error fetching insider sentiment: {str(e)}"
+
 from .stockstats_utils import StockstatsUtils
 
 def get_indicators_finnhub(
