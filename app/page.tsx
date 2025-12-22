@@ -14,25 +14,9 @@ import {
 
 export default function InfinityXZ() {
   /**
-   * STABILIZED SCROLL LOGIC
-   */
-  React.useEffect(() => {
-    // 1. Manual scroll restoration
-    if ('scrollRestoration' in history) {
-      history.scrollRestoration = 'manual';
-    }
-
-    // 2. Clear hash without jumping
-    if (window.location.hash) {
-      window.history.replaceState(null, '', window.location.pathname);
-    }
-
-    // 3. Gentle scroll to top
-    window.scrollTo(0, 0);
-  }, []);
-
-  /**
    * SMOOTH SCROLL HANDLER
+   * Only handles link clicks. We removed the "force top" logic
+   * to stop the page from jumping when you reach the bottom.
    */
   React.useEffect(() => {
     const handleScroll = (e: MouseEvent) => {
@@ -56,10 +40,15 @@ export default function InfinityXZ() {
   }, []);
 
   return (
-    <div className="relative w-full min-h-screen bg-[#060914] text-white font-sans selection:bg-cyan-500/30 overflow-x-hidden flex flex-col">
+    <div className="relative w-full min-h-screen bg-[#060914] text-white font-sans selection:bg-cyan-500/30 flex flex-col">
       
+      {/* GLOBAL STYLES 
+          - overflow-x-hidden on body stops horizontal shake
+          - scroll-padding-top handles the sticky header offset
+      */}
       <style dangerouslySetInnerHTML={{
         __html: `
+          body { overflow-x: hidden; }
           .no-scrollbar::-webkit-scrollbar { display: none; }
           .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
           html { scroll-padding-top: 100px; }
@@ -73,10 +62,10 @@ export default function InfinityXZ() {
         <main className="w-full pb-20">
           <Hero />
           
-          {/* MOVED UP: The Bot/CTA Panel is now second */}
+          {/* 2nd Position: Bot Interface */}
           <ExperienzCTA />
           
-          {/* MOVED DOWN: The Features list is now third */}
+          {/* 3rd Position: Features */}
           <Essence />
           
           <Footer />
@@ -99,7 +88,6 @@ function NavBar() {
           </span>
         </div>
 
-        {/* REORDERED LINKS TO MATCH NEW LAYOUT */}
         <nav className="hidden md:flex gap-6 text-sm text-white/70 font-medium">
           <a href="#experienz" className="hover:text-white transition-colors">XperienZ</a>
           <a href="#essence" className="hover:text-white transition-colors">Essence</a>
@@ -199,7 +187,7 @@ function Hero() {
   );
 }
 
-/* EXPERIENZ CTA (Moved Here) */
+/* EXPERIENZ CTA (2nd Position) */
 
 function ExperienzCTA() {
   return (
@@ -270,7 +258,7 @@ function ExperienzCTA() {
   );
 }
 
-/* ESSENCE (Moved Here) */
+/* ESSENCE (3rd Position) */
 
 function Essence() {
   return (
