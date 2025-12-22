@@ -9,10 +9,22 @@ import { motion } from "framer-motion";
 export default function ExperienzPage() {
   return (
     <div className="min-h-screen bg-[#060914] text-white font-sans selection:bg-cyan-500/30 flex flex-col">
-      {/* VERCEL HIDER ADDED HERE */}
+      
+      {/* --- STABILIZATION & VERCEL HIDER --- */}
       <style dangerouslySetInnerHTML={{
         __html: `
-          /* --- HIDE VERCEL TOOLBAR --- */
+          /* 1. Stop the "bounce" / jump when hitting top/bottom */
+          html, body {
+            overscroll-behavior-y: none;
+            overflow-x: hidden;
+            width: 100%;
+          }
+
+          /* 2. Hide Scrollbar but keep functionality */
+          .no-scrollbar::-webkit-scrollbar { display: none; }
+          .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+          /* 3. Hide Vercel Toolbar */
           #vercel-toolbar,
           vercel-live-feedback,
           [data-vercel-toolbar] {
