@@ -10,114 +10,76 @@ import {
   Network,
   ShieldCheck,
   Zap,
-  Activity,
-  FileText,
-  TrendingUp,
-  Globe,
-  BarChart3,
-  Newspaper,
-  CandlestickChart,
-  Filter,
-  Briefcase,
-  ScanEye,
-  LineChart,
-  Percent,
-  ArrowDownUp,
-  Calendar,
-  Bitcoin,
-  Gem,
-  RefreshCw,
-  Database,
-  Clock,
-  Map as MapIcon,
-  Megaphone
 } from "lucide-react";
 
 export default function InfinityXZ() {
   /**
-   * FIX #1: Stop hash-anchor auto-jump + stop scroll restoration
-   * - useLayoutEffect runs before paint on client
-   * - removes #hash from URL (if present) and forces top
+   * STABILIZED SCROLL LOGIC
+   * We only run this once on mount. We do NOT force layout thrashing.
    */
-  React.useLayoutEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    // Stop browser from restoring previous scroll position
-    if ('scrollRestoration' in window.history) {
-      window.history.scrollRestoration = 'manual';
+  React.useEffect(() => {
+    // 1. Manual scroll restoration to prevent browser remembering scroll position
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
     }
 
-    // Remove hash BEFORE paint to prevent anchor snap/jump
+    // 2. Clear hash without jumping
     if (window.location.hash) {
-      window.history.replaceState(
-        null,
-        '',
-        window.location.pathname + window.location.search
-      );
+      window.history.replaceState(null, '', window.location.pathname);
     }
 
-    // Force top immediately
-    requestAnimationFrame(() => {
-      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-    });
+    // 3. Gentle scroll to top
+    window.scrollTo(0, 0);
   }, []);
 
   /**
-   * FIX #2: Smooth-scroll ONLY on click (not globally).
-   * Global `html{scroll-behavior:smooth}` can create "fighting scroll" vibes.
+   * SMOOTH SCROLL HANDLER
+   * Handles internal links smoothly, leaves external links alone.
    */
   React.useEffect(() => {
-    const onClick = (e: MouseEvent) => {
-      const a = (e.target as HTMLElement)?.closest?.('a[href^="#"]') as HTMLAnchorElement | null;
-      if (!a) return;
+    const handleScroll = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const link = target.closest('a[href^="#"]');
+      
+      if (!link) return;
+      
+      const href = link.getAttribute('href');
+      if (!href || href === '#') return;
 
-      const href = a.getAttribute('href') || '';
-      const id = href.startsWith('#') ? href.slice(1) : '';
-      if (!id) return;
-
-      const el = document.getElementById(id);
-      if (!el) return;
-
-      e.preventDefault();
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const element = document.getElementById(href.substring(1));
+      if (element) {
+        e.preventDefault();
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     };
 
-    document.addEventListener('click', onClick);
-    return () => document.removeEventListener('click', onClick);
+    document.addEventListener('click', handleScroll);
+    return () => document.removeEventListener('click', handleScroll);
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#060914] text-white font-sans selection:bg-cyan-500/30">
-      {/* GLOBAL STYLES */}
+    // FIX: overflow-x-hidden here, NOT on html/body. 
+    // FIX: relative w-full ensures it takes space correctly.
+    <div className="relative w-full min-h-screen bg-[#060914] text-white font-sans selection:bg-cyan-500/30 overflow-x-hidden flex flex-col">
+      
+      {/* GLOBAL STYLES - REDUCED TO MINIMUM */}
       <style dangerouslySetInnerHTML={{
         __html: `
-          vercel-live-feedback { display: none !important; }
-
-          /* IMPORTANT: keep this AUTO, not smooth */
-          html {
-            scroll-behavior: auto;
-            overflow-x: hidden;
-          }
-
-          body { overflow-x: hidden; }
-
-          /* Hide scrollbar */
+          /* Hide scrollbar but keep functionality */
           .no-scrollbar::-webkit-scrollbar { display: none; }
           .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-          /* Fix sticky positioning calculations */
-          * { scroll-margin-top: 100px; }
+          
+          /* Smooth scroll offset for sticky header */
+          html { scroll-padding-top: 100px; }
         `
       }} />
 
       <AuroraBackground />
       <NavBar />
 
-      {/* WIDER CONTAINER + BOT-FIRST LAYOUT
-          - Remove RightPanel completely (smoothest experience)
-          - Give iframe area full width
-      */}
-      <div className="mx-auto max-w-[1600px] px-4 sm:px-6 pt-8">
+      {/* CENTERED CONTAINER */}
+      {/* w-full ensures it doesn't collapse, mx-auto centers it */}
+      <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 pt-8 flex-grow">
         <main className="w-full pb-20">
           <Hero />
           <Essence />
@@ -133,7 +95,7 @@ export default function InfinityXZ() {
 
 function NavBar() {
   return (
-    <header className="sticky top-0 z-30 border-b border-white/10 bg-black/60 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#060914]/80 backdrop-blur-md w-full">
       <div className="mx-auto max-w-[1600px] px-4 sm:px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <InfinityMark />
@@ -172,14 +134,14 @@ function NavBar() {
 
 function InfinityMark() {
   return (
-    <div className="relative h-8 w-8">
+    <div className="relative h-8 w-8 flex-shrink-0">
       <motion.div
         className="absolute inset-0 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-500 blur-sm"
         initial={{ scale: 0.9, rotate: 0 }}
         animate={{ scale: 1, rotate: 360 }}
         transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
       />
-      <div className="absolute inset-[2px] rounded-full border border-white/20 bg-[#060914] grid place-items-center">
+      <div className="absolute inset-[2px] rounded-full border border-white/20 bg-[#060914] grid place-items-center z-10">
         <InfinityIcon size={18} className="text-cyan-300" />
       </div>
     </div>
@@ -247,7 +209,7 @@ function Essence() {
   return (
     <section
       id="essence"
-      className="pt-16 md:pt-24 grid md:grid-cols-3 gap-10 items-start border-t border-white/5"
+      className="pt-16 md:pt-24 grid md:grid-cols-3 gap-10 items-start border-t border-white/5 scroll-mt-24"
     >
       <div className="md:col-span-1 space-y-4">
         <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
@@ -309,16 +271,16 @@ function EssenceCard(props: { icon: React.ReactNode; title: string; text: string
   );
 }
 
-/* EXPERIENZ CTA (BOT WIDTH FIXED) */
+/* EXPERIENZ CTA */
 
 function ExperienzCTA() {
   return (
     <section
       id="experienz"
-      className="mt-24 rounded-3xl border border-white/10 bg-[#0B101F] overflow-hidden relative"
+      className="mt-24 rounded-3xl border border-white/10 bg-[#0B101F] overflow-hidden relative scroll-mt-24"
     >
       <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 blur-[100px] rounded-full pointer-events-none" />
-      {/* Make bot side bigger */}
+      
       <div className="grid lg:grid-cols-[1fr_1.8fr] relative z-10">
         <div className="p-8 md:p-16 space-y-8">
           <h3 className="text-3xl md:text-4xl font-bold tracking-tight">
@@ -364,13 +326,13 @@ function ExperienzCTA() {
           </div>
         </div>
 
-        {/* BIGGER BOT PANEL */}
-        <div className="relative bg-gradient-to-br from-cyan-900/20 to-[#060914] p-4 md:p-10 min-h-[360px] flex items-center justify-center">
-          <div className="w-full h-[520px] md:h-[640px] rounded-2xl border border-white/10 bg-black/40 backdrop-blur-md overflow-hidden shadow-2xl">
+        {/* BOT PANEL */}
+        <div className="relative bg-gradient-to-br from-cyan-900/20 to-[#060914] p-4 md:p-10 min-h-[360px] flex items-center justify-center border-l border-white/5">
+          <div className="w-full h-[520px] md:h-[640px] rounded-2xl border border-white/10 bg-black/40 backdrop-blur-md overflow-hidden shadow-2xl relative">
             <iframe
               src="https://stockbot-sigma.vercel.app/"
               title="InfinityXZ StockBot"
-              className="w-full h-full border-0"
+              className="w-full h-full border-0 absolute inset-0"
               loading="lazy"
             />
           </div>
@@ -384,7 +346,7 @@ function ExperienzCTA() {
 
 function Footer() {
   return (
-    <footer className="border-t border-white/10 mt-12 bg-[#03050a]">
+    <footer className="border-t border-white/10 mt-12 bg-[#03050a] w-full">
       <div className="mx-auto max-w-[1600px] px-4 sm:px-6 py-12 flex flex-col xl:flex-row items-center justify-between gap-10 text-xs text-white/40">
         <div className="flex items-center gap-3 xl:w-1/3">
           <InfinityMark />
@@ -478,11 +440,11 @@ function SocialIcon({ href, img, alt, size }: { href: string; img: string; alt: 
   );
 }
 
-/* BACKGROUND (included to fix your AuroraBackground build error) */
+/* BACKGROUND */
 
 function AuroraBackground() {
   return (
-    <div className="pointer-events-none fixed inset-0 -z-10">
+    <div className="fixed inset-0 -z-10 pointer-events-none">
       <div className="absolute inset-0 bg-[#060914]" />
       <div className="absolute -top-40 left-1/2 h-[60vh] w-[120vw] -translate-x-1/2 rounded-full bg-cyan-600/10 blur-[120px]" />
       <div className="absolute top-1/3 right-0 h-[40vh] w-[50vw] rounded-full bg-blue-600/10 blur-[120px]" />
