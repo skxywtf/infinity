@@ -15,6 +15,8 @@ import {
 export default function InfinityXZ() {
   /**
    * SMOOTH SCROLL HANDLER (Links Only)
+   * We have REMOVED all other scroll logic (restoration, scrollTo top, etc)
+   * to prevent the browser from fighting the user at the bottom of the page.
    */
   React.useEffect(() => {
     const handleScroll = (e: MouseEvent) => {
@@ -38,21 +40,23 @@ export default function InfinityXZ() {
   }, []);
 
   return (
-    // FIX: Removed 'overflow-x-hidden' from this div. 
-    // It must only exist on the body tag to preventing scroll conflict.
     <div className="relative min-h-screen bg-[#060914] text-white font-sans selection:bg-cyan-500/30">
       
-      {/* GLOBAL STYLES */}
+      {/* GLOBAL STYLES 
+          - overscroll-behavior-y: none -> PREVENTS the "bounce" and jump at the bottom.
+          - height: auto -> Ensures the body grows naturally with content.
+      */}
       <style dangerouslySetInnerHTML={{
         __html: `
-          /* This is the ONLY place overflow should be handled */
-          body { 
-            overflow-x: hidden; 
+          html, body {
+            overscroll-behavior-y: none;
+            overflow-x: hidden;
+            height: auto;
             width: 100%;
-            position: relative;
+            scroll-behavior: smooth;
           }
           
-          /* Hide scrollbar visually but keep functionality */
+          /* Visual scrollbar hiding */
           .no-scrollbar::-webkit-scrollbar { display: none; }
           .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         `
@@ -62,7 +66,8 @@ export default function InfinityXZ() {
       <NavBar />
 
       <div className="mx-auto max-w-[1600px] px-4 sm:px-6 pt-8">
-        <main className="w-full pb-20">
+        {/* pb-32 adds extra breathing room at the bottom to prevent edge-snapping */}
+        <main className="w-full pb-32">
           <Hero />
           
           {/* 2nd Position: Bot Interface */}
