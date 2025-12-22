@@ -39,6 +39,16 @@ export default function InfinityXZ() {
           .no-scrollbar::-webkit-scrollbar { display: none; }
           .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
           html { scroll-padding-top: 100px; }
+
+          /* --- HIDE VERCEL TOOLBAR --- */
+          #vercel-toolbar,
+          vercel-live-feedback,
+          [data-vercel-toolbar] {
+            display: none !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            visibility: hidden !important;
+          }
         `
       }} />
 
@@ -109,7 +119,7 @@ function InfinityMark() {
   );
 }
 
-/* HERO - UPDATED IMAGE SECTION */
+/* HERO */
 function Hero() {
   return (
     <section className="pt-12 md:pt-20 pb-10 grid md:grid-cols-2 gap-12 items-center">
@@ -148,11 +158,8 @@ function Hero() {
         </div>
       </div>
 
-      {/* UPDATED IMAGE CONTAINER & HOVER EFFECT */}
-      {/* Increased height: h-96 md:h-[600px] */}
       <div className="relative h-96 md:h-[600px] w-full overflow-hidden rounded-2xl border border-white/10 shadow-2xl shadow-cyan-900/20 group">
         <div className="absolute inset-0 bg-gradient-to-t from-[#060914] via-transparent to-transparent z-10 transition-opacity duration-1000 group-hover:opacity-0" />
-        {/* Increased zoom and added distortion on hover with scale-[1.4_1.1] and rotate-1 */}
         <img
           src="infinity.png"
           alt="Infinity XZ AI Hero"
@@ -226,7 +233,7 @@ function EssenceCard(props: { icon: React.ReactNode; title: string; text: string
   );
 }
 
-/* FULL FOOTER */
+/* FOOTER */
 function Footer() {
   return (
     <footer className="border-t border-white/10 mt-12 bg-[#03050a] w-full">
