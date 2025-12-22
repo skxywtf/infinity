@@ -73,7 +73,7 @@ export default function ExperienzPage() {
               </h1>
               <p className="text-white/60 text-lg leading-relaxed max-w-md">
                 This is the XperienZ layer. A closed beta environment for professionals who demand 
-                an AI partner that respects the gravity of financial decisions.
+                an AI partner that respects the gravity of financial decisions in a live setting. For users that need the intelligence organized in specific categories/areas - use the World Trade Factory link.
               </p>
             </div>
 
