@@ -145,10 +145,20 @@ function Hero() {
             href="/experienz"
             className="inline-flex items-center justify-center gap-2 rounded-xl px-8 py-4 bg-cyan-500 text-black font-bold hover:bg-cyan-400 transition-all shadow-[0_0_30px_-10px_rgba(6,182,212,0.5)]"
           >
-            Enter InfinityXZ
+            Enter InfinityXZ(Beta)
             <ArrowRight size={18} />
           </Link>
-          
+                      <div>
+              <a
+                href="https://www.worldtradefactory.ai/"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center gap-2 rounded-xl px-8 py-4 bg-cyan-500 text-black font-bold hover:bg-cyan-400 transition-all shadow-[0_0_30px_-10px_rgba(6,182,212,0.5)] mb-6"
+              >
+                World Trade Factory
+                <ArrowRight size={14} />
+              </a>
+            </div>
           <a
             href="#essence"
             className="inline-flex items-center justify-center gap-2 rounded-xl px-8 py-4 border border-white/10 bg-white/5 hover:bg-white/10 text-sm font-medium transition-colors"
