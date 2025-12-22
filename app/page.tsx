@@ -14,9 +14,7 @@ import {
 
 export default function InfinityXZ() {
   /**
-   * SMOOTH SCROLL HANDLER
-   * Only handles link clicks. We removed the "force top" logic
-   * to stop the page from jumping when you reach the bottom.
+   * SMOOTH SCROLL HANDLER (Links Only)
    */
   React.useEffect(() => {
     const handleScroll = (e: MouseEvent) => {
@@ -40,25 +38,30 @@ export default function InfinityXZ() {
   }, []);
 
   return (
-    <div className="relative w-full min-h-screen bg-[#060914] text-white font-sans selection:bg-cyan-500/30 flex flex-col">
+    // FIX: Removed 'overflow-x-hidden' from this div. 
+    // It must only exist on the body tag to preventing scroll conflict.
+    <div className="relative min-h-screen bg-[#060914] text-white font-sans selection:bg-cyan-500/30">
       
-      {/* GLOBAL STYLES 
-          - overflow-x-hidden on body stops horizontal shake
-          - scroll-padding-top handles the sticky header offset
-      */}
+      {/* GLOBAL STYLES */}
       <style dangerouslySetInnerHTML={{
         __html: `
-          body { overflow-x: hidden; }
+          /* This is the ONLY place overflow should be handled */
+          body { 
+            overflow-x: hidden; 
+            width: 100%;
+            position: relative;
+          }
+          
+          /* Hide scrollbar visually but keep functionality */
           .no-scrollbar::-webkit-scrollbar { display: none; }
           .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-          html { scroll-padding-top: 100px; }
         `
       }} />
 
       <AuroraBackground />
       <NavBar />
 
-      <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 pt-8 flex-grow">
+      <div className="mx-auto max-w-[1600px] px-4 sm:px-6 pt-8">
         <main className="w-full pb-20">
           <Hero />
           
@@ -79,7 +82,7 @@ export default function InfinityXZ() {
 
 function NavBar() {
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#060914]/80 backdrop-blur-md w-full">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#060914]/80 backdrop-blur-md">
       <div className="mx-auto max-w-[1600px] px-4 sm:px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <InfinityMark />
