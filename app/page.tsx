@@ -140,32 +140,40 @@ function Hero() {
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 pt-2">
-          <Link
-            href="/experienz"
-            className="inline-flex items-center justify-center gap-2 rounded-xl px-8 py-4 bg-cyan-500 text-black font-bold hover:bg-cyan-400 transition-all shadow-[0_0_30px_-10px_rgba(6,182,212,0.5)]"
-          >
-            Enter InfinityXZ(Beta)
-            <ArrowRight size={18} />
-          </Link>
-                      <div>
-              <a
-                href="https://www.worldtradefactory.ai/"
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center justify-center gap-2 rounded-xl px-8 py-4 bg-cyan-500 text-black font-bold hover:bg-cyan-400 transition-all shadow-[0_0_30px_-10px_rgba(6,182,212,0.5)] mb-6"
-              >
-                World Trade Factory
-                <ArrowRight size={14} />
-              </a>
-            </div>
-          <a
-            href="#essence"
-            className="inline-flex items-center justify-center gap-2 rounded-xl px-8 py-4 border border-white/10 bg-white/5 hover:bg-white/10 text-sm font-medium transition-colors"
-          >
-            How it reasons
-          </a>
+        {/* BUTTONS CONTAINER */}
+        <div className="flex flex-col gap-4 pt-2">
+          {/* Top Row: Main Actions */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Link
+              href="/experienz"
+              className="inline-flex items-center justify-center gap-2 rounded-xl px-8 py-4 bg-cyan-500 text-black font-bold hover:bg-cyan-400 transition-all shadow-[0_0_30px_-10px_rgba(6,182,212,0.5)]"
+            >
+              Enter InfinityXZ(Beta)
+              <ArrowRight size={18} />
+            </Link>
+            
+            <a
+              href="#essence"
+              className="inline-flex items-center justify-center gap-2 rounded-xl px-8 py-4 border border-white/10 bg-white/5 hover:bg-white/10 text-sm font-medium transition-colors"
+            >
+              How it reasons
+            </a>
+          </div>
+
+          {/* Bottom Row: World Trade Factory */}
+          <div>
+            <a
+              href="https://www.worldtradefactory.ai/"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center gap-2 rounded-xl px-8 py-3 border border-cyan-500/30 bg-cyan-900/10 hover:bg-cyan-900/20 text-cyan-400 font-bold transition-all text-sm w-full sm:w-auto"
+            >
+              World Trade Factory
+              <ArrowRight size={14} />
+            </a>
+          </div>
         </div>
+
       </div>
 
       <div className="relative h-96 md:h-[600px] w-full overflow-hidden rounded-2xl border border-white/10 shadow-2xl shadow-cyan-900/20 group">
