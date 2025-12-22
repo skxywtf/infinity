@@ -9,6 +9,21 @@ import { motion } from "framer-motion";
 export default function ExperienzPage() {
   return (
     <div className="min-h-screen bg-[#060914] text-white font-sans selection:bg-cyan-500/30 flex flex-col">
+      {/* VERCEL HIDER ADDED HERE */}
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          /* --- HIDE VERCEL TOOLBAR --- */
+          #vercel-toolbar,
+          vercel-live-feedback,
+          [data-vercel-toolbar] {
+            display: none !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            visibility: hidden !important;
+          }
+        `
+      }} />
+
       <AuroraBackground />
       
       {/* HEADER */}
@@ -50,7 +65,7 @@ export default function ExperienzPage() {
               </p>
             </div>
 
-            {/* RESTORED BUTTON: World Trade Factory */}
+            {/* BUTTON: World Trade Factory */}
             <div>
               <a
                 href="https://www.worldtradefactory.ai/"
@@ -118,13 +133,12 @@ export default function ExperienzPage() {
         </div>
       </main>
 
-      {/* FOOTER ADDED HERE */}
       <Footer />
     </div>
   );
 }
 
-/* FULL FOOTER (Restored) */
+/* FOOTER */
 function Footer() {
   return (
     <footer className="border-t border-white/10 mt-12 bg-[#03050a] w-full">
@@ -197,8 +211,8 @@ function AuroraBackground() {
   return (
     <div className="fixed inset-0 -z-10 pointer-events-none">
       <div className="absolute inset-0 bg-[#060914]" />
-      <div className="absolute top-[-20%] left-[-10%] h-[80vh] w-[80vw] rounded-full bg-cyan-900/10 blur-[150px]" />
-      <div className="absolute bottom-[-20%] right-[-10%] h-[80vh] w-[80vw] rounded-full bg-blue-900/10 blur-[150px]" />
+      <div className="absolute -top-40 left-1/2 h-[60vh] w-[120vw] -translate-x-1/2 rounded-full bg-cyan-600/10 blur-[120px]" />
+      <div className="absolute top-1/3 right-0 h-[40vh] w-[50vw] rounded-full bg-blue-600/10 blur-[120px]" />
     </div>
   );
 }
