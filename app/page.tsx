@@ -15,10 +15,9 @@ import {
 export default function InfinityXZ() {
   /**
    * STABILIZED SCROLL LOGIC
-   * We only run this once on mount. We do NOT force layout thrashing.
    */
   React.useEffect(() => {
-    // 1. Manual scroll restoration to prevent browser remembering scroll position
+    // 1. Manual scroll restoration
     if ('scrollRestoration' in history) {
       history.scrollRestoration = 'manual';
     }
@@ -34,7 +33,6 @@ export default function InfinityXZ() {
 
   /**
    * SMOOTH SCROLL HANDLER
-   * Handles internal links smoothly, leaves external links alone.
    */
   React.useEffect(() => {
     const handleScroll = (e: MouseEvent) => {
@@ -58,18 +56,12 @@ export default function InfinityXZ() {
   }, []);
 
   return (
-    // FIX: overflow-x-hidden here, NOT on html/body. 
-    // FIX: relative w-full ensures it takes space correctly.
     <div className="relative w-full min-h-screen bg-[#060914] text-white font-sans selection:bg-cyan-500/30 overflow-x-hidden flex flex-col">
       
-      {/* GLOBAL STYLES - REDUCED TO MINIMUM */}
       <style dangerouslySetInnerHTML={{
         __html: `
-          /* Hide scrollbar but keep functionality */
           .no-scrollbar::-webkit-scrollbar { display: none; }
           .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-          
-          /* Smooth scroll offset for sticky header */
           html { scroll-padding-top: 100px; }
         `
       }} />
@@ -77,13 +69,16 @@ export default function InfinityXZ() {
       <AuroraBackground />
       <NavBar />
 
-      {/* CENTERED CONTAINER */}
-      {/* w-full ensures it doesn't collapse, mx-auto centers it */}
       <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 pt-8 flex-grow">
         <main className="w-full pb-20">
           <Hero />
-          <Essence />
+          
+          {/* MOVED UP: The Bot/CTA Panel is now second */}
           <ExperienzCTA />
+          
+          {/* MOVED DOWN: The Features list is now third */}
+          <Essence />
+          
           <Footer />
         </main>
       </div>
@@ -104,9 +99,10 @@ function NavBar() {
           </span>
         </div>
 
+        {/* REORDERED LINKS TO MATCH NEW LAYOUT */}
         <nav className="hidden md:flex gap-6 text-sm text-white/70 font-medium">
-          <a href="#essence" className="hover:text-white transition-colors">Essence</a>
           <a href="#experienz" className="hover:text-white transition-colors">XperienZ</a>
+          <a href="#essence" className="hover:text-white transition-colors">Essence</a>
         </nav>
 
         <SignedOut>
@@ -203,7 +199,78 @@ function Hero() {
   );
 }
 
-/* ESSENCE */
+/* EXPERIENZ CTA (Moved Here) */
+
+function ExperienzCTA() {
+  return (
+    <section
+      id="experienz"
+      className="mt-12 mb-24 rounded-3xl border border-white/10 bg-[#0B101F] overflow-hidden relative scroll-mt-28"
+    >
+      <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 blur-[100px] rounded-full pointer-events-none" />
+      
+      <div className="grid lg:grid-cols-[1fr_1.8fr] relative z-10">
+        <div className="p-8 md:p-16 space-y-8">
+          <h3 className="text-3xl md:text-4xl font-bold tracking-tight">
+            Enter InfinityXZ
+          </h3>
+          <p className="text-white/70 text-base leading-relaxed max-w-md">
+            Join the closed beta for the XperienZ layer. This is for professionals
+            who demand an AI partner that respects the gravity of financial decisions.
+            <br /><br />
+            Experience the difference between a chatbot and a
+            <strong className="text-white"> World Trade Factory</strong> analyst.
+          </p>
+
+          <div className="pt-2 flex gap-4">
+            <a
+              href="https://www.worldtradefactory.ai/"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center gap-2 rounded-xl px-8 py-4 bg-cyan-500 text-black font-bold hover:bg-cyan-400 transition-all shadow-[0_0_30px_-10px_rgba(6,182,212,0.5)]"
+            >
+              World Trade Factory
+              <ArrowRight size={14} />
+            </a>
+          </div>
+
+          <div className="pt-8 border-t border-white/5">
+            <SignedOut>
+              <SignInButton mode="modal">
+                <button className="w-full sm:w-auto rounded-xl bg-cyan-500 text-[#060914] font-bold px-8 py-4 shadow-[0_0_30px_-10px_rgba(6,182,212,0.6)] hover:bg-cyan-400 hover:shadow-[0_0_40px_-5px_rgba(6,182,212,0.7)] transition-all transform hover:-translate-y-0.5">
+                  Authenticate Access
+                </button>
+              </SignInButton>
+              <p className="mt-4 text-[10px] text-white/40 uppercase tracking-widest font-mono">
+                // Professional Credentials Required
+              </p>
+            </SignedOut>
+
+            <SignedIn>
+              <p className="mt-3 text-xs text-cyan-300 font-mono">
+                ● SYSTEM STATUS: ONLINE. AUTHENTICATED.
+              </p>
+            </SignedIn>
+          </div>
+        </div>
+
+        {/* BOT PANEL */}
+        <div className="relative bg-gradient-to-br from-cyan-900/20 to-[#060914] p-4 md:p-10 min-h-[360px] flex items-center justify-center border-l border-white/5">
+          <div className="w-full h-[520px] md:h-[640px] rounded-2xl border border-white/10 bg-black/40 backdrop-blur-md overflow-hidden shadow-2xl relative">
+            <iframe
+              src="https://stockbot-sigma.vercel.app/"
+              title="InfinityXZ StockBot"
+              className="w-full h-full border-0 absolute inset-0"
+              loading="lazy"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ESSENCE (Moved Here) */
 
 function Essence() {
   return (
@@ -268,77 +335,6 @@ function EssenceCard(props: { icon: React.ReactNode; title: string; text: string
       </div>
       <p className="text-sm text-white/60 leading-relaxed">{props.text}</p>
     </motion.div>
-  );
-}
-
-/* EXPERIENZ CTA */
-
-function ExperienzCTA() {
-  return (
-    <section
-      id="experienz"
-      className="mt-24 rounded-3xl border border-white/10 bg-[#0B101F] overflow-hidden relative scroll-mt-24"
-    >
-      <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 blur-[100px] rounded-full pointer-events-none" />
-      
-      <div className="grid lg:grid-cols-[1fr_1.8fr] relative z-10">
-        <div className="p-8 md:p-16 space-y-8">
-          <h3 className="text-3xl md:text-4xl font-bold tracking-tight">
-            Enter InfinityXZ
-          </h3>
-          <p className="text-white/70 text-base leading-relaxed max-w-md">
-            Join the closed beta for the XperienZ layer. This is for professionals
-            who demand an AI partner that respects the gravity of financial decisions.
-            <br /><br />
-            Experience the difference between a chatbot and a
-            <strong className="text-white"> World Trade Factory</strong> analyst.
-          </p>
-
-          <div className="pt-2 flex gap-4">
-            <a
-              href="https://www.worldtradefactory.ai/"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center justify-center gap-2 rounded-xl px-8 py-4 bg-cyan-500 text-black font-bold hover:bg-cyan-400 transition-all shadow-[0_0_30px_-10px_rgba(6,182,212,0.5)]"
-            >
-              World Trade Factory
-              <ArrowRight size={14} />
-            </a>
-          </div>
-
-          <div className="pt-8 border-t border-white/5">
-            <SignedOut>
-              <SignInButton mode="modal">
-                <button className="w-full sm:w-auto rounded-xl bg-cyan-500 text-[#060914] font-bold px-8 py-4 shadow-[0_0_30px_-10px_rgba(6,182,212,0.6)] hover:bg-cyan-400 hover:shadow-[0_0_40px_-5px_rgba(6,182,212,0.7)] transition-all transform hover:-translate-y-0.5">
-                  Authenticate Access
-                </button>
-              </SignInButton>
-              <p className="mt-4 text-[10px] text-white/40 uppercase tracking-widest font-mono">
-                // Professional Credentials Required
-              </p>
-            </SignedOut>
-
-            <SignedIn>
-              <p className="mt-3 text-xs text-cyan-300 font-mono">
-                ● SYSTEM STATUS: ONLINE. AUTHENTICATED.
-              </p>
-            </SignedIn>
-          </div>
-        </div>
-
-        {/* BOT PANEL */}
-        <div className="relative bg-gradient-to-br from-cyan-900/20 to-[#060914] p-4 md:p-10 min-h-[360px] flex items-center justify-center border-l border-white/5">
-          <div className="w-full h-[520px] md:h-[640px] rounded-2xl border border-white/10 bg-black/40 backdrop-blur-md overflow-hidden shadow-2xl relative">
-            <iframe
-              src="https://stockbot-sigma.vercel.app/"
-              title="InfinityXZ StockBot"
-              className="w-full h-full border-0 absolute inset-0"
-              loading="lazy"
-            />
-          </div>
-        </div>
-      </div>
-    </section>
   );
 }
 
