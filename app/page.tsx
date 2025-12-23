@@ -143,6 +143,29 @@ function Hero() {
         {/* BUTTONS CONTAINER */}
         <div className="flex flex-col gap-4 pt-2">
           {/* Top Row: Main Actions */}
+          <div>
+            <a
+              href="https://infinityxz.ai/trading-agent"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center gap-2 rounded-xl px-8 py-3 border border-cyan-500/30 bg-cyan-900/10 hover:bg-cyan-900/20 text-cyan-400 font-bold transition-all text-sm w-full sm:w-auto"
+            >
+              Applied Strategic Intelligence
+              <ArrowRight size={14} />
+            </a>
+          </div>
+          <div>
+            <a
+              href="https://www.worldtradefactory.ai/"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center gap-2 rounded-xl px-8 py-3 border border-cyan-500/30 bg-cyan-900/10 hover:bg-cyan-900/20 text-cyan-400 font-bold transition-all text-sm w-full sm:w-auto"
+            >
+              World Trade Factory
+              <ArrowRight size={14} />
+            </a>
+          </div>
+       
           <div className="flex flex-col sm:flex-row gap-4">
             <Link
               href="/experienz"
@@ -161,17 +184,7 @@ function Hero() {
           </div>
 
           {/* Bottom Row: World Trade Factory */}
-          <div>
-            <a
-              href="https://www.worldtradefactory.ai/"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center justify-center gap-2 rounded-xl px-8 py-3 border border-cyan-500/30 bg-cyan-900/10 hover:bg-cyan-900/20 text-cyan-400 font-bold transition-all text-sm w-full sm:w-auto"
-            >
-              World Trade Factory
-              <ArrowRight size={14} />
-            </a>
-          </div>
+
         </div>
 
       </div>
