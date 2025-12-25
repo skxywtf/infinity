@@ -162,28 +162,23 @@ export default function ChatInterface() {
                             if (key === 'market_report') {
                                 accumulatedContent = `### TECHNICAL ANALYSIS\n${content}\n`;
                                 hasUpdatedContent = true;
-
-                                // Update the message content in real-time
-                                setMessages(prev => prev.map(m =>
-                                    m.id === runId
-                                        ? { ...m, content: accumulatedContent }
-                                        : m
-                                ));
                             }
                         }
 
                         // Handle Completion
                         else if (data.type === 'result') {
                             addLog("Analysis Sequence Completed", 'success');
+
+                            // Finalize and Show Content in One Go
                             if (!hasUpdatedContent) {
-                                // If no reports came through, show result state or generic success
                                 accumulatedContent += "\n\n**Analysis Complete.**";
-                                setMessages(prev => prev.map(m =>
-                                    m.id === runId
-                                        ? { ...m, content: accumulatedContent }
-                                        : m
-                                ));
                             }
+
+                            setMessages(prev => prev.map(m =>
+                                m.id === runId
+                                    ? { ...m, content: accumulatedContent }
+                                    : m
+                            ));
                         }
 
                     } catch (e) {
