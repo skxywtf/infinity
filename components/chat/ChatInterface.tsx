@@ -157,11 +157,10 @@ export default function ChatInterface() {
 
                         // Handle Report Events (Chat Content)
                         else if (data.type === 'report') {
-                            // Filter reports to match "News + Graphs" request (Hide Strategy/Risk)
+                            // Filter reports to match "Simple Analysis" request (Only Market Report)
                             const { key, content } = data.content;
-                            if (['market_report', 'news_report', 'fundamentals_report'].includes(key)) {
-                                const sectionTitle = key.replace(/_/g, ' ').toUpperCase();
-                                accumulatedContent += `\n### ${sectionTitle}\n${content}\n`;
+                            if (key === 'market_report') {
+                                accumulatedContent = `### ANALYSIS\n${content}\n`;
                                 hasUpdatedContent = true;
 
                                 // Update the message content in real-time
