@@ -5,6 +5,7 @@ import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { ArrowLeft, ArrowRight, Infinity as InfinityIcon } from "lucide-react";
 import Link from 'next/link';
 import { motion } from "framer-motion";
+import ChatInterface from '@/components/chat/ChatInterface';
 
 export default function ExperienzPage() {
   return (
@@ -119,18 +120,9 @@ export default function ExperienzPage() {
             </div>
           </div>
 
-          {/* RIGHT: The Bot Frame */}
           <div className="order-1 lg:order-2 h-[600px] md:h-[700px] w-full relative">
             <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/10 to-blue-600/10 rounded-3xl blur-2xl" />
-            <div className="relative h-full w-full rounded-2xl border border-white/20 bg-black/40 backdrop-blur-md shadow-2xl shadow-cyan-500/20 overflow-hidden flex flex-col">
-              {/* The Bot Iframe - Blended Container */}
-              <iframe
-                src="https://stockbot-sigma.vercel.app/"
-                title="InfinityXZ StockBot"
-                className="flex-grow w-full border-0 bg-transparent filter invert-[.92] hue-rotate-180 contrast-[0.95] saturate-[.85]"
-                loading="eager"
-              />
-            </div>
+            <ChatInterface />
           </div>
         </div>
       </main>
