@@ -122,7 +122,7 @@ export default function ExperienzPage() {
           {/* RIGHT: The Bot Frame */}
           <div className="order-1 lg:order-2 h-[600px] md:h-[700px] w-full relative">
             <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/10 to-blue-600/10 rounded-3xl blur-2xl" />
-            <div className="relative h-full w-full rounded-2xl border border-white/10 bg-black/40 backdrop-blur-md shadow-2xl shadow-cyan-500/5 overflow-hidden flex flex-col">
+            <div className="relative h-full w-full rounded-2xl border border-white/20 bg-black/40 backdrop-blur-md shadow-2xl shadow-cyan-500/20 overflow-hidden flex flex-col">
               {/* The Bot Iframe - Blended Container */}
               <iframe
                 src="https://stockbot-sigma.vercel.app/"
