@@ -65,11 +65,8 @@ export default function ChatInterface() {
             addLog(`Dispatching Analyst Agents...`, 'step');
 
             // CALL BACKEND STREAM
-            // Since we don't have the Python stream route perfectly set up in Next.js yet,
-            // we will simulate the "Thought Stream" for the UI demo using the logic we know exists.
-
-            // Simulation of Graph Execution
-            await simulateGraphExecution(ticker);
+            // We connect to the real Python backend via Next.js API route
+            await runAnalysis(ticker);
 
         } catch (error) {
             console.error(error);
@@ -98,38 +95,113 @@ export default function ChatInterface() {
 
     const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
-    // Temporary simulation until API connection is solidified
-    const simulateGraphExecution = async (ticker: string) => {
-        await delay(1000);
-        addLog(`Market Analyst: Fetching price data from YFinance...`, 'info');
-        await delay(1200);
-        addLog(`Market Analyst: Price $124.30 | RSI: 65.4 | MACD: Bullish`, 'success');
+    // Real Backend Integration
+    const runAnalysis = async (ticker: string) => {
+        const runId = Date.now().toString();
 
-        await delay(1000);
-        addLog(`News Analyst: Scanning 45+ sources (Finnhub, OpenAI)...`, 'info');
-        await delay(1500);
-        addLog(`News Analyst: Detected 3 major headlines. Sentiment: POSITIVE`, 'success');
-
-        await delay(800);
-        addLog(`Fundamental Analyst: Checking Balance Sheet...`, 'info');
-        await delay(1000);
-        addLog(`Risk Manager: Evaluating volatility exposure...`, 'warning');
-
-        await delay(1500);
-        addLog(`Debate: Bull vs Bear Agents deliberating...`, 'step');
-        await delay(2000);
-        addLog(`Trader: Finalizing strategy...`, 'step');
-        await delay(800);
-        addLog(`Execution: Strategy Generated.`, 'success');
-
-        const finalResponse: Message = {
-            id: Date.now() + '',
+        // Initial Message Placeholder
+        const initialMsg: Message = {
+            id: runId,
             role: 'assistant',
-            content: `# Analysis Report: ${ticker}\n\n**Recommendation: BUY**\n\n### Rationale\nOur analysts have converged on a bullish outlook for ${ticker}. The price action indicates strong support at current levels, with technical indicators signaling upside potential.\n\n### Key Data Points\n*   **Price:** $429.30\n*   **RSI:** 65.4 (Neutral-Bullish)\n*   **Sentiment:** 8.2/10\n\n*See the intraday chart below for detailed price action.*`,
+            content: `Initiating real-time analysis for **${ticker}**...`,
             timestamp: new Date(),
-            chartTicker: ticker
+            chartTicker: ticker // Show chart immediately
         };
-        setMessages(prev => [...prev, finalResponse]);
+        setMessages(prev => [...prev, initialMsg]);
+
+        // Accumulate reports
+        let accumulatedContent = `Analysis for **${ticker}** initiated.\n\n`;
+
+        try {
+            const response = await fetch("/api/analyze-stream", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    ticker,
+                    date: new Date().toISOString().split('T')[0],
+                    research_depth: 1
+                })
+            });
+
+            if (!response.body) throw new Error("No response body");
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+
+            let hasUpdatedContent = false;
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || '';
+
+                for (const line of lines) {
+                    if (!line.trim()) continue;
+                    try {
+                        const data = JSON.parse(line);
+
+                        // Handle Log Events (Thought Stream)
+                        if (data.type === 'log') {
+                            addLog(data.content, 'info');
+                        }
+                        else if (data.type === 'status') {
+                            addLog(`Status: ${data.content.status}`, 'step');
+                        }
+                        else if (data.type === 'error') {
+                            addLog(`Error: ${data.content}`, 'error');
+                        }
+
+                        // Handle Report Events (Chat Content)
+                        else if (data.type === 'report') {
+                            const { key, content } = data.content;
+                            // Format the report section
+                            const sectionTitle = key.replace(/_/g, ' ').toUpperCase();
+                            accumulatedContent += `\n### ${sectionTitle}\n${content}\n`;
+
+                            // Update the message content in real-time (throttling could be added here if needed)
+                            setMessages(prev => prev.map(m =>
+                                m.id === runId
+                                    ? { ...m, content: accumulatedContent }
+                                    : m
+                            ));
+                            hasUpdatedContent = true;
+                        }
+
+                        // Handle Completion
+                        else if (data.type === 'result') {
+                            addLog("Analysis Sequence Completed", 'success');
+                            if (!hasUpdatedContent) {
+                                // If no reports came through, show result state or generic success
+                                accumulatedContent += "\n\n**Analysis Complete.**";
+                                setMessages(prev => prev.map(m =>
+                                    m.id === runId
+                                        ? { ...m, content: accumulatedContent }
+                                        : m
+                                ));
+                            }
+                        }
+
+                    } catch (e) {
+                        console.error("Stream parse error", e);
+                    }
+                }
+            }
+
+        } catch (error) {
+            console.error(error);
+            addLog(`Connection Failed: ${error}`, 'error');
+            setMessages(prev => prev.map(m =>
+                m.id === runId
+                    ? { ...m, content: accumulatedContent + `\n\n**System Error:** Failed to connect to Trading Agent backend. Please check API keys.` as string, isError: true }
+                    : m
+            ));
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
