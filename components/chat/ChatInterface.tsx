@@ -160,7 +160,7 @@ export default function ChatInterface() {
                             // Filter reports to match "Simple Analysis" request (Only Market Report)
                             const { key, content } = data.content;
                             if (key === 'market_report') {
-                                accumulatedContent = `### ANALYSIS\n${content}\n`;
+                                accumulatedContent = `### TECHNICAL ANALYSIS\n${content}\n`;
                                 hasUpdatedContent = true;
 
                                 // Update the message content in real-time
