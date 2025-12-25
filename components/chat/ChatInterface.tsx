@@ -104,8 +104,8 @@ export default function ChatInterface() {
             id: runId,
             role: 'assistant',
             content: `Initiating real-time analysis for **${ticker}**...`,
-            timestamp: new Date(),
-            chartTicker: ticker // Show chart immediately
+            timestamp: new Date()
+            // chartTicker removed - wait for result
         };
         setMessages(prev => [...prev, initialMsg]);
 
@@ -176,7 +176,7 @@ export default function ChatInterface() {
 
                             setMessages(prev => prev.map(m =>
                                 m.id === runId
-                                    ? { ...m, content: accumulatedContent }
+                                    ? { ...m, content: accumulatedContent, chartTicker: ticker }
                                     : m
                             ));
                         }
