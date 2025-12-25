@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 export default function ExperienzPage() {
   return (
     <div className="min-h-screen bg-[#060914] text-white font-sans selection:bg-cyan-500/30 flex flex-col">
-      
+
       {/* --- STABILIZATION & VERCEL HIDER --- */}
       <style dangerouslySetInnerHTML={{
         __html: `
@@ -37,17 +37,17 @@ export default function ExperienzPage() {
       }} />
 
       <AuroraBackground />
-      
+
       {/* HEADER */}
       <header className="px-6 py-4 flex items-center justify-between border-b border-white/5 bg-black/20 backdrop-blur-sm sticky top-0 z-50">
         <Link href="/" className="flex items-center gap-2 text-white/60 hover:text-white transition-colors text-sm font-medium">
           <ArrowLeft size={16} />
           Return Home
         </Link>
-        
+
         <div className="flex items-center gap-4">
           <span className="text-xs font-mono text-cyan-500/80 animate-pulse hidden sm:block">
-             ● LIVE CONNECTION
+            ● LIVE CONNECTION
           </span>
           <SignedIn>
             <UserButton afterSignOutUrl="/" />
@@ -58,7 +58,7 @@ export default function ExperienzPage() {
       {/* MAIN CONTENT AREA */}
       <main className="flex-grow flex items-center justify-center p-4 md:p-8">
         <div className="w-full max-w-[1400px] grid lg:grid-cols-[1fr_2fr] gap-8 items-center">
-          
+
           {/* LEFT: Info & Auth */}
           <div className="space-y-8 order-2 lg:order-1">
             <div>
@@ -72,7 +72,7 @@ export default function ExperienzPage() {
                 Enter the Neural Fabric
               </h1>
               <p className="text-white/60 text-lg leading-relaxed max-w-md">
-                This is the XperienZ layer. A closed beta environment for professionals who demand 
+                This is the XperienZ layer. A closed beta environment for professionals who demand
                 an AI partner that respects the gravity of financial decisions in a live setting. For users that need the intelligence organized in specific categories/areas - use the World Trade Factory link.
               </p>
             </div>
@@ -121,26 +121,16 @@ export default function ExperienzPage() {
 
           {/* RIGHT: The Bot Frame */}
           <div className="order-1 lg:order-2 h-[600px] md:h-[700px] w-full relative">
-             <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/10 to-blue-600/10 rounded-3xl blur-2xl" />
-             <div className="relative h-full w-full rounded-2xl border border-white/10 bg-[#0B101F]/90 backdrop-blur-xl shadow-2xl overflow-hidden flex flex-col">
-                {/* Fake Terminal Header */}
-                <div className="h-10 border-b border-white/10 bg-black/40 flex items-center px-4 gap-2">
-                  <div className="flex gap-1.5">
-                    <div className="w-3 h-3 rounded-full bg-red-500/20 border border-red-500/50" />
-                    <div className="w-3 h-3 rounded-full bg-yellow-500/20 border border-yellow-500/50" />
-                    <div className="w-3 h-3 rounded-full bg-green-500/20 border border-green-500/50" />
-                  </div>
-                  <div className="ml-4 text-[10px] font-mono text-white/30">root@infinity-xz:~</div>
-                </div>
-                
-                {/* The Bot Iframe */}
-                <iframe
-                  src="https://stockbot-sigma.vercel.app/"
-                  title="InfinityXZ StockBot"
-                  className="flex-grow w-full border-0 bg-transparent"
-                  loading="eager"
-                />
-             </div>
+            <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/10 to-blue-600/10 rounded-3xl blur-2xl" />
+            <div className="relative h-full w-full rounded-2xl border border-white/10 bg-black/40 backdrop-blur-md shadow-2xl shadow-cyan-500/5 overflow-hidden flex flex-col">
+              {/* The Bot Iframe - Blended Container */}
+              <iframe
+                src="https://stockbot-sigma.vercel.app/"
+                title="InfinityXZ StockBot"
+                className="flex-grow w-full border-0 bg-transparent"
+                loading="eager"
+              />
+            </div>
           </div>
         </div>
       </main>
