@@ -9,7 +9,7 @@ load_dotenv()
 from api.models import AnalysisRequest, AnalysisResponse
 from api.manager import manager
 
-app = FastAPI(title="TradingAgents API")
+app = FastAPI(title="Infinity Trading Agent API - v2.1 Concise Mode")
 
 # Configure CORS
 app.add_middleware(

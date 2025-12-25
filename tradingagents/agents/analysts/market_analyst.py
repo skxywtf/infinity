@@ -42,8 +42,8 @@ Volatility Indicators:
 Volume-Based Indicators:
 - vwma: VWMA: A moving average weighted by volume. Usage: Confirm trends by integrating price action with volume data. Tips: Watch for skewed results from volume spikes; use in combination with other volume analyses.
 
-- Select indicators that provide diverse and complementary information. Avoid redundancy. When you tool call, please use the exact name of the indicators provided above. Please make sure to call get_stock_data first to retrieve the CSV that is needed to generate indicators. Then use get_indicators with the specific indicator names. Write a CONCISE summary of the trends (max 4-5 sentences). Focus only on the most critical signal. Do NOT be verbose."""
-            + """ Make sure to append a Markdown table at the end of the report to organize key points in the report, organized and easy to read."""
+- Select indicators that provide diverse and complementary information. Avoid redundancy. When you tool call, please use the exact name of the indicators provided above. Please make sure to call get_stock_data first to retrieve the CSV that is needed to generate indicators. Then use get_indicators with the specific indicator names. Write an EXTREMELY BRIEF analysis. STRICTLY LIMIT your response to TWO SHORT PARAGRAPHS. Paragraph 1: Trend Summary. Paragraph 2: Key Levels/Signals. Do NOT output a 'detailed report'. Do NOT be verbose."""
+            + """ Append a small Markdown table of key indicators at the end."""
         )
 
         prompt = ChatPromptTemplate.from_messages(
