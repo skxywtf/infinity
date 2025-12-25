@@ -64,7 +64,7 @@ export default function StockChart({ ticker, data }: { ticker: string; data?: an
                     <Tooltip
                         contentStyle={{ backgroundColor: '#060914', borderColor: '#ffffff10', borderRadius: '8px', fontSize: '12px' }}
                         itemStyle={{ color: '#fff' }}
-                        formatter={(value: number) => [`$${value.toFixed(2)}`, 'Price']}
+                        formatter={(value: any) => [`$${Number(value).toFixed(2)}`, 'Price']}
                     />
                     <Area
                         type="monotone"
