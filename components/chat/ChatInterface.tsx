@@ -18,7 +18,7 @@ export default function ChatInterface() {
     const [messages, setMessages] = useState<Message[]>([INITIAL_MESSAGE]);
     const [logs, setLogs] = useState<ThoughtLog[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [showThoughts, setShowThoughts] = useState(true); // Default show on desktop
+    const [showThoughts, setShowThoughts] = useState(false); // Default hidden for cleaner experience
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -157,18 +157,20 @@ export default function ChatInterface() {
 
                         // Handle Report Events (Chat Content)
                         else if (data.type === 'report') {
+                            // Filter reports to match "News + Graphs" request (Hide Strategy/Risk)
                             const { key, content } = data.content;
-                            // Format the report section
-                            const sectionTitle = key.replace(/_/g, ' ').toUpperCase();
-                            accumulatedContent += `\n### ${sectionTitle}\n${content}\n`;
+                            if (['market_report', 'news_report', 'fundamentals_report'].includes(key)) {
+                                const sectionTitle = key.replace(/_/g, ' ').toUpperCase();
+                                accumulatedContent += `\n### ${sectionTitle}\n${content}\n`;
+                                hasUpdatedContent = true;
 
-                            // Update the message content in real-time (throttling could be added here if needed)
-                            setMessages(prev => prev.map(m =>
-                                m.id === runId
-                                    ? { ...m, content: accumulatedContent }
-                                    : m
-                            ));
-                            hasUpdatedContent = true;
+                                // Update the message content in real-time
+                                setMessages(prev => prev.map(m =>
+                                    m.id === runId
+                                        ? { ...m, content: accumulatedContent }
+                                        : m
+                                ));
+                            }
                         }
 
                         // Handle Completion
@@ -272,7 +274,7 @@ export default function ChatInterface() {
                     <MessageInput onSend={handleSendMessage} disabled={isLoading} />
                     <div className="mt-2 text-center">
                         <span className="text-[10px] text-white/20 uppercase tracking-widest font-mono">
-                            Powered by TradingAgents Architecture
+                            Powered by InfinityXZ
                         </span>
                     </div>
                 </div>
