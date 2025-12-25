@@ -127,7 +127,7 @@ export default function ExperienzPage() {
               <iframe
                 src="https://stockbot-sigma.vercel.app/"
                 title="InfinityXZ StockBot"
-                className="flex-grow w-full border-0 bg-transparent"
+                className="flex-grow w-full border-0 bg-transparent filter invert-[.92] hue-rotate-180 contrast-[0.95] saturate-[.85]"
                 loading="eager"
               />
             </div>
