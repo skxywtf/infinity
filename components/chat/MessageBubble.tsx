@@ -5,6 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { User, Bot, Sparkles, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
+import StockChart from './StockChart';
 
 export interface Message {
     id: string;
@@ -12,6 +13,8 @@ export interface Message {
     content: string;
     timestamp: Date;
     isError?: boolean;
+    chartTicker?: string;
+    chartData?: any[];
 }
 
 interface MessageBubbleProps {
@@ -44,18 +47,18 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
         >
             {/* Avatar */}
             <div className={`mt-1 h-8 w-8 shrink-0 rounded-lg flex items-center justify-center border ${isUser
-                    ? 'bg-purple-500/10 border-purple-500/20 text-purple-400'
-                    : 'bg-cyan-500/10 border-cyan-500/20 text-cyan-400'
+                ? 'bg-purple-500/10 border-purple-500/20 text-purple-400'
+                : 'bg-cyan-500/10 border-cyan-500/20 text-cyan-400'
                 }`}>
                 {isUser ? <User size={16} /> : <Bot size={16} />}
             </div>
 
             {/* Bubble */}
             <div className={`rounded-xl px-4 py-3 text-sm leading-relaxed shadow-lg backdrop-blur-sm border ${isUser
-                    ? 'bg-purple-600/20 border-purple-500/20 text-white rounded-tr-sm'
-                    : message.isError
-                        ? 'bg-red-900/20 border-red-500/30 text-red-100 rounded-tl-sm'
-                        : 'bg-white/5 border-white/10 text-white/90 rounded-tl-sm'
+                ? 'bg-purple-600/20 border-purple-500/20 text-white rounded-tr-sm'
+                : message.isError
+                    ? 'bg-red-900/20 border-red-500/30 text-red-100 rounded-tl-sm'
+                    : 'bg-white/5 border-white/10 text-white/90 rounded-tl-sm'
                 }`}>
                 {message.isError && (
                     <div className="flex items-center gap-2 mb-2 text-red-400 font-bold text-xs uppercase tracking-wider">
@@ -82,6 +85,10 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
                         {message.content}
                     </ReactMarkdown>
                 </div>
+
+                {message.chartTicker && (
+                    <StockChart ticker={message.chartTicker} data={message.chartData} />
+                )}
 
                 <div className="mt-2 text-[10px] text-white/30 text-right flex items-center justify-end gap-1">
                     {timestamp(message.timestamp)}

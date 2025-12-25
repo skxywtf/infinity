@@ -125,8 +125,9 @@ export default function ChatInterface() {
         const finalResponse: Message = {
             id: Date.now() + '',
             role: 'assistant',
-            content: `# Analysis Report: ${ticker}\n\n**Recommendation: BUY**\n\n### Rationale\nOur analysts have converged on a bullish outlook for ${ticker}. While volatility remains elevated (Risk Manager Concern), the Technicals show strong momentum (MACD Crossover) aligned with positive sentiment from recent product announcements.\n\n### Key Data Points\n*   **RSI:** 65.4 (Neutral-Bullish)\n*   **Sentiment:** 8.2/10\n*   **Risk:** Moderate\n\n*Invest wisely.*`,
-            timestamp: new Date()
+            content: `# Analysis Report: ${ticker}\n\n**Recommendation: BUY**\n\n### Rationale\nOur analysts have converged on a bullish outlook for ${ticker}. The price action indicates strong support at current levels, with technical indicators signaling upside potential.\n\n### Key Data Points\n*   **Price:** $429.30\n*   **RSI:** 65.4 (Neutral-Bullish)\n*   **Sentiment:** 8.2/10\n\n*See the intraday chart below for detailed price action.*`,
+            timestamp: new Date(),
+            chartTicker: ticker
         };
         setMessages(prev => [...prev, finalResponse]);
     };
