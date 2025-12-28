@@ -57,16 +57,31 @@ export default function ChatInterface() {
             return;
         }
 
-        // 3. Simulate Analysis / Call Backend
-        try {
-            // Add initial logs
-            addLog(`Initializing analysis for ${ticker}...`, 'info');
-            await delay(800);
-            addLog(`Dispatching Analyst Agents...`, 'step');
 
-            // CALL BACKEND STREAM
-            // We connect to the real Python backend via Next.js API route
-            await runAnalysis(ticker);
+        // 3. Response Generation
+        try {
+            // Intent Detection
+            const isNews = text.toLowerCase().includes('news');
+
+            // Log action
+            addLog(isNews ? `Fetching news for ${ticker}...` : `Loading chart for ${ticker}`, 'info');
+            await delay(500);
+
+            const responseMsg: Message = {
+                id: Date.now().toString(),
+                role: 'assistant',
+                content: isNews
+                    ? `### ${ticker} MARKET NEWS\nHere are the latest headlines and updates for **${ticker}**.`
+                    : `### ${ticker} CHART\nHere is the live technical chart for **${ticker}**.`,
+                timestamp: new Date(),
+                newsTicker: isNews ? ticker : undefined,
+                chartTicker: !isNews ? ticker : undefined
+            };
+
+            setMessages(prev => [...prev, responseMsg]);
+
+            // CALL BACKEND STREAM - DISABLED to satisfy "Just show graph/news" request
+            // await runAnalysis(ticker);
 
         } catch (error) {
             console.error(error);

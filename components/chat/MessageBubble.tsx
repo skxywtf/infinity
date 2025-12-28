@@ -6,6 +6,7 @@ import remarkGfm from 'remark-gfm';
 import { User, Bot, Sparkles, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import StockChart from './StockChart';
+import { Timeline } from 'react-ts-tradingview-widgets';
 
 export interface Message {
     id: string;
@@ -15,6 +16,7 @@ export interface Message {
     isError?: boolean;
     chartTicker?: string;
     chartData?: any[];
+    newsTicker?: string;
 }
 
 interface MessageBubbleProps {
@@ -88,6 +90,18 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
 
                 {message.chartTicker && (
                     <StockChart ticker={message.chartTicker} data={message.chartData} />
+                )}
+
+                {message.newsTicker && (
+                    <div className="w-full h-[500px] mt-3 rounded-xl overflow-hidden border border-white/5 relative bg-black/20">
+                        <Timeline
+                            symbol={message.newsTicker}
+                            colorTheme="dark"
+                            width="100%"
+                            height={500}
+                            isTransparent
+                        />
+                    </div>
                 )}
 
                 <div className="mt-2 text-[10px] text-white/30 text-right flex items-center justify-end gap-1">
