@@ -67,12 +67,14 @@ export async function POST(req: Request) {
 
         if (toolCalls) {
             for (const tc of toolCalls) {
-                const args = JSON.parse(tc.function.arguments);
-                if (tc.function.name === 'show_chart') {
+                const func = (tc as any).function;
+                const args = JSON.parse(func.arguments);
+
+                if (func.name === 'show_chart') {
                     responseData.chartTicker = args.ticker;
                     if (!responseData.content) responseData.content = `Here is the chart for ${args.ticker}.`;
                 }
-                if (tc.function.name === 'show_news') {
+                if (func.name === 'show_news') {
                     responseData.newsTicker = args.ticker;
                     if (!responseData.content) responseData.content = `Here are the latest news updates for ${args.ticker}.`;
                 }
