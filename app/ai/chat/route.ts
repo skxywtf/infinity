@@ -40,6 +40,36 @@ export async function POST(req: Request) {
                     },
                 },
             },
+            {
+                type: "function",
+                function: {
+                    name: "show_heatmap",
+                    description: "Display the stock market heatmap (sectors/performance).",
+                    parameters: { type: "object", properties: {}, required: [] },
+                },
+            },
+            {
+                type: "function",
+                function: {
+                    name: "show_financials",
+                    description: "Display financial data/table for a specific stock.",
+                    parameters: {
+                        type: "object",
+                        properties: {
+                            ticker: { type: "string", description: "The stock symbol, e.g. MSFT" },
+                        },
+                        required: ["ticker"],
+                    },
+                },
+            },
+            {
+                type: "function",
+                function: {
+                    name: "show_screener",
+                    description: "Display the stock screener widget to filter and find stocks.",
+                    parameters: { type: "object", properties: {}, required: [] },
+                },
+            },
         ];
 
         const completion = await openai.chat.completions.create({
@@ -47,7 +77,7 @@ export async function POST(req: Request) {
             messages: [
                 {
                     role: "system",
-                    content: "You are InfinityXZ, an advanced trading AI. You are helpful and concise. If the user provides a ticker symbol (e.g. 'NVDA') or asks for price/chart, call ONLY 'show_chart'. Do NOT call 'show_news' unless the user EXPLICITLY asks for news, headlines, or 'what is happening' with the stock. If user asks for BOTH, call both. Default behavior for a ticker is CHART ONLY."
+                    content: "You are InfinityXZ, an advanced trading AI. You are helpful and concise. If the user provides a ticker symbol (e.g. 'NVDA') or asks for price/chart, call ONLY 'show_chart'. Do NOT call 'show_news' unless the user EXPLICITLY asks for news, headlines, or 'what is happening' with the stock. If user asks for 'heatmap', 'hotmap', 'sector performance', call 'show_heatmap'. If user asks for 'financials', call 'show_financials'. If user asks for 'screener' or 'scan', call 'show_screener'."
                 },
                 ...messages
             ],
@@ -62,7 +92,10 @@ export async function POST(req: Request) {
             role: 'assistant',
             content: choice.message.content || "",
             chartTicker: undefined as string | undefined,
-            newsTicker: undefined as string | undefined
+            newsTicker: undefined as string | undefined,
+            showHeatmap: false,
+            financialsTicker: undefined as string | undefined,
+            showScreener: false
         };
 
         if (toolCalls) {
@@ -77,6 +110,18 @@ export async function POST(req: Request) {
                 if (func.name === 'show_news') {
                     responseData.newsTicker = args.ticker;
                     if (!responseData.content) responseData.content = `Here are the latest news updates for ${args.ticker}.`;
+                }
+                if (func.name === 'show_heatmap') {
+                    responseData.showHeatmap = true;
+                    if (!responseData.content) responseData.content = "Here is the Market Heatmap.";
+                }
+                if (func.name === 'show_financials') {
+                    responseData.financialsTicker = args.ticker;
+                    if (!responseData.content) responseData.content = `Here are the financials for ${args.ticker}.`;
+                }
+                if (func.name === 'show_screener') {
+                    responseData.showScreener = true;
+                    if (!responseData.content) responseData.content = "Here is the Stock Screener.";
                 }
             }
         }

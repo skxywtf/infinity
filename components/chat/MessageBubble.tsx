@@ -6,7 +6,7 @@ import remarkGfm from 'remark-gfm';
 import { User, Bot, Sparkles, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import StockChart from './StockChart';
-import { Timeline } from 'react-ts-tradingview-widgets';
+import { Timeline, StockHeatmap, Financials, Screener } from 'react-ts-tradingview-widgets';
 
 export interface Message {
     id: string;
@@ -17,6 +17,9 @@ export interface Message {
     chartTicker?: string;
     chartData?: any[];
     newsTicker?: string;
+    showHeatmap?: boolean;
+    financialsTicker?: string;
+    showScreener?: boolean;
 }
 
 interface MessageBubbleProps {
@@ -45,7 +48,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
         <motion.div
             initial={{ opacity: 0, x: isUser ? 20 : -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className={`flex gap-3 max-w-[90%] ${isUser ? 'ml-auto flex-row-reverse' : ''}`}
+            className={`flex gap-3 ${isUser ? 'ml-auto flex-row-reverse max-w-[85%]' : 'w-full'}`}
         >
             {/* Avatar */}
             <div className={`mt-1 h-8 w-8 shrink-0 rounded-lg flex items-center justify-center border ${isUser
@@ -56,11 +59,11 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
             </div>
 
             {/* Bubble */}
-            <div className={`rounded-xl px-4 py-3 text-sm leading-relaxed shadow-lg backdrop-blur-sm border ${isUser
+            <div className={`rounded-xl px-4 py-3 text-sm leading-relaxed shadow-lg backdrop-blur-sm border transition-all ${isUser
                 ? 'bg-purple-600/20 border-purple-500/20 text-white rounded-tr-sm'
                 : message.isError
-                    ? 'bg-red-900/20 border-red-500/30 text-red-100 rounded-tl-sm'
-                    : 'bg-white/5 border-white/10 text-white/90 rounded-tl-sm'
+                    ? 'bg-red-900/20 border-red-500/30 text-red-100 rounded-tl-sm w-full'
+                    : 'bg-white/5 border-white/10 text-white/90 rounded-tl-sm w-full'
                 }`}>
                 {message.isError && (
                     <div className="flex items-center gap-2 mb-2 text-red-400 font-bold text-xs uppercase tracking-wider">
@@ -101,6 +104,22 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
                             height={500}
                             isTransparent
                         />
+                    </div>
+                )}
+
+                {message.showHeatmap && (
+                    <div className="w-full h-[600px] mt-3 rounded-xl overflow-hidden border border-white/5 relative bg-black/20">
+                        <StockHeatmap colorTheme="dark" width="100%" height={600} />
+                    </div>
+                )}
+                {message.financialsTicker && (
+                    <div className="w-full h-[600px] mt-3 rounded-xl overflow-hidden border border-white/5 relative bg-black/20">
+                        <Financials symbol={message.financialsTicker} colorTheme="dark" width="100%" height={600} displayMode="regular" />
+                    </div>
+                )}
+                {message.showScreener && (
+                    <div className="w-full h-[600px] mt-3 rounded-xl overflow-hidden border border-white/5 relative bg-black/20">
+                        <Screener colorTheme="dark" width="100%" height={600} />
                     </div>
                 )}
 

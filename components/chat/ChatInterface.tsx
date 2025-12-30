@@ -10,9 +10,16 @@ import ThoughtStream, { ThoughtLog } from './ThoughtStream';
 const INITIAL_MESSAGE: Message = {
     id: 'init-1',
     role: 'assistant',
-    content: "**InfinityXZ Online.**\n\nI am connected to the World Trade Factory intelligence grid. Enter a stock symbol (e.g., **$NVDA**, **BTC**, **AAPL**) or ask me a question to begin.",
+    content: "**InfinityXZ Online.**\n\nI am connected to the World Trade Factory intelligence grid. Select an option below or ask me about stocks, sectors, or market news.",
     timestamp: new Date()
 };
+
+const QUICK_PROMPTS = [
+    { label: "Market Heatmap", query: "Show me the market heatmap by sector" },
+    { label: "Microsoft Financials", query: "Show me Microsoft financials table" },
+    { label: "Stock Screener", query: "Open the stock screener" },
+    { label: "NVDA Chart", query: "Show me NVDA chart" },
+];
 
 export default function ChatInterface() {
     const [messages, setMessages] = useState<Message[]>([INITIAL_MESSAGE]);
@@ -20,6 +27,7 @@ export default function ChatInterface() {
     const [isLoading, setIsLoading] = useState(false);
     const [showThoughts, setShowThoughts] = useState(false);
 
+    // Auto-scroll ref
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -60,13 +68,18 @@ export default function ChatInterface() {
                 content: data.content,
                 timestamp: new Date(),
                 chartTicker: data.chartTicker,
-                newsTicker: data.newsTicker
+                newsTicker: data.newsTicker,
+                showHeatmap: data.showHeatmap,
+                financialsTicker: data.financialsTicker,
+                showScreener: data.showScreener
             };
 
             setMessages(prev => [...prev, aiMsg]);
 
             if (data.chartTicker) addLog(`Displaying Chart for ${data.chartTicker}`, 'info');
             if (data.newsTicker) addLog(`Displaying News for ${data.newsTicker}`, 'info');
+            if (data.showHeatmap) addLog(`Displaying Market Heatmap`, 'step');
+            if (data.showScreener) addLog(`Opening Stock Screener`, 'step');
 
         } catch (error) {
             console.error(error);
@@ -91,8 +104,6 @@ export default function ChatInterface() {
             timestamp: new Date().toLocaleTimeString()
         }]);
     };
-
-    // runAnalysis removed (Legacy Agent)
 
     return (
         <div className="flex w-full h-full bg-[#060914] rounded-2xl overflow-hidden border border-white/10 shadow-2xl relative">
@@ -124,14 +135,14 @@ export default function ChatInterface() {
                     ))}
 
                     {messages.length === 1 && !isLoading && (
-                        <div className="flex flex-wrap gap-2 px-12 mb-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                            {['$NVDA', '$TSLA', 'BITCOIN', '$AMD'].map(ticker => (
+                        <div className="flex flex-wrap gap-3 px-8 mb-4 animate-in fade-in slide-in-from-bottom-2 duration-500 justify-center">
+                            {QUICK_PROMPTS.map(prompt => (
                                 <button
-                                    key={ticker}
-                                    onClick={() => handleSendMessage(ticker)}
-                                    className="px-3 py-1.5 rounded-full bg-cyan-500/5 border border-cyan-500/20 text-cyan-400 text-xs font-mono hover:bg-cyan-500/10 hover:border-cyan-500/40 transition-all cursor-pointer hover:scale-105"
+                                    key={prompt.label}
+                                    onClick={() => handleSendMessage(prompt.query)}
+                                    className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-cyan-400 text-xs font-semibold hover:bg-cyan-500/10 hover:border-cyan-500/40 transition-all cursor-pointer hover:scale-105 hover:text-cyan-300 shadow-lg"
                                 >
-                                    {ticker}
+                                    {prompt.label}
                                 </button>
                             ))}
                         </div>
