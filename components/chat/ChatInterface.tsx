@@ -134,19 +134,7 @@ export default function ChatInterface() {
                         <MessageBubble key={msg.id} message={msg} />
                     ))}
 
-                    {messages.length === 1 && !isLoading && (
-                        <div className="flex flex-wrap gap-3 px-8 mb-4 animate-in fade-in slide-in-from-bottom-2 duration-500 justify-center">
-                            {QUICK_PROMPTS.map(prompt => (
-                                <button
-                                    key={prompt.label}
-                                    onClick={() => handleSendMessage(prompt.query)}
-                                    className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-cyan-400 text-xs font-semibold hover:bg-cyan-500/10 hover:border-cyan-500/40 transition-all cursor-pointer hover:scale-105 hover:text-cyan-300 shadow-lg"
-                                >
-                                    {prompt.label}
-                                </button>
-                            ))}
-                        </div>
-                    )}
+
 
                     {isLoading && (
                         <div className="flex gap-3">
@@ -173,13 +161,37 @@ export default function ChatInterface() {
                 </div>
             </div>
 
+            {/* RIGHT PANEL: Quick Actions */}
+            <div className="hidden md:flex flex-col w-64 border-l border-white/10 bg-[#0B101F]/50 backdrop-blur-sm relative z-10">
+                <div className="p-4 border-b border-white/5">
+                    <h3 className="text-xs font-bold text-white/60 tracking-wider uppercase">Quick Access</h3>
+                </div>
+                <div className="p-4 flex flex-col gap-3 overflow-y-auto">
+                    {QUICK_PROMPTS.map(prompt => (
+                        <button
+                            key={prompt.label}
+                            onClick={() => handleSendMessage(prompt.query)}
+                            className="text-left px-4 py-3 rounded-xl bg-white/5 border border-white/5 text-cyan-400 text-xs font-medium hover:bg-cyan-500/10 hover:border-cyan-500/30 transition-all hover:translate-x-1 duration-200 group"
+                        >
+                            <span className="group-hover:text-cyan-300">{prompt.label}</span>
+                        </button>
+                    ))}
+
+                    <div className="mt-4 pt-4 border-t border-white/5">
+                        <p className="text-[10px] text-white/30 leading-relaxed">
+                            Select a tool to instantly visualize market data.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <AnimatePresence>
                 {showThoughts && (
                     <motion.div
                         initial={{ width: 0, opacity: 0 }}
                         animate={{ width: 320, opacity: 1 }}
                         exit={{ width: 0, opacity: 0 }}
-                        className="hidden md:block h-full border-l border-white/10 relative z-20"
+                        className="hidden md:block h-full border-l border-white/10 relative z-20 bg-[#060914]"
                     >
                         <ThoughtStream logs={logs} isProcessing={isLoading} />
                     </motion.div>
