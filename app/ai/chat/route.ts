@@ -70,6 +70,22 @@ export async function POST(req: Request) {
                     parameters: { type: "object", properties: {}, required: [] },
                 },
             },
+            {
+                type: "function",
+                function: {
+                    name: "show_market_overview",
+                    description: "Display today's market overview (indices, futures, bonds, forex).",
+                    parameters: { type: "object", properties: {}, required: [] },
+                },
+            },
+            {
+                type: "function",
+                function: {
+                    name: "show_market_data",
+                    description: "Display trending stocks (top gainers/losers/active).",
+                    parameters: { type: "object", properties: {}, required: [] },
+                },
+            },
         ];
 
         const completion = await openai.chat.completions.create({
@@ -77,7 +93,7 @@ export async function POST(req: Request) {
             messages: [
                 {
                     role: "system",
-                    content: "You are InfinityXZ, an advanced trading AI. You are helpful and concise. If the user provides a ticker symbol (e.g. 'NVDA') or asks for price/chart, call ONLY 'show_chart'. Do NOT call 'show_news' unless the user EXPLICITLY asks for news, headlines, or 'what is happening' with the stock. If user asks for 'heatmap', 'hotmap', 'sector performance', call 'show_heatmap'. If user asks for 'financials', call 'show_financials'. If user asks for 'screener' or 'scan', call 'show_screener'."
+                    content: "You are InfinityXZ, an advanced trading AI. You are helpful and concise. If the user provides a ticker symbol (e.g. 'NVDA') or asks for price/chart, call ONLY 'show_chart'. Do NOT call 'show_news' unless the user EXPLICITLY asks for news, headlines, or 'what is happening' with the stock. If user asks for 'heatmap', 'hotmap', 'sector performance', or 'ETF heatmap', call 'show_heatmap'. If user asks for 'financials', call 'show_financials'. If user asks for 'screener', call 'show_screener'. If 'market overview' or 'futures/bonds', call 'show_market_overview'. If 'trending stocks' or 'top gainers', call 'show_market_data'. Default ticker -> chart."
                 },
                 ...messages
             ],
@@ -94,8 +110,11 @@ export async function POST(req: Request) {
             chartTicker: undefined as string | undefined,
             newsTicker: undefined as string | undefined,
             showHeatmap: false,
+            heatmapMode: 'stock' as 'stock' | 'etf',
             financialsTicker: undefined as string | undefined,
-            showScreener: false
+            showScreener: false,
+            showMarketOverview: false,
+            showMarketData: false
         };
 
         if (toolCalls) {
@@ -113,6 +132,8 @@ export async function POST(req: Request) {
                 }
                 if (func.name === 'show_heatmap') {
                     responseData.showHeatmap = true;
+                    // Detect if ETF was requested in the message history? Or just default.
+                    // For now, simple heatmap.
                     if (!responseData.content) responseData.content = "Here is the Market Heatmap.";
                 }
                 if (func.name === 'show_financials') {
@@ -122,6 +143,14 @@ export async function POST(req: Request) {
                 if (func.name === 'show_screener') {
                     responseData.showScreener = true;
                     if (!responseData.content) responseData.content = "Here is the Stock Screener.";
+                }
+                if (func.name === 'show_market_overview') {
+                    responseData.showMarketOverview = true;
+                    if (!responseData.content) responseData.content = "Here is the Market Overview.";
+                }
+                if (func.name === 'show_market_data') {
+                    responseData.showMarketData = true;
+                    if (!responseData.content) responseData.content = "Here are today's Trending Stocks.";
                 }
             }
         }

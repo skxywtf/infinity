@@ -6,7 +6,7 @@ import remarkGfm from 'remark-gfm';
 import { User, Bot, Sparkles, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import StockChart from './StockChart';
-import { Timeline, StockHeatmap, FundamentalData, Screener } from 'react-ts-tradingview-widgets';
+import { Timeline, StockHeatmap, FundamentalData, Screener, MarketOverview, MarketData } from 'react-ts-tradingview-widgets';
 
 export interface Message {
     id: string;
@@ -20,6 +20,8 @@ export interface Message {
     showHeatmap?: boolean;
     financialsTicker?: string;
     showScreener?: boolean;
+    showMarketOverview?: boolean;
+    showMarketData?: boolean;
 }
 
 interface MessageBubbleProps {
@@ -120,6 +122,16 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
                 {message.showScreener && (
                     <div className="w-full h-[600px] mt-3 rounded-xl overflow-hidden border border-white/5 relative bg-black/20">
                         <Screener colorTheme="dark" width="100%" height={600} />
+                    </div>
+                )}
+                {message.showMarketOverview && (
+                    <div className="w-full h-[600px] mt-3 rounded-xl overflow-hidden border border-white/5 relative bg-black/20">
+                        <MarketOverview colorTheme="dark" width="100%" height={600} />
+                    </div>
+                )}
+                {message.showMarketData && (
+                    <div className="w-full h-[600px] mt-3 rounded-xl overflow-hidden border border-white/5 relative bg-black/20">
+                        <MarketData colorTheme="dark" width="100%" height={600} />
                     </div>
                 )}
 

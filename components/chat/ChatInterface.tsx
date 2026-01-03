@@ -10,15 +10,56 @@ import ThoughtStream, { ThoughtLog } from './ThoughtStream';
 const INITIAL_MESSAGE: Message = {
     id: 'init-1',
     role: 'assistant',
-    content: "**InfinityXZ Online.**\n\nI am connected to the World Trade Factory intelligence grid. Select an option below or ask me about stocks, sectors, or market news.",
+    content: "**InfinityXZ Online.**\n\nI am connected to the World Trade Factory intelligence grid. Select an option from the panel to the right or ask me about stocks, sectors, or market news.",
     timestamp: new Date()
 };
 
 const QUICK_PROMPTS = [
-    { label: "Market Heatmap", query: "Show me the market heatmap by sector" },
-    { label: "Microsoft Financials", query: "Show me Microsoft financials table" },
-    { label: "Stock Screener", query: "Open the stock screener" },
-    { label: "NVDA Chart", query: "Show me NVDA chart" },
+    {
+        title: "Heatmap of Daily Market Performance",
+        desc: "Visualize market trends at a glance with an interactive heatmap.",
+        query: "Show me market heatmap"
+    },
+    {
+        title: "Breakdown of Financial Data for Stocks",
+        desc: "Get detailed financial metrics and key performance indicators for any stock.",
+        query: "Show me financials for MSFT"
+    },
+    {
+        title: "Price History of Stock",
+        desc: "Track the historical price movement of stocks with customizable date ranges.",
+        query: "Show me price history of NVDA"
+    },
+    {
+        title: "Candlestick Stock Charts",
+        desc: "Analyze price patterns and trends with detailed candlestick charts.",
+        query: "Show candlestick chart for NVDA"
+    },
+    {
+        title: "Top Stories for Specific Stock",
+        desc: "Stay informed with the latest news and headlines affecting specific companies.",
+        query: "Show news for NVDA"
+    },
+    {
+        title: "Market Overview",
+        desc: "Shows an overview of today's stock, futures, bond, and forex market performance.",
+        query: "Show market overview"
+    },
+    {
+        title: "Stock Screener",
+        desc: "Discover new companies with a stock screening tool.",
+        query: "Open stock screener"
+    },
+    {
+        title: "Trending Stocks",
+        desc: "Shows the top five gaining, losing, and most active stocks for the day.",
+        query: "Show trending stocks"
+    },
+    {
+        title: "ETF Heatmap",
+        desc: "Shows a heatmap of today's ETF market performance across sectors.",
+        query: "Show ETF heatmap"
+    },
 ];
 
 export default function ChatInterface() {
@@ -71,7 +112,9 @@ export default function ChatInterface() {
                 newsTicker: data.newsTicker,
                 showHeatmap: data.showHeatmap,
                 financialsTicker: data.financialsTicker,
-                showScreener: data.showScreener
+                showScreener: data.showScreener,
+                showMarketOverview: data.showMarketOverview,
+                showMarketData: data.showMarketData
             };
 
             setMessages(prev => [...prev, aiMsg]);
@@ -80,6 +123,8 @@ export default function ChatInterface() {
             if (data.newsTicker) addLog(`Displaying News for ${data.newsTicker}`, 'info');
             if (data.showHeatmap) addLog(`Displaying Market Heatmap`, 'step');
             if (data.showScreener) addLog(`Opening Stock Screener`, 'step');
+            if (data.showMarketOverview) addLog(`Displaying Market Overview`, 'step');
+            if (data.showMarketData) addLog(`Displaying Trending Stocks`, 'step');
 
         } catch (error) {
             console.error(error);
@@ -134,8 +179,7 @@ export default function ChatInterface() {
                         <MessageBubble key={msg.id} message={msg} />
                     ))}
 
-
-
+                    {/* Loading State */}
                     {isLoading && (
                         <div className="flex gap-3">
                             <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
@@ -162,23 +206,27 @@ export default function ChatInterface() {
             </div>
 
             {/* RIGHT PANEL: Quick Actions */}
-            <div className="hidden md:flex flex-col w-64 border-l border-white/10 bg-[#0B101F]/50 backdrop-blur-sm relative z-10">
+            <div className="hidden md:flex flex-col w-72 border-l border-white/10 bg-[#0B101F]/50 backdrop-blur-sm relative z-10">
                 <div className="p-4 border-b border-white/5">
                     <h3 className="text-xs font-bold text-white/60 tracking-wider uppercase">Quick Access</h3>
                 </div>
-                <div className="p-4 flex flex-col gap-3 overflow-y-auto">
+                <div className="p-3 flex flex-col gap-2 overflow-y-auto h-full scrollbar-thin scrollbar-thumb-white/10">
                     {QUICK_PROMPTS.map(prompt => (
                         <button
-                            key={prompt.label}
+                            key={prompt.title}
                             onClick={() => handleSendMessage(prompt.query)}
-                            className="text-left px-4 py-3 rounded-xl bg-white/5 border border-white/5 text-cyan-400 text-xs font-medium hover:bg-cyan-500/10 hover:border-cyan-500/30 transition-all hover:translate-x-1 duration-200 group"
+                            className="text-left px-4 py-3 rounded-xl bg-white/5 border border-white/5 text-xs hover:bg-cyan-500/10 hover:border-cyan-500/30 transition-all hover:translate-x-1 duration-200 group relative overflow-hidden"
                         >
-                            <span className="group-hover:text-cyan-300">{prompt.label}</span>
+                            <div className="relative z-10">
+                                <span className="block font-bold text-cyan-400 group-hover:text-cyan-300 mb-1">{prompt.title}</span>
+                                <span className="block text-[10px] text-white/50 leading-tight">{prompt.desc}</span>
+                            </div>
+                            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-cyan-500/5 to-cyan-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
                         </button>
                     ))}
 
-                    <div className="mt-4 pt-4 border-t border-white/5">
-                        <p className="text-[10px] text-white/30 leading-relaxed">
+                    <div className="mt-4 pt-4 border-t border-white/5 px-2">
+                        <p className="text-[9px] text-white/30 leading-relaxed text-center">
                             Select a tool to instantly visualize market data.
                         </p>
                     </div>
