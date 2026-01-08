@@ -1,12 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import { signIn } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Mail, Infinity as InfinityIcon } from 'lucide-react';
 
-export default function LoginPage() {
+function LoginContent() {
     const searchParams = useSearchParams();
     const callbackUrl = searchParams.get('next') || '/experienz';
 
@@ -81,5 +81,13 @@ export default function LoginPage() {
                 </p>
             </motion.div>
         </div>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-[#060914]" />}>
+            <LoginContent />
+        </Suspense>
     );
 }
