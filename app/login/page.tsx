@@ -1,22 +1,29 @@
 'use client';
 
-import React, { Suspense } from 'react';
+import React, { Suspense, useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Mail, Infinity as InfinityIcon } from 'lucide-react';
+import { Mail, Infinity as InfinityIcon, ArrowRight, Loader2 } from 'lucide-react';
 
 function LoginContent() {
     const searchParams = useSearchParams();
     const callbackUrl = searchParams.get('next') || '/experienz';
+    const [email, setEmail] = useState('');
+    const [isEmailLoading, setIsEmailLoading] = useState(false);
 
     const handleLogin = (provider: string) => {
         signIn(provider, { callbackUrl });
     };
 
-    const handleGhostLogin = () => {
-        // Flow A: Redirect to Ghost Portal for Email Login
-        window.location.href = "https://worldtradefactory.ghost.io/#/portal/signin";
+    const handleEmailLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!email) return;
+        setIsEmailLoading(true);
+        // Flow B: SignIn via NextAuth Email Provider
+        await signIn('email', { email, callbackUrl });
+        // Note: signIn redirects by default or we can handle error
+        setIsEmailLoading(false);
     };
 
     return (
@@ -67,13 +74,26 @@ function LoginContent() {
                     <div className="h-px bg-white/10 flex-1" />
                 </div>
 
-                <button
-                    onClick={handleGhostLogin}
-                    className="w-full flex items-center justify-center gap-3 bg-cyan-500/10 border border-cyan-500/50 text-cyan-400 font-semibold py-3 px-4 rounded-xl hover:bg-cyan-500/20 transition-colors shadow-[0_0_15px_-5px_rgba(6,182,212,0.3)]"
-                >
-                    <Mail size={18} />
-                    Login with Email (Portal)
-                </button>
+                {/* Email Magic Link Form */}
+                <form onSubmit={handleEmailLogin} className="space-y-3">
+                    <div className="relative">
+                        <input
+                            type="email"
+                            placeholder="Enter your email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-cyan-500/50 transition-colors"
+                        />
+                    </div>
+                    <button
+                        type="submit"
+                        disabled={isEmailLoading}
+                        className="w-full flex items-center justify-center gap-3 bg-cyan-500/10 border border-cyan-500/50 text-cyan-400 font-semibold py-3 px-4 rounded-xl hover:bg-cyan-500/20 transition-colors shadow-[0_0_15px_-5px_rgba(6,182,212,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isEmailLoading ? <Loader2 size={18} className="animate-spin" /> : <Mail size={18} />}
+                        {isEmailLoading ? "Sending Link..." : "Login with Email"}
+                    </button>
+                </form>
 
                 <p className="mt-8 text-center text-[10px] text-white/30">
                     By signing in, you agree to our Terms of Service and Privacy Policy.
