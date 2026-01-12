@@ -2,7 +2,7 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import FacebookProvider from "next-auth/providers/facebook";
-import EmailProvider from "next-auth/providers/email";
+
 import { syncGhostMember } from "@/lib/ghost";
 
 const providers = [
@@ -15,15 +15,6 @@ const providers = [
         clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
     }),
 ];
-
-if (process.env.EMAIL_SERVER) {
-    providers.push(
-        EmailProvider({
-            server: process.env.EMAIL_SERVER,
-            from: process.env.EMAIL_FROM || "InfinityXZ <login@infinityxz.ai>",
-        }) as any
-    );
-}
 
 const handler = NextAuth({
     providers: providers,
