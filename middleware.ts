@@ -1,13 +1,12 @@
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
-import { withAuth } from "next-auth/middleware"
+// No-op middleware to fix build error while debugging
+export function middleware(request: NextRequest) {
+    return NextResponse.next()
+}
 
-// export default withAuth({
-//     callbacks: {
-//         authorized: ({ token }) => !!token,
-//     },
-//     pages: {
-//         signIn: '/login',
-//     },
-// })
-
-// export const config = { matcher: ["/experienz", "/app/infinity"] }
+// Disable matcher so it affects nothing (or keep it empty)
+export const config = {
+    matcher: []
+}
