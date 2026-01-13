@@ -26,13 +26,13 @@ const handler = NextAuth({
             console.log("User signed in:", user.email);
 
             // Sync with Ghost
-            if (user.email) {
-                try {
-                    await syncGhostMember(user.email, user.name || undefined);
-                } catch (e) {
-                    console.error("Ghost Sync Error", e);
-                }
-            }
+            // if (user.email) {
+            //     try {
+            //         await syncGhostMember(user.email, user.name || undefined);
+            //     } catch (e) {
+            //         console.error("Ghost Sync Error", e);
+            //     }
+            // }
             return true;
         },
         async session({ session, token }) {
