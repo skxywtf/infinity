@@ -23,7 +23,7 @@ const handler = NextAuth({
         signIn: '/login',
     },
     callbacks: {
-        async signIn({ user, account, profile }) {
+        async signIn({ user, account, profile }: any) {
             console.log("User signed in:", user.email, "Provider:", account?.provider);
 
             // Sync with Ghost (TEMPORARILY DISABLED FOR DEBUGGING)
@@ -38,7 +38,7 @@ const handler = NextAuth({
             */
             return true;
         },
-        async session({ session, token }) {
+        async session({ session, token }: any) {
             return session;
         },
     },
