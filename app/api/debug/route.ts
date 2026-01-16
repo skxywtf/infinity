@@ -8,6 +8,8 @@ export async function GET() {
         NODE_ENV: process.env.NODE_ENV,
         EMAIL_SERVER_DEFINED: !!process.env.EMAIL_SERVER,
         GHOST_API_URL: process.env.GHOST_API_URL,
-        GHOST_ADMIN_KEY_DEFINED: !!process.env.GHOST_ADMIN_API_KEY
+        GHOST_ADMIN_KEY_DEFINED: !!process.env.GHOST_ADMIN_API_KEY,
+        GHOST_CONTENT_KEY_DEFINED: !!process.env.GHOST_CONTENT_API_KEY,
+        NEXT_PUBLIC_GHOST_CONTENT_KEY_DEFINED: !!process.env.NEXT_PUBLIC_GHOST_CONTENT_API_KEY
     });
 }
