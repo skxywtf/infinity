@@ -11,7 +11,8 @@ export default function LoginPage() {
     };
 
     const handleGhostLogin = () => {
-        window.location.href = "https://worldtradefactory.ghost.io/#/portal/signin";
+        // Trigger Ghost Portal Popup via Hash Change
+        window.location.hash = '#/portal/signin';
     };
 
     return (
