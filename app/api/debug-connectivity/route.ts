@@ -30,6 +30,18 @@ export async function GET(req: Request) {
         errorDetails = JSON.stringify(e, Object.getOwnPropertyNames(e));
     }
 
+    // Debug Ghost Integration specifically
+    let ghostCheck = 'Skipped';
+    if (process.env.GHOST_API_URL) {
+        try {
+            const gStart = Date.now();
+            const gRes = await fetch(process.env.GHOST_API_URL + '/ghost/api/content/settings/?key=' + process.env.GHOST_CONTENT_API_KEY, { method: 'GET' });
+            ghostCheck = `Ghost Status: ${gRes.status} (${Date.now() - gStart}ms)`;
+        } catch (e: any) {
+            ghostCheck = `Ghost Fetch Failed: ${e.message}`;
+        }
+    }
+
     return NextResponse.json({
         env: {
             NEXTAUTH_URL: process.env.NEXTAUTH_URL,
@@ -39,6 +51,7 @@ export async function GET(req: Request) {
         tests: {
             dns: dnsResult,
             connectivity: fetchResult,
+            ghost_connectivity: ghostCheck,
             error: errorDetails
         }
     });
