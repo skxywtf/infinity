@@ -8,10 +8,16 @@ interface GhostPortalProps {
 }
 
 export default function GhostPortal({ apiUrl, contentApiKey }: GhostPortalProps) {
+    // Dynamic URL: Use current origin if we are trying to proxy via "infinityxz.ai"
+    // This allows Preview Deployments to work (proxying via themselves) instead of crossing origins.
+    const effectiveApiUrl = typeof window !== 'undefined' && apiUrl.includes('infinityxz.ai')
+        ? window.location.origin
+        : apiUrl;
+
     useEffect(() => {
         // use console.error to ensure visibility in filtered consoles
         console.error(`👻 GHOST DEBUG: Component Mounted.`);
-        console.error(`👻 GHOST DEBUG: API URL: ${apiUrl}`);
+        console.error(`👻 GHOST DEBUG: Effective API URL: ${effectiveApiUrl}`);
         console.error(`👻 GHOST DEBUG: Key Length: ${contentApiKey?.length || 0} (First 5: ${contentApiKey?.substring(0, 5)}...)`);
 
         const checkGhost = setInterval(() => {
@@ -29,13 +35,13 @@ export default function GhostPortal({ apiUrl, contentApiKey }: GhostPortalProps)
         }, 10000);
 
         return () => clearInterval(checkGhost);
-    }, [apiUrl, contentApiKey]);
+    }, [apiUrl, contentApiKey, effectiveApiUrl]);
 
     return (
         <script
             src="https://unpkg.com/@tryghost/portal@latest/umd/portal.min.js"
-            data-ghost={apiUrl}
-            data-api={`${apiUrl}/ghost/api/content/`}
+            data-ghost={effectiveApiUrl}
+            data-api={`${effectiveApiUrl}/ghost/api/content/`}
             data-key={contentApiKey}
             crossOrigin="anonymous"
             onLoad={() => console.error("👻 GHOST DEBUG: Script onLoad fired (Network Success).")}
