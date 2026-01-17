@@ -6,6 +6,8 @@ export const metadata: Metadata = {
   description: "Infinity AI - AGI for Global Finance",
 };
 
+import GhostPortal from "@/components/GhostPortal";
+
 export default function RootLayout({
   children,
 }: {
@@ -15,16 +17,10 @@ export default function RootLayout({
     <html lang="en">
       <body>
         {children}
-        {process.env.GHOST_CONTENT_API_KEY && (
-          <script
-            defer
-            src="https://unpkg.com/@tryghost/portal@latest/umd/portal.min.js"
-            data-ghost={process.env.GHOST_API_URL || "https://worldtradefactory.ghost.io"}
-            data-key={process.env.GHOST_CONTENT_API_KEY}
-            data-api={process.env.GHOST_API_URL ? `${process.env.GHOST_API_URL}/ghost/api/content/` : "https://worldtradefactory.ghost.io/ghost/api/content/"}
-            crossOrigin="anonymous"
-          />
-        )}
+        <GhostPortal
+          apiUrl={process.env.GHOST_API_URL || "https://worldtradefactory.ghost.io"}
+          contentApiKey={process.env.GHOST_CONTENT_API_KEY || ""}
+        />
       </body>
     </html>
   );
