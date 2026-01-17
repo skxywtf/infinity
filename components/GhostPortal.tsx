@@ -9,14 +9,15 @@ interface GhostPortalProps {
 
 export default function GhostPortal({ apiUrl, contentApiKey }: GhostPortalProps) {
     useEffect(() => {
-        // Immediate Log: Is the Key Empty?
-        console.log(`👻 Ghost Portal Init. URL: ${apiUrl}, Key Present: ${!!contentApiKey ? 'YES' : 'NO'}`);
+        // use console.error to ensure visibility in filtered consoles
+        console.error(`👻 GHOST DEBUG: Component Mounted.`);
+        console.error(`👻 GHOST DEBUG: API URL: ${apiUrl}`);
+        console.error(`👻 GHOST DEBUG: Key Length: ${contentApiKey?.length || 0} (First 5: ${contentApiKey?.substring(0, 5)}...)`);
 
-        // Debug: Check if Ghost initializes
         const checkGhost = setInterval(() => {
             // @ts-ignore
             if (window.Ghost) {
-                console.log("👻 Ghost Portal Detected & Active!");
+                console.error("👻 GHOST SUCCESS: window.Ghost is available!");
                 clearInterval(checkGhost);
             }
         }, 1000);
@@ -24,21 +25,21 @@ export default function GhostPortal({ apiUrl, contentApiKey }: GhostPortalProps)
         setTimeout(() => {
             clearInterval(checkGhost);
             // @ts-ignore
-            if (!window.Ghost) console.warn("👻 Ghost Portal: 'window.Ghost' not found. If 'Key Present' is NO, you must set GHOST_CONTENT_API_KEY in Vercel.");
-        }, 8000);
+            if (!window.Ghost) console.error("👻 GHOST FAILURE: Timeout waiting for window.Ghost.");
+        }, 10000);
 
         return () => clearInterval(checkGhost);
     }, [apiUrl, contentApiKey]);
 
-    // Force Render script even if key is empty (it will fail to auth, but will load)
     return (
         <script
-            defer
             src="https://unpkg.com/@tryghost/portal@latest/umd/portal.min.js"
             data-ghost={apiUrl}
             data-api={`${apiUrl}/ghost/api/content/`}
             data-key={contentApiKey}
             crossOrigin="anonymous"
+            onLoad={() => console.error("👻 GHOST DEBUG: Script onLoad fired (Network Success).")}
+            onError={(e) => console.error("👻 GHOST DEBUG: Script onError fired (Network Falure).", e)}
         />
     );
 }
