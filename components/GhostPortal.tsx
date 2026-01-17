@@ -53,7 +53,7 @@ export default function GhostPortal({ apiUrl, contentApiKey }: GhostPortalProps)
     return (
         <script
             key={effectiveApiUrl} // Force re-render if URL changes
-            src="https://unpkg.com/@tryghost/portal@latest/umd/portal.min.js"
+            src={`https://unpkg.com/@tryghost/portal@latest/umd/portal.min.js?v=${Date.now()}`} // FORCE FRESH SCRIPT
             data-ghost={effectiveApiUrl}
             data-api={`${effectiveApiUrl}/ghost/api/content/`}
             data-key={contentApiKey}
