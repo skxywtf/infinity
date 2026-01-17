@@ -19,7 +19,7 @@ export default function RootLayout({
         {children}
         <GhostPortal
           apiUrl={process.env.GHOST_API_URL || "https://worldtradefactory.ghost.io"}
-          contentApiKey={process.env.GHOST_CONTENT_API_KEY || ""}
+          contentApiKey={process.env.NEXT_PUBLIC_GHOST_CONTENT_API_KEY || process.env.GHOST_CONTENT_API_KEY || ""}
         />
       </body>
     </html>
