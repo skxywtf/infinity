@@ -6,11 +6,11 @@ const nextConfig: NextConfig = {
       // Ghost Proxy - Bypass CORS
       {
         source: "/ghost/api/:path*",
-        destination: "https://worldtradefactory.ai/ghost/api/:path*",
+        destination: "https://www.worldtradefactory.ai/ghost/api/:path*",
       },
       {
         source: "/members/api/:path*",
-        destination: "https://worldtradefactory.ai/members/api/:path*",
+        destination: "https://www.worldtradefactory.ai/members/api/:path*",
       },
       // Backend Proxy (Python)
       {
