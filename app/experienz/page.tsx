@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { ArrowLeft, ArrowRight, Infinity as InfinityIcon } from "lucide-react";
 import Link from 'next/link';
 import { motion } from "framer-motion";
@@ -50,9 +49,7 @@ export default function ExperienzPage() {
           <span className="text-xs font-mono text-cyan-500/80 animate-pulse hidden sm:block">
             ● LIVE CONNECTION
           </span>
-          <SignedIn>
-            <UserButton afterSignOutUrl="/" />
-          </SignedIn>
+          {/* User Profile / Logout Placeholder - NextAuth handled elsewhere or add logout button here */}
         </div>
       </header>
 
@@ -92,31 +89,16 @@ export default function ExperienzPage() {
             </div>
 
             <div className="p-6 rounded-2xl border border-white/10 bg-white/5">
-              <SignedOut>
-                <div className="space-y-4">
-                  <p className="text-sm text-white/80 font-medium">Authenticate to access the terminal:</p>
-                  <SignInButton mode="modal">
-                    <button className="w-full rounded-xl bg-cyan-500 text-[#060914] font-bold px-6 py-3 hover:bg-cyan-400 transition-all shadow-[0_0_20px_-5px_rgba(6,182,212,0.5)]">
-                      Authenticate Access
-                    </button>
-                  </SignInButton>
-                  <p className="text-[10px] text-white/30 uppercase tracking-widest font-mono text-center">
-                    // Credentials Verified by Clerk
-                  </p>
+              {/* Authenticated State always shown as route is protected */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 text-cyan-400 bg-cyan-950/30 p-3 rounded-lg border border-cyan-500/20">
+                  <div className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse" />
+                  <span className="text-sm font-mono font-bold">ACCESS GRANTED</span>
                 </div>
-              </SignedOut>
-
-              <SignedIn>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 text-cyan-400 bg-cyan-950/30 p-3 rounded-lg border border-cyan-500/20">
-                    <div className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse" />
-                    <span className="text-sm font-mono font-bold">ACCESS GRANTED</span>
-                  </div>
-                  <p className="text-sm text-white/60">
-                    You are connected to the World Trade Factory reasoning engine.
-                  </p>
-                </div>
-              </SignedIn>
+                <p className="text-sm text-white/60">
+                  You are connected to the World Trade Factory reasoning engine.
+                </p>
+              </div>
             </div>
           </div>
 
