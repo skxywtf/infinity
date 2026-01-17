@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -86,17 +85,13 @@ function NavBar() {
         </nav>
 
         <div className="flex items-center gap-4">
-           <Link 
-             href="/experienz"
-             className="hidden sm:inline-flex items-center gap-2 rounded-full px-4 py-1.5 bg-cyan-500 text-black text-sm font-bold hover:bg-cyan-400 transition-colors"
-           >
-             Enter Console
-             <ArrowRight size={14} />
-           </Link>
-
-          <SignedIn>
-             <UserButton afterSignOutUrl="/" />
-          </SignedIn>
+          <Link
+            href="/experienz"
+            className="hidden sm:inline-flex items-center gap-2 rounded-full px-4 py-1.5 bg-cyan-500 text-black text-sm font-bold hover:bg-cyan-400 transition-colors"
+          >
+            Enter Console
+            <ArrowRight size={14} />
+          </Link>
         </div>
       </div>
     </header>
@@ -165,7 +160,7 @@ function Hero() {
               <ArrowRight size={14} />
             </a>
           </div>
-       
+
           <div className="flex flex-col sm:flex-row gap-4">
             <Link
               href="/experienz"
@@ -174,7 +169,7 @@ function Hero() {
               Enter InfinityXZ(Beta)
               <ArrowRight size={18} />
             </Link>
-            
+
             <a
               href="#essence"
               className="inline-flex items-center justify-center gap-2 rounded-xl px-8 py-4 border border-white/10 bg-white/5 hover:bg-white/10 text-sm font-medium transition-colors"
