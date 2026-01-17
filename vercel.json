@@ -1,16 +1,1 @@
-{
-  "rewrites": [
-    {
-      "source": "/api/analyze",
-      "destination": "/api/index.py"
-    },
-    {
-      "source": "/api/analyze-stream",
-      "destination": "/api/index.py"
-    },
-    {
-      "source": "/api/health",
-      "destination": "/api/index.py"
-    }
-  ]
-}
+{}
