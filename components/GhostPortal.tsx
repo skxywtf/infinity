@@ -20,6 +20,14 @@ export default function GhostPortal({ apiUrl, contentApiKey }: GhostPortalProps)
         console.error(`👻 GHOST DEBUG: Effective API URL: ${effectiveApiUrl}`);
         console.error(`👻 GHOST DEBUG: Key Length: ${contentApiKey?.length || 0} (First 5: ${contentApiKey?.substring(0, 5)}...)`);
 
+        // Force Clear Ghost LocalStorage Cache to prevent sticking to old Production URLs
+        if (typeof window !== 'undefined') {
+            try {
+                localStorage.removeItem('ghost:portal:config');
+                console.error("👻 GHOST DEBUG: Cleared 'ghost:portal:config' cache to force new URL.");
+            } catch (e) { /* ignore */ }
+        }
+
         const checkGhost = setInterval(() => {
             // @ts-ignore
             if (window.Ghost) {
