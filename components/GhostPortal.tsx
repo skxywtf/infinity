@@ -23,8 +23,13 @@ export default function GhostPortal({ apiUrl, contentApiKey }: GhostPortalProps)
         // Force Clear Ghost LocalStorage Cache to prevent sticking to old Production URLs
         if (typeof window !== 'undefined') {
             try {
-                localStorage.removeItem('ghost:portal:config');
-                console.error("👻 GHOST DEBUG: Cleared 'ghost:portal:config' cache to force new URL.");
+                // Aggressively clear ALL ghost-related keys
+                Object.keys(localStorage).forEach(key => {
+                    if (key.includes('ghost')) {
+                        localStorage.removeItem(key);
+                        console.error(`👻 GHOST DEBUG: Cleared stale cache key: ${key}`);
+                    }
+                });
             } catch (e) { /* ignore */ }
         }
 
@@ -47,6 +52,7 @@ export default function GhostPortal({ apiUrl, contentApiKey }: GhostPortalProps)
 
     return (
         <script
+            key={effectiveApiUrl} // Force re-render if URL changes
             src="https://unpkg.com/@tryghost/portal@latest/umd/portal.min.js"
             data-ghost={effectiveApiUrl}
             data-api={`${effectiveApiUrl}/ghost/api/content/`}
