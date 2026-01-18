@@ -37,15 +37,24 @@ const handleProxy = async (req: NextRequest, { params }: { params: Promise<{ pat
         headers.set("Content-Type", response.headers.get("Content-Type") || "application/json");
         headers.set("Access-Control-Allow-Origin", "*");
 
-        // Critical: Forward Set-Cookie header BUT sanitize Domain
+        // Critical: Forward Set-Cookie header BUT sanitize Domain and ensure Path is root
         // If we leave Domain=worldtradefactory.ai, browser blocks it.
-        const setCookie = response.headers.get("Set-Cookie");
-        if (setCookie) {
-            // Debug: Expose original cookie
-            headers.set("X-Debug-Set-Cookie-Original", setCookie);
+        // If Path is restricted to /members, other pages won't see it.
 
-            // Remove Domain attribute to default to current domain
-            const sanitizedCookie = setCookie.replace(/Domain=[^;]+;?/gi, "");
+        const rawSetCookie = response.headers.get("Set-Cookie");
+
+        if (rawSetCookie) {
+            // Debug: Expose original cookie (first one if multiple, for display)
+            headers.set("X-Debug-Set-Cookie-Original", rawSetCookie);
+
+            // Handle potential multiple cookies if comma-separated (simple split approach, or just treat as one if simple)
+            // Note: simple split by comma is dangerous due to release dates, but Ghost auth cookie is usually single or predictable.
+            // A safer bet is replacing globally in the string if it's combined, assuming it's the auth cookie we care about.
+
+            let sanitizedCookie = rawSetCookie.replace(/Domain=[^;]+;?/gi, "");
+            sanitizedCookie = sanitizedCookie.replace(/Path=[^;]+;?/gi, "");
+            sanitizedCookie = sanitizedCookie + "; Path=/";
+
             headers.set("Set-Cookie", sanitizedCookie);
 
             // Debug: Expose final cookie

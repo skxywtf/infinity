@@ -20,5 +20,5 @@ export async function middleware(req: NextRequest) {
 
 // Protect specific routes
 export const config = {
-    matcher: ["/experienz", "/app/infinity"]
+    matcher: ["/app/infinity"]
 };
