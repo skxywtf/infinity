@@ -20,9 +20,11 @@ export function useGhostUser() {
 
         async function fetchUser() {
             try {
-                const res = await fetch('/members/api/member', {
+                // Add timestamp to prevent browser caching of "Logged Out" state
+                const res = await fetch(`/members/api/member?_t=${Date.now()}`, {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' },
+                    cache: 'no-store'
                 });
 
                 if (res.ok) {
