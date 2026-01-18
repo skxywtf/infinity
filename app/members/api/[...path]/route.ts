@@ -24,12 +24,20 @@ const handleProxy = async (req: NextRequest, { params }: { params: Promise<{ pat
 
         const data = await response.text();
 
+        // Create headers object to forward
+        const headers = new Headers();
+        headers.set("Content-Type", response.headers.get("Content-Type") || "application/json");
+        headers.set("Access-Control-Allow-Origin", "*");
+
+        // Critical: Forward Set-Cookie header to client (manual copy)
+        const setCookie = response.headers.get("Set-Cookie");
+        if (setCookie) {
+            headers.set("Set-Cookie", setCookie);
+        }
+
         return new NextResponse(data, {
             status: response.status,
-            headers: {
-                "Content-Type": response.headers.get("Content-Type") || "application/json",
-                "Access-Control-Allow-Origin": "*",
-            },
+            headers: headers
         });
 
     } catch (error) {
