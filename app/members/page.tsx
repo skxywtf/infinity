@@ -1,11 +1,10 @@
 'use client';
 
 // Members Root Page (/members)
-// Handles cases where Ghost link is just /members/?token=...
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function MembersRootPage() {
+function VerificationContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [status, setStatus] = useState("Verifying Login...");
@@ -23,7 +22,6 @@ export default function MembersRootPage() {
 
             try {
                 // Manually call the Ghost API via our Proxy to set the cookie
-                // We use the exact same params Ghost expects
                 const res = await fetch(`/members/api/member?token=${token}&action=${action}`, {
                     method: 'GET',
                     headers: {
@@ -61,5 +59,13 @@ export default function MembersRootPage() {
                 <p className="text-zinc-400">Please wait while we log you in.</p>
             </div>
         </div>
+    );
+}
+
+export default function MembersRootPage() {
+    return (
+        <Suspense fallback={<div className="flex items-center justify-center min-h-screen bg-black text-white">Loading...</div>}>
+            <VerificationContent />
+        </Suspense>
     );
 }
