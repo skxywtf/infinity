@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 
 interface GhostPortalProps {
     apiUrl: string;
@@ -8,6 +9,14 @@ interface GhostPortalProps {
 }
 
 export default function GhostPortal({ apiUrl, contentApiKey }: GhostPortalProps) {
+    const pathname = usePathname();
+
+    // Disable Ghost Portal script on Verification Pages to prevent "Token Stealing"
+    // The script aggressively scrubs URL params, breaking our manual verification logic.
+    if (pathname?.startsWith('/members')) {
+        return null;
+    }
+
     // Dynamic URL: Use current origin if we are trying to proxy via "infinityxz.ai"
     // This allows Preview Deployments to work (proxying via themselves) instead of crossing origins.
     const effectiveApiUrl = typeof window !== 'undefined' && apiUrl.includes('infinityxz.ai')
