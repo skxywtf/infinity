@@ -17,6 +17,8 @@ const handleProxy = async (req: NextRequest, { params }: { params: Promise<{ pat
             headers: {
                 // Pass Content-Type for POST/PUT
                 "Content-Type": req.headers.get("Content-Type") || "application/json",
+                // Forward Cookie header so Ghost knows who we are
+                "Cookie": req.headers.get("Cookie") || "",
                 // Do NOT pass Host header
             },
             body: body,
@@ -29,10 +31,13 @@ const handleProxy = async (req: NextRequest, { params }: { params: Promise<{ pat
         headers.set("Content-Type", response.headers.get("Content-Type") || "application/json");
         headers.set("Access-Control-Allow-Origin", "*");
 
-        // Critical: Forward Set-Cookie header to client (manual copy)
+        // Critical: Forward Set-Cookie header BUT sanitize Domain
+        // If we leave Domain=worldtradefactory.ai, browser blocks it.
         const setCookie = response.headers.get("Set-Cookie");
         if (setCookie) {
-            headers.set("Set-Cookie", setCookie);
+            // Remove Domain attribute to default to current domain
+            const sanitizedCookie = setCookie.replace(/Domain=[^;]+;?/gi, "");
+            headers.set("Set-Cookie", sanitizedCookie);
         }
 
         return new NextResponse(data, {

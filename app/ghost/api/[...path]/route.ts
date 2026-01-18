@@ -19,6 +19,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ path
             headers: {
                 // Do NOT pass the original Host header. Let fetch set it automatically to worldtradefactory.ai
                 // Pass essential headers like Content-Type if needed
+                "Cookie": req.headers.get("Cookie") || "",
             },
         });
 
