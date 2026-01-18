@@ -35,9 +35,17 @@ const handleProxy = async (req: NextRequest, { params }: { params: Promise<{ pat
         // If we leave Domain=worldtradefactory.ai, browser blocks it.
         const setCookie = response.headers.get("Set-Cookie");
         if (setCookie) {
+            // Debug: Expose original cookie
+            headers.set("X-Debug-Set-Cookie-Original", setCookie);
+
             // Remove Domain attribute to default to current domain
             const sanitizedCookie = setCookie.replace(/Domain=[^;]+;?/gi, "");
             headers.set("Set-Cookie", sanitizedCookie);
+
+            // Debug: Expose final cookie
+            headers.set("X-Debug-Set-Cookie-Sanitized", sanitizedCookie);
+        } else {
+            headers.set("X-Debug-Set-Cookie-Original", "NULL");
         }
 
         return new NextResponse(data, {
