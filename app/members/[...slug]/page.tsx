@@ -1,11 +1,10 @@
 'use client';
 
-// This page handles the Ghost Magic Link landing.
-// When a user clicks a Magic Link (e.g. infinityxz.ai/members/auth?token=...),
-// they land here. The GhostPortal script (in layout) detects the token and completes the sign-in.
-// It effectively just needs to exist and render the layout.
+// Catch-All Page for Ghost Members Routes (e.g. /members/auth, /members/signin)
+// This ensures that whatever link structure Ghost generates, we render the layout
+// so the GhostPortal script can verify the token.
 
-export default function MembersAuthPage() {
+export default function MembersCatchAllPage() {
     return (
         <div className="flex items-center justify-center min-h-screen bg-black text-white">
             <div className="text-center">
