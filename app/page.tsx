@@ -11,6 +11,7 @@ import {
   Zap,
 } from "lucide-react";
 import Link from 'next/link';
+import { useGhostUser } from '@/lib/useGhostUser';
 
 export default function InfinityXZ() {
   React.useEffect(() => {
@@ -67,6 +68,8 @@ export default function InfinityXZ() {
 
 /* NAV */
 function NavBar() {
+  const { user, loading } = useGhostUser();
+
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-[#060914]/80 backdrop-blur-md">
       <div className="mx-auto max-w-[1600px] px-4 sm:px-6 py-3 flex items-center justify-between">
@@ -84,12 +87,27 @@ function NavBar() {
           <a href="#essence" className="hover:text-white transition-colors">Essence</a>
         </nav>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-6">
+          {/* Auth State */}
+          {!loading && (
+            <>
+              {user ? (
+                <a href="#/portal/account" className="text-sm font-medium text-white/60 hover:text-white transition-colors">
+                  Account
+                </a>
+              ) : (
+                <a href="#/portal/signin" className="text-sm font-medium text-white/60 hover:text-white transition-colors">
+                  Sign in
+                </a>
+              )}
+            </>
+          )}
+
           <Link
             href="/experienz"
-            className="hidden sm:inline-flex items-center gap-2 rounded-full px-4 py-1.5 bg-cyan-500 text-black text-sm font-bold hover:bg-cyan-400 transition-colors"
+            className="hidden sm:inline-flex items-center gap-2 rounded-full px-4 py-1.5 bg-cyan-500 text-black text-sm font-bold hover:bg-cyan-400 transition-colors shadow-[0_0_15px_-5px_rgba(6,182,212,0.6)]"
           >
-            Enter Console
+            {user ? "Enter Console" : "Start Now"}
             <ArrowRight size={14} />
           </Link>
         </div>

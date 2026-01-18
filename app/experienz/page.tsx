@@ -1,38 +1,32 @@
 'use client';
 
 import * as React from 'react';
+import { useGhostUser } from '@/lib/useGhostUser';
 import { ArrowLeft, ArrowRight, Infinity as InfinityIcon } from "lucide-react";
 import Link from 'next/link';
 import { motion } from "framer-motion";
 import ChatInterface from '@/components/chat/ChatInterface';
 
 export default function ExperienzPage() {
+  const { user, loading } = useGhostUser();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#060914] flex items-center justify-center text-white font-mono">
+        <span className="animate-pulse">Initialize Neural Uplink...</span>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#060914] text-white font-sans selection:bg-cyan-500/30 flex flex-col">
-
-      {/* --- STABILIZATION & VERCEL HIDER --- */}
+      {/* ... styles ... */}
       <style dangerouslySetInnerHTML={{
         __html: `
-          /* 1. Stop the "bounce" / jump when hitting top/bottom */
-          html, body {
-            overscroll-behavior-y: none;
-            overflow-x: hidden;
-            width: 100%;
-          }
-
-          /* 2. Hide Scrollbar but keep functionality */
+          html, body { overscroll-behavior-y: none; overflow-x: hidden; width: 100%; }
           .no-scrollbar::-webkit-scrollbar { display: none; }
           .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-          /* 3. Hide Vercel Toolbar */
-          #vercel-toolbar,
-          vercel-live-feedback,
-          [data-vercel-toolbar] {
-            display: none !important;
-            opacity: 0 !important;
-            pointer-events: none !important;
-            visibility: hidden !important;
-          }
+          #vercel-toolbar, vercel-live-feedback, [data-vercel-toolbar] { display: none !important; opacity: 0 !important; pointer-events: none !important; visibility: hidden !important; }
         `
       }} />
 
@@ -44,12 +38,15 @@ export default function ExperienzPage() {
           <ArrowLeft size={16} />
           Return Home
         </Link>
-
         <div className="flex items-center gap-4">
           <span className="text-xs font-mono text-cyan-500/80 animate-pulse hidden sm:block">
             ● LIVE CONNECTION
           </span>
-          {/* User Profile / Logout Placeholder - NextAuth handled elsewhere or add logout button here */}
+          {user && (
+            <span className="text-xs text-white/40 border border-white/10 px-2 py-1 rounded">
+              OPERATOR: {user.email}
+            </span>
+          )}
         </div>
       </header>
 
@@ -71,40 +68,69 @@ export default function ExperienzPage() {
               </h1>
               <p className="text-white/60 text-lg leading-relaxed max-w-md">
                 This is the XperienZ layer. A closed beta environment for professionals who demand
-                an AI partner that respects the gravity of financial decisions in a live setting. For users that need the intelligence organized in specific categories/areas - use the World Trade Factory link.
+                an AI partner that respects the gravity of financial decisions in a live setting.
               </p>
             </div>
 
-            {/* BUTTON: World Trade Factory */}
-            <div>
-              <a
-                href="https://www.worldtradefactory.ai/"
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center justify-center gap-2 rounded-xl px-8 py-4 bg-cyan-500 text-black font-bold hover:bg-cyan-400 transition-all shadow-[0_0_30px_-10px_rgba(6,182,212,0.5)] mb-6"
-              >
-                World Trade Factory
-                <ArrowRight size={14} />
-              </a>
-            </div>
-
-            <div className="p-6 rounded-2xl border border-white/10 bg-white/5">
-              {/* Authenticated State always shown as route is protected */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 text-cyan-400 bg-cyan-950/30 p-3 rounded-lg border border-cyan-500/20">
-                  <div className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse" />
-                  <span className="text-sm font-mono font-bold">ACCESS GRANTED</span>
+            {/* Authenticated State vs Login Prompt */}
+            {!user ? (
+              <div className="p-6 rounded-2xl border border-red-500/20 bg-red-900/10">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 text-red-400 bg-red-950/30 p-3 rounded-lg border border-red-500/20">
+                    <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+                    <span className="text-sm font-mono font-bold">ACCESS RESTRICTED</span>
+                  </div>
+                  <p className="text-sm text-white/60">
+                    Authentication credential required for neural uplink.
+                  </p>
+                  <a
+                    href="#/portal/signin"
+                    className="inline-flex items-center justify-center gap-2 w-full rounded-xl px-6 py-3 bg-white text-black font-bold hover:bg-gray-200 transition-colors"
+                  >
+                    Connect Identity
+                    <ArrowRight size={14} />
+                  </a>
                 </div>
-                <p className="text-sm text-white/60">
-                  You are connected to the World Trade Factory reasoning engine.
-                </p>
               </div>
-            </div>
+            ) : (
+              <div className="p-6 rounded-2xl border border-white/10 bg-white/5">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 text-cyan-400 bg-cyan-950/30 p-3 rounded-lg border border-cyan-500/20">
+                    <div className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse" />
+                    <span className="text-sm font-mono font-bold">ACCESS GRANTED</span>
+                  </div>
+                  <p className="text-sm text-white/60">
+                    You are connected to the World Trade Factory reasoning engine.
+                  </p>
+                  <a
+                    href="https://www.worldtradefactory.ai/"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 bg-cyan-900/20 text-cyan-400 font-bold hover:bg-cyan-900/30 transition-all border border-cyan-500/10 text-xs"
+                  >
+                    World Trade Factory
+                    <ArrowRight size={12} />
+                  </a>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="order-1 lg:order-2 h-[600px] md:h-[700px] w-full relative">
             <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/10 to-blue-600/10 rounded-3xl blur-2xl" />
-            <ChatInterface />
+            {user ? (
+              <ChatInterface />
+            ) : (
+              <div className="h-full w-full rounded-3xl border border-white/10 bg-black/40 backdrop-blur-xl flex flex-col items-center justify-center text-center p-8">
+                <div className="bg-white/5 p-4 rounded-full mb-4">
+                  <InfinityIcon size={48} className="text-white/20" />
+                </div>
+                <h3 className="text-xl font-bold mb-2">Secure Channel Locked</h3>
+                <p className="text-white/40 max-w-sm">
+                  Please sign in to establish a secure connection to the model.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </main>
