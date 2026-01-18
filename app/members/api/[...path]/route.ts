@@ -22,9 +22,15 @@ const handleProxy = async (req: NextRequest, { params }: { params: Promise<{ pat
                 // Do NOT pass Host header
             },
             body: body,
+            redirect: "manual", // CRITICAL: Do not follow redirects! We need to see the Set-Cookie on the 302.
         });
 
-        const data = await response.text();
+        // If it's a redirect (301, 302, 303), Ghost is likely sending the cookie now.
+        // We will return 200 to the client to stop the browser from following the redirect to the external domain,
+        // but we WILL pass the Set-Cookie header so the browser saves it.
+        const isRedirect = response.status >= 300 && response.status < 400;
+        const data = isRedirect ? "Login Successful (Redirect Captured)" : await response.text();
+        const status = isRedirect ? 200 : response.status;
 
         // Create headers object to forward
         const headers = new Headers();
@@ -49,13 +55,14 @@ const handleProxy = async (req: NextRequest, { params }: { params: Promise<{ pat
         }
 
         return new NextResponse(data, {
-            status: response.status,
+            status: status,
             headers: headers
         });
 
     } catch (error) {
         console.error("Ghost Members Proxy Error:", error);
-        return NextResponse.json({ error: "Proxy Failed" }, { status: 500 });
+        // Return 500 but log error
+        return NextResponse.json({ error: "Proxy Failed", details: String(error) }, { status: 500 });
     }
 }
 
