@@ -7,8 +7,9 @@ import { NextRequest, NextResponse } from "next/server";
 
 const GHOST_URL = "https://www.worldtradefactory.ai";
 
-export async function GET(req: NextRequest, { params }: { params: { path: string[] } }) {
-    const path = params.path.join("/");
+export async function GET(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
+    const { path: pathArray } = await params;
+    const path = pathArray.join("/");
     const searchParams = req.nextUrl.searchParams.toString();
     const targetUrl = `${GHOST_URL}/ghost/api/${path}${searchParams ? `?${searchParams}` : ""}`;
 

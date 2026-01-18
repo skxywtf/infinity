@@ -3,8 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 // Manual Proxy for Ghost Members API
 const GHOST_URL = "https://www.worldtradefactory.ai";
 
-const handleProxy = async (req: NextRequest, { params }: { params: { path: string[] } }) => {
-    const path = params.path.join("/");
+const handleProxy = async (req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) => {
+    const { path: pathArray } = await params;
+    const path = pathArray.join("/");
     const searchParams = req.nextUrl.searchParams.toString();
     const targetUrl = `${GHOST_URL}/members/api/${path}${searchParams ? `?${searchParams}` : ""}`;
 
