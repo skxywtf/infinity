@@ -3,15 +3,6 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   async rewrites() {
     return [
-      // Ghost Proxy - Bypass CORS
-      {
-        source: "/ghost/api/:path*",
-        destination: "https://www.worldtradefactory.ai/ghost/api/:path*",
-      },
-      {
-        source: "/members/api/:path*",
-        destination: "https://www.worldtradefactory.ai/members/api/:path*",
-      },
       // Backend Proxy (Python)
       {
         source: "/api/analyze",
