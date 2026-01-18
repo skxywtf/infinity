@@ -33,11 +33,16 @@ function VerificationContent() {
                     const originalCookie = res.headers.get("X-Debug-Set-Cookie-Original");
                     const sanitizedCookie = res.headers.get("X-Debug-Set-Cookie-Sanitized");
 
+                    // Manually signal to Ghost Portal that we are signed in
+                    if (typeof window !== 'undefined') {
+                        localStorage.setItem('ghost-members:signedin', 'true');
+                    }
+
                     setStatus("Success! Session Cookie Received.");
                     setError(`Debug Info:\nOriginal: ${originalCookie}\nSanitized: ${sanitizedCookie}`);
 
-                    // STOP Auto-Redirect for Debugging
-                    // setTimeout(() => { window.location.href = '/'; }, 1000);
+                    // Redirect to Home after success
+                    setTimeout(() => { window.location.href = '/'; }, 2000);
                 } else {
                     const txt = await res.text();
                     console.error("Verification failed:", txt);

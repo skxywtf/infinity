@@ -29,18 +29,16 @@ export default function GhostPortal({ apiUrl, contentApiKey }: GhostPortalProps)
         console.error(`👻 GHOST DEBUG: Effective API URL: ${effectiveApiUrl}`);
         console.error(`👻 GHOST DEBUG: Key Length: ${contentApiKey?.length || 0} (First 5: ${contentApiKey?.substring(0, 5)}...)`);
 
-        // Force Clear Ghost LocalStorage Cache to prevent sticking to old Production URLs
+        // Force Clear Ghost LocalStorage Cache - DISABLED
+        // We must preserve session keys like 'ghost-members:signedin'.
+        // The stale config issue is handled by the key prop on the script tag.
+        /*
         if (typeof window !== 'undefined') {
             try {
-                // Aggressively clear ALL ghost-related keys
-                Object.keys(localStorage).forEach(key => {
-                    if (key.includes('ghost')) {
-                        localStorage.removeItem(key);
-                        console.error(`👻 GHOST DEBUG: Cleared stale cache key: ${key}`);
-                    }
-                });
-            } catch (e) { /* ignore */ }
+               // ... (Removed aggressive clearing)
+            } catch (e) { }
         }
+        */
 
         const checkGhost = setInterval(() => {
             // @ts-ignore
