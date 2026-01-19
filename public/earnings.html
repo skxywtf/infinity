@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Earnings Calendar</title>
+    <style>
+      html, body { height: 100%; margin: 0; }
+      #widget { height: 100vh; width: 100vw; }
+    </style>
+  </head>
+  <body>
+    <div id="widget"></div>
+
+    <!-- dxFeed CDN bundle (you must replace with the REAL CDN URL they provide) -->
+    <script type="module">
+      import { newEarningsCalendarWidget } from "https://path-to-cdn/widgets/earnings-calendar.js";
+
+      const providers = {
+        ipfPath: "/your-path/ipf",
+        ipfAuthHeader: "your-header",
+        fundamentalsPath: "/api/scanner",
+        fundamentalsAuthHeader: "your-header",
+        schedulePath: "/api/schedule",
+      };
+
+      const container = document.getElementById("widget");
+      const widget = newEarningsCalendarWidget({
+        element: container,
+        providers,
+      });
+    </script>
+  </body>
+</html>
