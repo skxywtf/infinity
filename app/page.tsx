@@ -88,7 +88,7 @@ function NavBar() {
         </nav>
 
         <div className="flex items-center gap-6">
-          {/* Auth State */}
+          {/* Auth State - DISABLED FOR NOW
           {!loading && (
             <>
               {user ? (
@@ -101,13 +101,14 @@ function NavBar() {
                 </a>
               )}
             </>
-          )}
+          )} */}
 
           <Link
             href="/experienz"
             className="hidden sm:inline-flex items-center gap-2 rounded-full px-4 py-1.5 bg-cyan-500 text-black text-sm font-bold hover:bg-cyan-400 transition-colors shadow-[0_0_15px_-5px_rgba(6,182,212,0.6)]"
           >
-            {user ? "Enter Console" : "Start Now"}
+            {/* {user ? "Enter Console" : "Start Now"} */}
+            Enter Console
             <ArrowRight size={14} />
           </Link>
         </div>

@@ -30,22 +30,17 @@ function VerificationContent() {
                 });
 
                 if (res.ok) {
-                    const originalCookie = res.headers.get("X-Debug-Set-Cookie-Original");
-                    const sanitizedCookie = res.headers.get("X-Debug-Set-Cookie-Sanitized");
-
                     // Manually signal to Ghost Portal that we are signed in
                     if (typeof window !== 'undefined') {
                         localStorage.setItem('ghost-members:signedin', 'true');
                     }
 
-                    setStatus("Success! Session Cookie Received.");
-                    setError(`Debug Info:\nOriginal: ${originalCookie}\nSanitized: ${sanitizedCookie}`);
+                    setStatus("Login Successful. Redirecting...");
 
                     // Redirect to Home after success
-                    setTimeout(() => { window.location.href = '/'; }, 2000);
+                    setTimeout(() => { window.location.href = '/'; }, 500);
                 } else {
-                    const txt = await res.text();
-                    console.error("Verification failed:", txt);
+                    console.error("Verification failed");
                     setError("Verification failed. Link might be expired.");
                     setStatus("Error");
                 }
@@ -59,32 +54,26 @@ function VerificationContent() {
         verifyToken();
     }, [searchParams, router]);
 
-    const checkSession = async () => {
-        try {
-            const res = await fetch('/members/api/member');
-            const txt = await res.text();
-            alert(`Session Check Result (200=Good, 401=Bad): ${res.status}\nBody: ${txt.substring(0, 100)}`);
-            if (res.ok) window.location.href = '/';
-        } catch (e) {
-            alert("Check failed: " + e);
-        }
-    };
-
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white p-4">
-            <div className="text-center max-w-2xl break-all">
-                <h1 className="text-2xl font-bold mb-4">{status}</h1>
-                {error && (
-                    <div className="bg-zinc-900 p-4 rounded mb-4 text-xs font-mono text-left whitespace-pre-wrap border border-zinc-800">
-                        {error}
-                    </div>
+            <div className="text-center max-w-2xl">
+                {!error ? (
+                    <>
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
+                        <h1 className="text-xl font-medium">{status}</h1>
+                    </>
+                ) : (
+                    <>
+                        <h1 className="text-xl font-bold text-red-500 mb-2">{status}</h1>
+                        <p className="text-zinc-400">{error}</p>
+                        <button
+                            onClick={() => window.location.href = '/'}
+                            className="mt-4 px-4 py-2 bg-white text-black rounded hover:bg-zinc-200"
+                        >
+                            Return Home
+                        </button>
+                    </>
                 )}
-                <button
-                    onClick={checkSession}
-                    className="bg-white text-black px-4 py-2 rounded font-bold hover:bg-zinc-200 transition"
-                >
-                    Test Session & Go Home
-                </button>
             </div>
         </div>
     );

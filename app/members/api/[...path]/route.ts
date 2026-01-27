@@ -44,9 +44,6 @@ const handleProxy = async (req: NextRequest, { params }: { params: Promise<{ pat
         const rawSetCookie = response.headers.get("Set-Cookie");
 
         if (rawSetCookie) {
-            // Debug: Expose original cookie (first one if multiple, for display)
-            headers.set("X-Debug-Set-Cookie-Original", rawSetCookie);
-
             // Handle potential multiple cookies if comma-separated (simple split approach, or just treat as one if simple)
             // Note: simple split by comma is dangerous due to release dates, but Ghost auth cookie is usually single or predictable.
             // A safer bet is replacing globally in the string if it's combined, assuming it's the auth cookie we care about.
@@ -56,11 +53,6 @@ const handleProxy = async (req: NextRequest, { params }: { params: Promise<{ pat
             sanitizedCookie = sanitizedCookie + "; Path=/";
 
             headers.set("Set-Cookie", sanitizedCookie);
-
-            // Debug: Expose final cookie
-            headers.set("X-Debug-Set-Cookie-Sanitized", sanitizedCookie);
-        } else {
-            headers.set("X-Debug-Set-Cookie-Original", "NULL");
         }
 
         return new NextResponse(data, {

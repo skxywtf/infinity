@@ -57,6 +57,7 @@ export default function GhostPortal({ apiUrl, contentApiKey }: GhostPortalProps)
         return () => clearInterval(checkGhost);
     }, [apiUrl, contentApiKey, effectiveApiUrl]);
 
+    /*
     return (
         <script
             key={effectiveApiUrl} // Force re-render if URL changes
@@ -69,4 +70,6 @@ export default function GhostPortal({ apiUrl, contentApiKey }: GhostPortalProps)
             onError={(e) => console.error("👻 GHOST DEBUG: Script onError fired (Network Falure).", e)}
         />
     );
+    */
+    return null;
 }
