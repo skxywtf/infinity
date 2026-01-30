@@ -6,8 +6,100 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from api.models import AnalysisRequest, AnalysisResponse
+from api.models import AnalysisRequest, AnalysisResponse, OpenBBRequest
 from api.manager import manager
+import sys
+import json
+import random
+from datetime import datetime, timedelta
+
+# OPENBB SETUP
+USE_MOCK = False
+try:
+    from openbb import obb
+except ImportError:
+    USE_MOCK = True
+    print("Warning: OpenBB module not found. Using MOCK data.", file=sys.stderr)
+except Exception as e:
+    USE_MOCK = True
+    print(f"Warning: OpenBB Error: {e}. Using MOCK data.", file=sys.stderr)
+
+# --- HELPER FUNCTIONS (Migrated from bridge script) ---
+def get_mock_price(ticker):
+    data = []
+    price = 150.0 if ticker == "AAPL" else 100.0
+    today = datetime.now()
+    for i in range(180):
+        date = (today - timedelta(days=180-i)).strftime('%Y-%m-%d')
+        change = random.uniform(-2, 2.5)
+        price += change
+        data.append({"date": date, "close": round(price, 2)})
+    return {"data": data}
+
+def get_mock_news(ticker):
+    base_news = [
+        {"title": f"{ticker} announces revolutionary AI feature", "date": datetime.now().isoformat(), "source": "Bloomberg", "url": "#"},
+        {"title": "Market rally continues as tech stocks soar", "date": (datetime.now() - timedelta(days=1)).isoformat(), "source": "Reuters", "url": "#"},
+        {"title": f"Analyst upgrades {ticker} to 'Buy'", "date": (datetime.now() - timedelta(days=2)).isoformat(), "source": "Benzinga", "url": "#"},
+        {"title": "Fed signals potential rate cuts", "date": (datetime.now() - timedelta(days=3)).isoformat(), "source": "WSJ", "url": "#"},
+        {"title": f"Why {ticker} is the stock to watch this week", "date": (datetime.now() - timedelta(days=4)).isoformat(), "source": "TechCrunch", "url": "#"},
+    ]
+    return {"data": base_news * 3}
+
+def get_mock_profile(ticker):
+    return {"data": [{
+        "shortName": f"{ticker} Inc.",
+        "currency": "USD",
+        "marketCap": 2500000000000 if ticker == "AAPL" else 50000000000,
+        "sector": "Technology",
+        "industry": "Consumer Electronics",
+        "exchange": "NASDAQ"
+    }]}
+
+@app.post("/api/openbb")
+async def openbb_endpoint(request: OpenBBRequest):
+    ticker = request.ticker
+    data_type = request.type
+    
+    if data_type == 'price':
+        if USE_MOCK: return get_mock_price(ticker)
+        try:
+            start_date = (datetime.now() - timedelta(days=180)).strftime('%Y-%m-%d')
+            df = obb.equity.price.historical(ticker, start_date=start_date, provider="yfinance").to_dataframe()
+            if 'date' not in df.columns and 'Date' not in df.columns:
+                df = df.reset_index()
+            result = json.loads(df.to_json(orient="records", date_format="iso"))
+            return {"data": result}
+        except Exception as e:
+            print(f"Error fetching price: {e}")
+            return get_mock_price(ticker)
+
+    elif data_type == 'news':
+        if USE_MOCK: return get_mock_news(ticker)
+        try:
+            try:
+                 df = obb.news.company(symbol=ticker, provider="benzinga").to_dataframe()
+            except:
+                 df = obb.news.world(limit=5, provider="benzinga").to_dataframe()
+            if 'date' not in df.columns and 'Date' not in df.columns:
+                 df = df.reset_index()
+            result = json.loads(df.to_json(orient="records", date_format="iso"))
+            return {"data": result}
+        except Exception as e:
+            print(f"Error fetching news: {e}")
+            return get_mock_news(ticker)
+
+    elif data_type == 'profile':
+        if USE_MOCK: return get_mock_profile(ticker)
+        try:
+            df = obb.equity.fundamental.overview(symbol=ticker, provider="yfinance").to_dataframe()
+            result = json.loads(df.to_json(orient="records", date_format="iso"))
+            return {"data": result}
+        except Exception as e:
+            print(f"Error fetching profile: {e}")
+            return get_mock_profile(ticker)
+            
+    return {"error": "Invalid type"}
 
 app = FastAPI(title="Infinity Trading Agent API - v2.1 Concise Mode")
 

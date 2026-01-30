@@ -16,3 +16,7 @@ class AnalysisResponse(BaseModel):
     run_id: str
     ticker: str
     status: str
+
+class OpenBBRequest(BaseModel):
+    ticker: str
+    type: str # price, news, profile

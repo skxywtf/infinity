@@ -13,3 +13,5 @@ python-dotenv
 finnhub-python
 langchain_anthropic
 langchain-google-genai
+pandas
+openbb

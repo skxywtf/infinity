@@ -84,6 +84,9 @@ function NavBar() {
           <Link href="/experienz" className="hover:text-white transition-colors">
             XperienZ
           </Link>
+          <Link href="/openbb" className="hover:text-white transition-colors">
+            Terminal
+          </Link>
           <a href="#essence" className="hover:text-white transition-colors">Essence</a>
         </nav>
 
