@@ -42,7 +42,6 @@ export default function OpenBBTerminal() {
             if (priceJson.error) throw new Error(priceJson.error);
 
             // Process data for Chart (ensure dates are readable)
-            // OpenBB/Pandas sometimes returns 'date' or 'Date' or index
             const cleanData = (priceJson.data || []).map((item: any) => ({
                 ...item,
                 dateStr: new Date(item.date || item.Date).toLocaleDateString(),
@@ -136,7 +135,6 @@ export default function OpenBBTerminal() {
                                     <span className="text-4xl font-mono font-medium text-cyan-400">
                                         {priceData.length > 0 ? (priceData[priceData.length - 1]?.close || 0).toFixed(2) : '---'}
                                     </span>
-                                    {/* Placeholder for change (requires calc) */}
                                 </div>
                             </div>
                             <div className="flex gap-2">
@@ -148,24 +146,24 @@ export default function OpenBBTerminal() {
                             </div>
                         </div>
 
-                        <div className="flex-1 w-full min-h-[350px] relative">
-                            {loading ? (
-                                <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
-                                    {/* Spinner & Text */}
-                                    <div className="flex items-center space-x-3 bg-[#0A0C14]/80 px-6 py-3 rounded-full border border-cyan-500/30 backdrop-blur-md shadow-2xl relative z-20">
+                        {/* Chart Area with explicit height context to fix width(-1) responsive bug */}
+                        <div className="flex-1 w-full h-[400px] min-h-[400px] relative">
+
+                            {/* Loading State - Absolute Overlay */}
+                            {loading && (
+                                <div className="absolute inset-0 flex flex-col items-center justify-center z-20 bg-[#0A0C14]/60 backdrop-blur-sm rounded-xl">
+                                    <div className="flex items-center space-x-3 bg-[#0A0C14] px-6 py-3 rounded-full border border-cyan-500/30 shadow-2xl">
                                         <Loader2 className="h-5 w-5 animate-spin text-cyan-400" />
                                         <span className="text-cyan-400 font-medium tracking-wide text-sm animate-pulse">Analyzing Market Data...</span>
                                     </div>
-
-                                    {/* Shimmer Skeleton Background */}
-                                    <div className="absolute inset-0 w-full h-full overflow-hidden rounded-xl opacity-20">
+                                    <div className="absolute inset-0 w-full h-full overflow-hidden rounded-xl opacity-10 -z-10">
                                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent w-[200%] h-full animate-[shimmer_2s_infinite] -skew-x-12 translate-x-[-100%]"></div>
-                                        <svg className="w-full h-full text-slate-800" fill="none" viewBox="0 0 400 200" preserveAspectRatio="none">
-                                            <path stroke="currentColor" strokeWidth="2" d="M0 150 C 100 150, 100 100, 200 100 S 300 150, 400 50" vectorEffect="non-scaling-stroke" strokeDasharray="5,5" className="animate-pulse opacity-50" />
-                                        </svg>
                                     </div>
                                 </div>
-                            ) : priceData.length > 0 ? (
+                            )}
+
+                            {/* Chart - Only render when NOT loading and data exists to avoid resize glitch */}
+                            {!loading && priceData.length > 0 ? (
                                 <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart data={priceData}>
                                         <defs>
@@ -205,11 +203,11 @@ export default function OpenBBTerminal() {
                                         />
                                     </AreaChart>
                                 </ResponsiveContainer>
-                            ) : (
+                            ) : !loading ? (
                                 <div className="h-full flex flex-col items-center justify-center text-slate-500">
                                     <p>No price data available.</p>
                                 </div>
-                            )}
+                            ) : null}
                         </div>
                     </div>
                 </div>
@@ -223,24 +221,30 @@ export default function OpenBBTerminal() {
                             <Activity className="h-4 w-4 text-cyan-400" />
                             Key Metrics
                         </h3>
-                        <div className="space-y-4">
-                            <div className="flex justify-between items-center py-2 border-b border-white/5">
-                                <span className="text-slate-400 text-sm">Market Cap</span>
-                                <span className="font-mono">{profileData?.marketCap ? (profileData.marketCap / 1e9).toFixed(2) + 'B' : '---'}</span>
+                        {loading ? (
+                            <div className="space-y-4 animate-pulse opacity-50">
+                                {[1, 2, 3, 4].map(i => <div key={i} className="h-8 bg-white/10 rounded"></div>)}
                             </div>
-                            <div className="flex justify-between items-center py-2 border-b border-white/5">
-                                <span className="text-slate-400 text-sm">Sector</span>
-                                <span className="text-right text-sm">{profileData?.sector || '---'}</span>
+                        ) : (
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center py-2 border-b border-white/5">
+                                    <span className="text-slate-400 text-sm">Market Cap</span>
+                                    <span className="font-mono">{profileData?.marketCap ? (profileData.marketCap / 1e9).toFixed(2) + 'B' : '---'}</span>
+                                </div>
+                                <div className="flex justify-between items-center py-2 border-b border-white/5">
+                                    <span className="text-slate-400 text-sm">Sector</span>
+                                    <span className="text-right text-sm">{profileData?.sector || '---'}</span>
+                                </div>
+                                <div className="flex justify-between items-center py-2 border-b border-white/5">
+                                    <span className="text-slate-400 text-sm">Industry</span>
+                                    <span className="text-right text-sm">{profileData?.industry || '---'}</span>
+                                </div>
+                                <div className="flex justify-between items-center py-2 border-b border-white/5">
+                                    <span className="text-slate-400 text-sm">Exchange</span>
+                                    <span className="font-mono">{profileData?.exchange || '---'}</span>
+                                </div>
                             </div>
-                            <div className="flex justify-between items-center py-2 border-b border-white/5">
-                                <span className="text-slate-400 text-sm">Industry</span>
-                                <span className="text-right text-sm">{profileData?.industry || '---'}</span>
-                            </div>
-                            <div className="flex justify-between items-center py-2 border-b border-white/5">
-                                <span className="text-slate-400 text-sm">Exchange</span>
-                                <span className="font-mono">{profileData?.exchange || '---'}</span>
-                            </div>
-                        </div>
+                        )}
                     </div>
 
                     {/* Latest News */}
@@ -249,33 +253,39 @@ export default function OpenBBTerminal() {
                             <Newspaper className="h-4 w-4 text-purple-400" />
                             Latest News
                         </h3>
-                        <div className="space-y-4">
-                            {newsData.length === 0 ? (
-                                <p className="text-slate-500 text-sm">No news found.</p>
-                            ) : (
-                                newsData.map((item, idx) => (
-                                    <a
-                                        key={idx}
-                                        href={item.url || '#'}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="block group p-3 rounded-lg hover:bg-white/5 transition-colors"
-                                    >
-                                        <div className="flex justify-between items-start mb-1">
-                                            <span className="text-[10px] uppercase text-cyan-500/70 font-bold bg-cyan-950/30 px-2 py-0.5 rounded">
-                                                {item.source || 'News'}
-                                            </span>
-                                            <span className="text-slate-500 text-[10px]">
-                                                {new Date(item.date).toLocaleDateString()}
-                                            </span>
-                                        </div>
-                                        <h4 className="text-sm font-medium text-slate-200 group-hover:text-cyan-300 transition-colors line-clamp-2">
-                                            {item.title}
-                                        </h4>
-                                    </a>
-                                ))
-                            )}
-                        </div>
+                        {loading ? (
+                            <div className="space-y-4 animate-pulse opacity-50">
+                                {[1, 2, 3].map(i => <div key={i} className="h-24 bg-white/10 rounded-xl"></div>)}
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                {newsData.length === 0 ? (
+                                    <p className="text-slate-500 text-sm">No news found.</p>
+                                ) : (
+                                    newsData.map((item, idx) => (
+                                        <a
+                                            key={idx}
+                                            href={item.url || '#'}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="block group p-3 rounded-lg hover:bg-white/5 transition-colors"
+                                        >
+                                            <div className="flex justify-between items-start mb-1">
+                                                <span className="text-[10px] uppercase text-cyan-500/70 font-bold bg-cyan-950/30 px-2 py-0.5 rounded">
+                                                    {item.source || 'News'}
+                                                </span>
+                                                <span className="text-slate-500 text-[10px]">
+                                                    {new Date(item.date).toLocaleDateString()}
+                                                </span>
+                                            </div>
+                                            <h4 className="text-sm font-medium text-slate-200 group-hover:text-cyan-300 transition-colors line-clamp-2">
+                                                {item.title}
+                                            </h4>
+                                        </a>
+                                    ))
+                                )}
+                            </div>
+                        )}
                     </div>
 
                 </div>
