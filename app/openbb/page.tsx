@@ -20,15 +20,16 @@ export default function OpenBBTerminal() {
     const [profileData, setProfileData] = useState<any>(null);
     const [error, setError] = useState('');
     const [chartReady, setChartReady] = useState(false);
+    const [timeRange, setTimeRange] = useState('3M'); // Default to 3 Months
 
     // Search handler
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!ticker) return;
-        await fetchData(ticker);
+        await fetchData(ticker, timeRange);
     };
 
-    const fetchData = async (sym: string) => {
+    const fetchData = async (sym: string, range: string = '3M') => {
         setLoading(true);
         setError('');
 
@@ -36,7 +37,7 @@ export default function OpenBBTerminal() {
             // 1. Fetch Price
             const priceRes = await fetch('/api/openbb', {
                 method: 'POST',
-                body: JSON.stringify({ ticker: sym, type: 'price' }),
+                body: JSON.stringify({ ticker: sym, type: 'price', range }), // Pass range
             });
             const priceJson = await priceRes.json();
 
