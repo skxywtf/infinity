@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
             // Correct path for Infinity structure (lib is in root, not src/lib)
             const BRIDGE_SCRIPT_PATH = path.join(process.cwd(), "lib", "openbb_bridge.py");
 
-            return new Promise((resolve) => {
+            return new Promise<NextResponse>((resolve) => {
                 const pythonProcess = spawn(PYTHON_PATH, [
                     BRIDGE_SCRIPT_PATH,
                     "--ticker", ticker,
