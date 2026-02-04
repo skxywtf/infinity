@@ -48,8 +48,7 @@ export default function GhostPortal({ apiUrl, contentApiKey }: GhostPortalProps)
 
         setTimeout(() => {
             clearInterval(checkGhost);
-            // @ts-ignore
-            if (!window.Ghost) console.error("👻 GHOST FAILURE: Timeout waiting for window.Ghost.");
+            // Silent timeout - no error logging
         }, 10000);
 
         return () => clearInterval(checkGhost);
