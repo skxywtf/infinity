@@ -41,12 +41,16 @@ export default function OpenBBTerminal() {
 
             if (priceJson.error) throw new Error(priceJson.error);
 
+            console.log("[OpenBB Page] Raw Price Response:", priceJson); // DEBUG
+
             // Process data for Chart (ensure dates are readable)
             const cleanData = (priceJson.data || []).map((item: any) => ({
                 ...item,
                 dateStr: new Date(item.date || item.Date).toLocaleDateString(),
                 close: item.Close || item.close,
             }));
+
+            console.log("[OpenBB Page] Processed Chart Data:", cleanData); // DEBUG
             setPriceData(cleanData);
 
             // 2. Fetch News (Parallel)

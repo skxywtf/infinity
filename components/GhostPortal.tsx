@@ -25,9 +25,7 @@ export default function GhostPortal({ apiUrl, contentApiKey }: GhostPortalProps)
 
     useEffect(() => {
         // use console.error to ensure visibility in filtered consoles
-        console.error(`👻 GHOST DEBUG: Component Mounted.`);
-        console.error(`👻 GHOST DEBUG: Effective API URL: ${effectiveApiUrl}`);
-        console.error(`👻 GHOST DEBUG: Key Length: ${contentApiKey?.length || 0} (First 5: ${contentApiKey?.substring(0, 5)}...)`);
+        // Logs removed for cleaner console
 
         // Force Clear Ghost LocalStorage Cache - DISABLED
         // We must preserve session keys like 'ghost-members:signedin'.
