@@ -76,11 +76,18 @@ export default function OpenBBTerminal() {
 
     // Initial load
     useEffect(() => {
-        fetchData('AAPL');
+        fetchData('AAPL', '3M');
         // Delay chart rendering slightly to allow DOM layout to settle
         const timer = setTimeout(() => setChartReady(true), 500);
         return () => clearTimeout(timer);
     }, []);
+
+    // Handle Range Switch
+    const handleRangeChange = (newRange: string) => {
+        if (newRange === timeRange) return;
+        setTimeRange(newRange);
+        fetchData(ticker, newRange);
+    };
 
     return (
         <div className="min-h-screen bg-[var(--background)] text-white p-6 md:p-12 font-sans selection:bg-cyan-500/30">
@@ -144,7 +151,11 @@ export default function OpenBBTerminal() {
                             </div>
                             <div className="flex gap-2">
                                 {['1D', '1W', '1M', '3M', '6M', '1Y'].map(time => (
-                                    <button key={time} className={`px-3 py-1 rounded text-xs font-medium transition-colors ${time === '6M' ? 'bg-cyan-500/20 text-cyan-400' : 'text-slate-500 hover:text-white'}`}>
+                                    <button
+                                        key={time}
+                                        onClick={() => handleRangeChange(time)}
+                                        className={`px-3 py-1 rounded text-xs font-medium transition-colors ${time === timeRange ? 'bg-cyan-500/20 text-cyan-400' : 'text-slate-500 hover:text-white'}`}
+                                    >
                                         {time}
                                     </button>
                                 ))}
