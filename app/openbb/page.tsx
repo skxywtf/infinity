@@ -148,10 +148,24 @@ export default function OpenBBTerminal() {
                             </div>
                         </div>
 
-                        <div className="flex-1 w-full min-h-[350px]">
-                            {loading && <div className="h-full flex items-center justify-center text-cyan-500/50"><Loader2 className="h-10 w-10 animate-spin" /></div>}
+                        <div className="flex-1 w-full min-h-[350px] relative">
+                            {loading ? (
+                                <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
+                                    {/* Spinner & Text */}
+                                    <div className="flex items-center space-x-3 bg-[#0A0C14]/80 px-6 py-3 rounded-full border border-cyan-500/30 backdrop-blur-md shadow-2xl relative z-20">
+                                        <Loader2 className="h-5 w-5 animate-spin text-cyan-400" />
+                                        <span className="text-cyan-400 font-medium tracking-wide text-sm animate-pulse">Analyzing Market Data...</span>
+                                    </div>
 
-                            {!loading && priceData.length > 0 && (
+                                    {/* Shimmer Skeleton Background */}
+                                    <div className="absolute inset-0 w-full h-full overflow-hidden rounded-xl opacity-20">
+                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent w-[200%] h-full animate-[shimmer_2s_infinite] -skew-x-12 translate-x-[-100%]"></div>
+                                        <svg className="w-full h-full text-slate-800" fill="none" viewBox="0 0 400 200" preserveAspectRatio="none">
+                                            <path stroke="currentColor" strokeWidth="2" d="M0 150 C 100 150, 100 100, 200 100 S 300 150, 400 50" vectorEffect="non-scaling-stroke" strokeDasharray="5,5" className="animate-pulse opacity-50" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            ) : priceData.length > 0 ? (
                                 <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart data={priceData}>
                                         <defs>
@@ -191,6 +205,10 @@ export default function OpenBBTerminal() {
                                         />
                                     </AreaChart>
                                 </ResponsiveContainer>
+                            ) : (
+                                <div className="h-full flex flex-col items-center justify-center text-slate-500">
+                                    <p>No price data available.</p>
+                                </div>
                             )}
                         </div>
                     </div>
