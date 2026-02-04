@@ -150,8 +150,8 @@ export default function OpenBBTerminal() {
                             </div>
                         </div>
 
-                        {/* Chart Area with explicit height context to fix width(-1) responsive bug */}
-                        <div className="flex-1 w-full h-[400px] min-h-[400px] relative">
+                        {/* Chart Area with explicit inline height to force Recharts to detect size */}
+                        <div className="flex-1 w-full relative" style={{ height: '400px', minHeight: '400px' }}>
 
                             {/* Loading State - Absolute Overlay */}
                             {loading && (
@@ -166,47 +166,49 @@ export default function OpenBBTerminal() {
                                 </div>
                             )}
 
-                            {/* Chart - Only render when NOT loading and data exists to avoid resize glitch */}
+                            {/* Chart - Only render when NOT loading and data exists */}
                             {!loading && priceData.length > 0 ? (
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={priceData}>
-                                        <defs>
-                                            <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3} />
-                                                <stop offset="95%" stopColor="#06b6d4" stopOpacity={0} />
-                                            </linearGradient>
-                                        </defs>
-                                        <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
-                                        <XAxis
-                                            dataKey="dateStr"
-                                            stroke="#64748b"
-                                            fontSize={12}
-                                            tickLine={false}
-                                            axisLine={false}
-                                            minTickGap={30}
-                                        />
-                                        <YAxis
-                                            stroke="#64748b"
-                                            fontSize={12}
-                                            tickLine={false}
-                                            axisLine={false}
-                                            domain={['auto', 'auto']}
-                                        />
-                                        <Tooltip
-                                            contentStyle={{ backgroundColor: '#0A0C14', borderColor: '#334155', borderRadius: '8px' }}
-                                            itemStyle={{ color: '#06b6d4' }}
-                                            labelStyle={{ color: '#94a3b8' }}
-                                        />
-                                        <Area
-                                            type="monotone"
-                                            dataKey="close"
-                                            stroke="#06b6d4"
-                                            strokeWidth={2}
-                                            fillOpacity={1}
-                                            fill="url(#colorPrice)"
-                                        />
-                                    </AreaChart>
-                                </ResponsiveContainer>
+                                <div style={{ width: '100%', height: '100%' }}>
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <AreaChart data={priceData}>
+                                            <defs>
+                                                <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3} />
+                                                    <stop offset="95%" stopColor="#06b6d4" stopOpacity={0} />
+                                                </linearGradient>
+                                            </defs>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
+                                            <XAxis
+                                                dataKey="dateStr"
+                                                stroke="#64748b"
+                                                fontSize={12}
+                                                tickLine={false}
+                                                axisLine={false}
+                                                minTickGap={30}
+                                            />
+                                            <YAxis
+                                                stroke="#64748b"
+                                                fontSize={12}
+                                                tickLine={false}
+                                                axisLine={false}
+                                                domain={['auto', 'auto']}
+                                            />
+                                            <Tooltip
+                                                contentStyle={{ backgroundColor: '#0A0C14', borderColor: '#334155', borderRadius: '8px' }}
+                                                itemStyle={{ color: '#06b6d4' }}
+                                                labelStyle={{ color: '#94a3b8' }}
+                                            />
+                                            <Area
+                                                type="monotone"
+                                                dataKey="close"
+                                                stroke="#06b6d4"
+                                                strokeWidth={2}
+                                                fillOpacity={1}
+                                                fill="url(#colorPrice)"
+                                            />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
+                                </div>
                             ) : !loading ? (
                                 <div className="h-full flex flex-col items-center justify-center text-slate-500">
                                     <p>No price data available.</p>
