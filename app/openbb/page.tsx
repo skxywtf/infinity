@@ -253,228 +253,213 @@ export default function OpenBBTerminal() {
                                 </div>
                             )}
 
-                            {/* Chart Area - Robust Container */}
-                            <div className="h-[400px] w-full relative bg-white/5 rounded-xl border border-white/5 overflow-hidden">
+                            {/* Chart - Delayed Render to fix width(-1) crash */}
+                            {!loading && priceData.length > 0 && chartReady ? (
+                                <div className="w-full h-full">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <AreaChart data={priceData}>
+                                            <defs>
+                                                <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3} />
+                                                    <stop offset="95%" stopColor="#06b6d4" stopOpacity={0} />
+                                                </linearGradient>
+                                            </defs>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
+                                            <XAxis
+                                                dataKey="dateStr"
+                                                stroke="#64748b"
+                                                fontSize={12}
+                                                tickLine={false}
+                                                axisLine={false}
+                                                minTickGap={30}
+                                            />
+                                            <YAxis
+                                                stroke="#64748b"
+                                                fontSize={12}
+                                                tickLine={false}
+                                                axisLine={false}
+                                                domain={['auto', 'auto']}
+                                            />
+                                            <Tooltip
+                                                contentStyle={{ backgroundColor: '#0A0C14', borderColor: '#334155', borderRadius: '8px' }}
+                                                itemStyle={{ color: '#06b6d4' }}
+                                                labelStyle={{ color: '#94a3b8' }}
+                                            />
+                                            <Area
+                                                type="monotone"
+                                                dataKey="close"
+                                                stroke="#06b6d4"
+                                                strokeWidth={2}
+                                                fillOpacity={1}
+                                                fill="url(#colorPrice)"
+                                                animationDuration={500}
+                                            />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            ) : !loading && !priceData.length ? (
+                                <div className="h-full flex flex-col items-center justify-center text-slate-500">
+                                    <p>No price data available.</p>
+                                </div>
+                            ) : null}
+                        </div>
 
-                                {/* Loading Overlay */}
-                                {loading && (
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center z-20 bg-[#0A0C14]/80 backdrop-blur-sm">
-                                        <div className="flex items-center space-x-3 bg-[#0A0C14] px-6 py-3 rounded-full border border-cyan-500/30">
-                                            <Loader2 className="h-5 w-5 animate-spin text-cyan-400" />
-                                            <span className="text-cyan-400 font-medium tracking-wide text-sm animate-pulse">Analyzing Market Data...</span>
-                                        </div>
-                                    </div>
-                                )}
+                        {/* ANALYSIS TABS (New) */}
+                        {assetClass === 'price' && (
+                            <div className="mt-6 border-t border-white/5 pt-4">
+                                <div className="flex gap-4 mb-4">
+                                    {['chart', 'financials', 'options', 'quantitative'].map(view => (
+                                        <button
+                                            key={view}
+                                            onClick={() => setAnalysisView(view)}
+                                            className={`text-sm font-semibold uppercase tracking-wide px-3 py-1 rounded transition-all ${analysisView === view ? 'text-cyan-400 bg-cyan-500/10' : 'text-slate-500 hover:text-white'}`}
+                                        >
+                                            {view}
+                                        </button>
+                                    ))}
+                                </div>
 
-                                {/* Chart - Delayed Render to fix width(-1) crash */}
-                                {!loading && priceData.length > 0 && chartReady ? (
-                                    <div className="w-full h-full">
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <AreaChart data={priceData}>
-                                                <defs>
-                                                    <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                                                        <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3} />
-                                                        <stop offset="95%" stopColor="#06b6d4" stopOpacity={0} />
-                                                    </linearGradient>
-                                                </defs>
-                                                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
-                                                <XAxis
-                                                    dataKey="dateStr"
-                                                    stroke="#64748b"
-                                                    fontSize={12}
-                                                    tickLine={false}
-                                                    axisLine={false}
-                                                    minTickGap={30}
-                                                />
-                                                <YAxis
-                                                    stroke="#64748b"
-                                                    fontSize={12}
-                                                    tickLine={false}
-                                                    axisLine={false}
-                                                    domain={['auto', 'auto']}
-                                                />
-                                                <Tooltip
-                                                    contentStyle={{ backgroundColor: '#0A0C14', borderColor: '#334155', borderRadius: '8px' }}
-                                                    itemStyle={{ color: '#06b6d4' }}
-                                                    labelStyle={{ color: '#94a3b8' }}
-                                                />
-                                                <Area
-                                                    type="monotone"
-                                                    dataKey="close"
-                                                    stroke="#06b6d4"
-                                                    strokeWidth={2}
-                                                    fillOpacity={1}
-                                                    fill="url(#colorPrice)"
-                                                    animationDuration={500}
-                                                />
-                                            </AreaChart>
-                                        </ResponsiveContainer>
-                                    </div>
-                                ) : !loading && !priceData.length ? (
-                                    <div className="h-full flex flex-col items-center justify-center text-slate-500">
-                                        <p>No price data available.</p>
-                                    </div>
-                                ) : null}
-                            </div>
-
-                            {/* ANALYSIS TABS (New) */}
-                            {assetClass === 'price' && (
-                                <div className="mt-6 border-t border-white/5 pt-4">
-                                    <div className="flex gap-4 mb-4">
-                                        {['chart', 'financials', 'options', 'quantitative'].map(view => (
-                                            <button
-                                                key={view}
-                                                onClick={() => setAnalysisView(view)}
-                                                className={`text-sm font-semibold uppercase tracking-wide px-3 py-1 rounded transition-all ${analysisView === view ? 'text-cyan-400 bg-cyan-500/10' : 'text-slate-500 hover:text-white'}`}
-                                            >
-                                                {view}
-                                            </button>
-                                        ))}
-                                    </div>
-
-                                    {/* ANALYSIS CONTENT */}
-                                    <div className="min-h-[200px]">
-                                        {/* Financials Table */}
-                                        {analysisView === 'financials' && (
-                                            <div className="overflow-x-auto">
-                                                <table className="w-full text-left text-sm text-slate-300">
-                                                    <thead className="text-xs uppercase text-slate-500 bg-white/5">
-                                                        <tr>
-                                                            <th className="px-4 py-2">Period</th>
-                                                            <th className="px-4 py-2">Revenue</th>
-                                                            <th className="px-4 py-2">Net Income</th>
+                                {/* ANALYSIS CONTENT */}
+                                <div className="min-h-[200px]">
+                                    {/* Financials Table */}
+                                    {analysisView === 'financials' && (
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-left text-sm text-slate-300">
+                                                <thead className="text-xs uppercase text-slate-500 bg-white/5">
+                                                    <tr>
+                                                        <th className="px-4 py-2">Period</th>
+                                                        <th className="px-4 py-2">Revenue</th>
+                                                        <th className="px-4 py-2">Net Income</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {fundamentalsData.length > 0 ? fundamentalsData.map((row, i) => (
+                                                        <tr key={i} className="border-b border-white/5 hover:bg-white/5">
+                                                            <td className="px-4 py-2">{row.period || row.date || '---'}</td>
+                                                            <td className="px-4 py-2 text-green-400">{(row.revenue / 1e9).toFixed(2)}B</td>
+                                                            <td className="px-4 py-2">{(row.netIncome / 1e9).toFixed(2)}B</td>
                                                         </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {fundamentalsData.length > 0 ? fundamentalsData.map((row, i) => (
-                                                            <tr key={i} className="border-b border-white/5 hover:bg-white/5">
-                                                                <td className="px-4 py-2">{row.period || row.date || '---'}</td>
-                                                                <td className="px-4 py-2 text-green-400">{(row.revenue / 1e9).toFixed(2)}B</td>
-                                                                <td className="px-4 py-2">{(row.netIncome / 1e9).toFixed(2)}B</td>
-                                                            </tr>
-                                                        )) : <tr><td colSpan={3} className="p-4 text-center text-slate-500">No Data</td></tr>}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        )}
+                                                    )) : <tr><td colSpan={3} className="p-4 text-center text-slate-500">No Data</td></tr>}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    )}
 
-                                        {/* Options Chain */}
-                                        {analysisView === 'options' && (
-                                            <div className="grid grid-cols-2 gap-4 h-[300px] overflow-y-auto custom-scrollbar">
-                                                <div>
-                                                    <h4 className="text-center text-green-400 mb-2 font-bold text-xs uppercase">Calls</h4>
-                                                    {optionsData.filter(o => o.optionType === 'call').map((opt, i) => (
-                                                        <div key={i} className="flex justify-between text-xs p-2 border-b border-white/5 hover:bg-white/5">
-                                                            <span>{opt.strike}</span>
-                                                            <span className="text-white">{opt.lastPrice?.toFixed(2)}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                                <div>
-                                                    <h4 className="text-center text-red-400 mb-2 font-bold text-xs uppercase">Puts</h4>
-                                                    {optionsData.filter(o => o.optionType === 'put').map((opt, i) => (
-                                                        <div key={i} className="flex justify-between text-xs p-2 border-b border-white/5 hover:bg-white/5">
-                                                            <span>{opt.strike}</span>
-                                                            <span className="text-white">{opt.lastPrice?.toFixed(2)}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* Quantitative Stats */}
-                                        {analysisView === 'quantitative' && (
-                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                                {quantitativeData.length > 0 ? quantitativeData.map((metric, i) => (
-                                                    <div key={i} className="bg-white/5 p-4 rounded-lg text-center">
-                                                        <div className="text-xs text-slate-400 uppercase">{metric.metric}</div>
-                                                        <div className="text-xl font-mono text-cyan-400 mt-1">{metric.value?.toFixed(2)}</div>
+                                    {/* Options Chain */}
+                                    {analysisView === 'options' && (
+                                        <div className="grid grid-cols-2 gap-4 h-[300px] overflow-y-auto custom-scrollbar">
+                                            <div>
+                                                <h4 className="text-center text-green-400 mb-2 font-bold text-xs uppercase">Calls</h4>
+                                                {optionsData.filter(o => o.optionType === 'call').map((opt, i) => (
+                                                    <div key={i} className="flex justify-between text-xs p-2 border-b border-white/5 hover:bg-white/5">
+                                                        <span>{opt.strike}</span>
+                                                        <span className="text-white">{opt.lastPrice?.toFixed(2)}</span>
                                                     </div>
-                                                )) : <div className="col-span-4 text-center text-slate-500 py-10">No Quantitative Data Available</div>}
+                                                ))}
                                             </div>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
+                                            <div>
+                                                <h4 className="text-center text-red-400 mb-2 font-bold text-xs uppercase">Puts</h4>
+                                                {optionsData.filter(o => o.optionType === 'put').map((opt, i) => (
+                                                    <div key={i} className="flex justify-between text-xs p-2 border-b border-white/5 hover:bg-white/5">
+                                                        <span>{opt.strike}</span>
+                                                        <span className="text-white">{opt.lastPrice?.toFixed(2)}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
 
-                    {/* Sidebar (Stats & News) */}
-                    <div className="lg:col-span-4 space-y-6">
-
-                        {/* Key Stats */}
-                        <div className="glass-panel p-6 rounded-2xl">
-                            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                                <Activity className="h-4 w-4 text-cyan-400" />
-                                Key Metrics
-                            </h3>
-                            {loading ? (
-                                <div className="space-y-4 animate-pulse opacity-50">
-                                    {[1, 2, 3, 4].map(i => <div key={i} className="h-8 bg-white/10 rounded"></div>)}
-                                </div>
-                            ) : (
-                                <div className="space-y-4">
-                                    <div className="flex justify-between items-center py-2 border-b border-white/5">
-                                        <span className="text-slate-400 text-sm">Market Cap</span>
-                                        <span className="font-mono">{profileData?.marketCap ? (profileData.marketCap / 1e9).toFixed(2) + 'B' : '---'}</span>
-                                    </div>
-                                    <div className="flex justify-between items-center py-2 border-b border-white/5">
-                                        <span className="text-slate-400 text-sm">Sector</span>
-                                        <span className="text-right text-sm">{profileData?.sector || '---'}</span>
-                                    </div>
-                                    <div className="flex justify-between items-center py-2 border-b border-white/5">
-                                        <span className="text-slate-400 text-sm">Industry</span>
-                                        <span className="text-right text-sm">{profileData?.industry || '---'}</span>
-                                    </div>
-                                    <div className="flex justify-between items-center py-2 border-b border-white/5">
-                                        <span className="text-slate-400 text-sm">Exchange</span>
-                                        <span className="font-mono">{profileData?.exchange || '---'}</span>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Latest News */}
-                        <div className="glass-panel p-6 rounded-2xl max-h-[400px] overflow-y-auto custom-scrollbar">
-                            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                                <Newspaper className="h-4 w-4 text-purple-400" />
-                                Latest News
-                            </h3>
-                            {loading ? (
-                                <div className="space-y-4 animate-pulse opacity-50">
-                                    {[1, 2, 3].map(i => <div key={i} className="h-24 bg-white/10 rounded-xl"></div>)}
-                                </div>
-                            ) : (
-                                <div className="space-y-4">
-                                    {newsData.length === 0 ? (
-                                        <p className="text-slate-500 text-sm">No news found.</p>
-                                    ) : (
-                                        newsData.map((item, idx) => (
-                                            <a
-                                                key={idx}
-                                                href={item.url || '#'}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="block group p-3 rounded-lg hover:bg-white/5 transition-colors"
-                                            >
-                                                <div className="flex justify-between items-start mb-1">
-                                                    <span className="text-[10px] uppercase text-cyan-500/70 font-bold bg-cyan-950/30 px-2 py-0.5 rounded">
-                                                        {item.source || 'News'}
-                                                    </span>
-                                                    <span className="text-slate-500 text-[10px]">
-                                                        {new Date(item.date).toLocaleDateString()}
-                                                    </span>
+                                    {/* Quantitative Stats */}
+                                    {analysisView === 'quantitative' && (
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                            {quantitativeData.length > 0 ? quantitativeData.map((metric, i) => (
+                                                <div key={i} className="bg-white/5 p-4 rounded-lg text-center">
+                                                    <div className="text-xs text-slate-400 uppercase">{metric.metric}</div>
+                                                    <div className="text-xl font-mono text-cyan-400 mt-1">{metric.value?.toFixed(2)}</div>
                                                 </div>
-                                                <h4 className="text-sm font-medium text-slate-200 group-hover:text-cyan-300 transition-colors line-clamp-2">
-                                                    {item.title}
-                                                </h4>
-                                            </a>
-                                        ))
+                                            )) : <div className="col-span-4 text-center text-slate-500 py-10">No Quantitative Data Available</div>}
+                                        </div>
                                     )}
                                 </div>
-                            )}
-                        </div>
+                            </div>
+                        )}
+                    </div>{/* End glass-panel */}
+                </div> {/* End col-span-8 */}
 
+                {/* Sidebar (Stats & News) */}
+                <div className="lg:col-span-4 space-y-6">
+
+                    {/* Key Stats */}
+                    <div className="glass-panel p-6 rounded-2xl">
+                        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                            <Activity className="h-4 w-4 text-cyan-400" />
+                            Key Metrics
+                        </h3>
+                        {loading ? (
+                            <div className="space-y-4 animate-pulse opacity-50">
+                                {[1, 2, 3, 4].map(i => <div key={i} className="h-8 bg-white/10 rounded"></div>)}
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center py-2 border-b border-white/5">
+                                    <span className="text-slate-400 text-sm">Market Cap</span>
+                                    <span className="font-mono">{profileData?.marketCap ? (profileData.marketCap / 1e9).toFixed(2) + 'B' : '---'}</span>
+                                </div>
+                                <div className="flex justify-between items-center py-2 border-b border-white/5">
+                                    <span className="text-slate-400 text-sm">Sector</span>
+                                    <span className="text-right text-sm">{profileData?.sector || '---'}</span>
+                                </div>
+                                <div className="flex justify-between items-center py-2 border-b border-white/5">
+                                    <span className="text-slate-400 text-sm">Industry</span>
+                                    <span className="text-right text-sm">{profileData?.industry || '---'}</span>
+                                </div>
+                                <div className="flex justify-between items-center py-2 border-b border-white/5">
+                                    <span className="text-slate-400 text-sm">Exchange</span>
+                                    <span className="font-mono">{profileData?.exchange || '---'}</span>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Latest News */}
+                    <div className="glass-panel p-6 rounded-2xl max-h-[400px] overflow-y-auto custom-scrollbar">
+                        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                            <Newspaper className="h-4 w-4 text-purple-400" />
+                            Latest News
+                        </h3>
+                        {loading ? (
+                            <div className="space-y-4 animate-pulse opacity-50">
+                                {[1, 2, 3].map(i => <div key={i} className="h-24 bg-white/10 rounded-xl"></div>)}
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                {newsData.length === 0 ? (
+                                    <p className="text-slate-500 text-sm">No news found.</p>
+                                ) : (
+                                    newsData.map((item, idx) => (
+                                        <a
+                                            key={idx}
+                                            href={item.url || '#'}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="block group p-3 rounded-lg hover:bg-white/5 transition-colors"
+                                        >
+                                            <div className="flex justify-between items-start mb-1">
+                                                <span className="text-[10px] uppercase text-cyan-500/70 font-bold bg-cyan-950/30 px-2 py-0.5 rounded">
+                                                    {item.source || 'News'}
+                                                </span>
+                                                <span className="text-slate-500 text-[10px]">
+                                                    {new Date(item.date).toLocaleDateString()}
+                                                </span>
+                                            </div>
+                                            <h4 className="text-sm font-medium text-slate-200 group-hover:text-cyan-300 transition-colors line-clamp-2">
+                                                {item.title}
+                                            </h4>
+                                        </a>
+                                    ))
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
