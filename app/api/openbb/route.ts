@@ -93,15 +93,16 @@ export async function POST(req: NextRequest) {
 
 // --- PURE JS MOCK GENERATOR ---
 function getJsMockData(ticker: string, type: string) {
-    if (type === 'price') {
+    if (type === 'price' || type === 'crypto' || type === 'forex' || type === 'economy') {
         const data = [];
-        let price = 150.0;
+        let price = type === 'crypto' ? 30000 : (type === 'forex' ? 1.10 : (type === 'economy' ? 250 : 150.0));
         const now = new Date();
         for (let i = 0; i < 180; i++) {
             const d = new Date(now);
             d.setDate(d.getDate() - (180 - i));
-            price += (Math.random() - 0.45) * 5;
-            data.push({ date: d.toISOString().split('T')[0], close: Number(price.toFixed(2)) });
+            const volatility = type === 'crypto' ? 500 : (type === 'forex' ? 0.005 : 2);
+            price += (Math.random() - 0.45) * volatility;
+            data.push({ date: d.toISOString().split('T')[0], close: Number(price.toFixed(4)) });
         }
         return { data };
     }

@@ -14,6 +14,7 @@ import {
 
 export default function OpenBBTerminal() {
     const [ticker, setTicker] = useState('AAPL'); // Default
+    const [assetClass, setAssetClass] = useState('price'); // 'price' | 'crypto' | 'forex' | 'economy'
     const [loading, setLoading] = useState(false);
     const [priceData, setPriceData] = useState<any[]>([]);
     const [newsData, setNewsData] = useState<any[]>([]);
@@ -26,18 +27,18 @@ export default function OpenBBTerminal() {
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!ticker) return;
-        await fetchData(ticker, timeRange);
+        await fetchData(ticker, assetClass, timeRange);
     };
 
-    const fetchData = async (sym: string, range: string = '3M') => {
+    const fetchData = async (sym: string, type: string = 'price', range: string = '3M') => {
         setLoading(true);
         setError('');
 
         try {
-            // 1. Fetch Price
+            // 1. Fetch Price/Data
             const priceRes = await fetch('/api/openbb', {
                 method: 'POST',
-                body: JSON.stringify({ ticker: sym, type: 'price', range }), // Pass range
+                body: JSON.stringify({ ticker: sym, type: type, range }),
             });
             const priceJson = await priceRes.json();
 
@@ -59,13 +60,17 @@ export default function OpenBBTerminal() {
             const newsJson = await newsRes.json();
             setNewsData(newsJson.data || []);
 
-            // 3. Fetch Profile (Parallel)
-            const profileRes = await fetch('/api/openbb', {
-                method: 'POST',
-                body: JSON.stringify({ ticker: sym, type: 'profile' }),
-            });
-            const profileJson = await profileRes.json();
-            setProfileData(profileJson.data?.[0] || null);
+            // 3. Fetch Profile (Parallel) - Profile might not exist for Economy
+            if (type !== 'economy') {
+                const profileRes = await fetch('/api/openbb', {
+                    method: 'POST',
+                    body: JSON.stringify({ ticker: sym, type: 'profile' }),
+                });
+                const profileJson = await profileRes.json();
+                setProfileData(profileJson.data?.[0] || null);
+            } else {
+                setProfileData({ shortName: sym, currency: 'USD', marketCap: 0, sector: 'Macro', industry: 'Economy', exchange: 'FRED' });
+            }
 
         } catch (err: any) {
             setError(err.message || "Failed to fetch data");
@@ -76,17 +81,32 @@ export default function OpenBBTerminal() {
 
     // Initial load
     useEffect(() => {
-        fetchData('AAPL', '3M');
+        fetchData('AAPL', 'price', '3M');
         // Delay chart rendering slightly to allow DOM layout to settle
         const timer = setTimeout(() => setChartReady(true), 500);
         return () => clearTimeout(timer);
     }, []);
 
+    // Handle Asset Class Switch
+    const handleAssetChange = (newClass: string) => {
+        if (newClass === assetClass) return;
+        setAssetClass(newClass);
+        // Default tickers for each class
+        let newTicker = ticker;
+        if (newClass === 'price') newTicker = 'AAPL';
+        if (newClass === 'crypto') newTicker = 'BTC-USD';
+        if (newClass === 'forex') newTicker = 'EURUSD=X';
+        if (newClass === 'economy') newTicker = 'CPIAUCSL';
+
+        setTicker(newTicker);
+        fetchData(newTicker, newClass, timeRange);
+    };
+
     // Handle Range Switch
     const handleRangeChange = (newRange: string) => {
         if (newRange === timeRange) return;
         setTimeRange(newRange);
-        fetchData(ticker, newRange);
+        fetchData(ticker, assetClass, newRange);
     };
 
     return (
@@ -101,6 +121,23 @@ export default function OpenBBTerminal() {
                     <p className="text-slate-400 mt-2 text-sm tracking-wide">
                         Powered by local <strong className="text-cyan-400">OpenBB</strong> runtime
                     </p>
+
+                    {/* Asset Class Tabs */}
+                    <div className="flex gap-2 mt-4">
+                        {['price', 'crypto', 'forex', 'economy'].map((cls) => (
+                            <button
+                                key={cls}
+                                onClick={() => handleAssetChange(cls)}
+                                className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all
+                                    ${assetClass === cls
+                                        ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/20'
+                                        : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white'
+                                    }`}
+                            >
+                                {cls === 'price' ? 'Stocks' : cls}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 <form onSubmit={handleSearch} className="relative w-full md:w-96 group">
@@ -111,7 +148,12 @@ export default function OpenBBTerminal() {
                         type="text"
                         value={ticker}
                         onChange={(e) => setTicker(e.target.value.toUpperCase())}
-                        placeholder="ENTER TICKER (e.g. NVDA)"
+                        placeholder={
+                            assetClass === 'crypto' ? "TICKER (e.g. BTC-USD)" :
+                                assetClass === 'forex' ? "PAIR (e.g. EURUSD=X)" :
+                                    assetClass === 'economy' ? "SERIES (e.g. CPIAUCSL)" :
+                                        "ENTER TICKER (e.g. NVDA)"
+                        }
                         className="block w-full pl-11 pr-4 py-3 bg-[#0A0C14] border border-white/10 rounded-xl text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all shadow-xl"
                     />
                     <button

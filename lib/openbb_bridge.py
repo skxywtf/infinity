@@ -67,6 +67,50 @@ def get_historical_price(ticker):
         print(f"Error fetching price: {e}", file=sys.stderr)
         return get_mock_price(ticker) # Fallback if individual call fails
 
+def get_crypto_price(ticker):
+    if USE_MOCK: return get_mock_price(ticker)
+    try:
+        start_date = (datetime.now() - timedelta(days=180)).strftime('%Y-%m-%d')
+        df = obb.crypto.price.historical(ticker, start_date=start_date, provider="yfinance").to_dataframe()
+        if 'date' not in df.columns and 'Date' not in df.columns:
+            df = df.reset_index()
+        result = json.loads(df.to_json(orient="records", date_format="iso"))
+        return {"data": result}
+    except Exception as e:
+        print(f"Error fetching crypto: {e}", file=sys.stderr)
+        return get_mock_price(ticker)
+
+def get_forex_price(ticker):
+    if USE_MOCK: return get_mock_price(ticker)
+    try:
+        start_date = (datetime.now() - timedelta(days=180)).strftime('%Y-%m-%d')
+        df = obb.currency.price.historical(ticker, start_date=start_date, provider="yfinance").to_dataframe()
+        if 'date' not in df.columns and 'Date' not in df.columns:
+            df = df.reset_index()
+        result = json.loads(df.to_json(orient="records", date_format="iso"))
+        return {"data": result}
+    except Exception as e:
+        print(f"Error fetching forex: {e}", file=sys.stderr)
+        return get_mock_price(ticker)
+
+def get_economy_data(ticker):
+    if USE_MOCK: return get_mock_price(ticker)
+    try:
+        symbol = "CPIAUCSL" if ticker == "ECON" else ticker
+        df = obb.economy.fred.series(symbol, start_date="2020-01-01").to_dataframe()
+        if 'date' not in df.columns and 'Date' not in df.columns:
+            df = df.reset_index()
+        if symbol in df.columns:
+                df = df.rename(columns={symbol: 'close'})
+        cols = df.columns
+        if 'close' not in cols and len(cols) > 1:
+                df = df.rename(columns={cols[-1]: 'close'})
+        result = json.loads(df.to_json(orient="records", date_format="iso"))
+        return {"data": result}
+    except Exception as e:
+        print(f"Error fetching economy: {e}", file=sys.stderr)
+        return get_mock_price(ticker)
+
 def get_news(ticker):
     if USE_MOCK: return get_mock_news(ticker)
     try:
@@ -103,6 +147,12 @@ if __name__ == "__main__":
     
     if args.type == 'price':
         print(json.dumps(get_historical_price(args.ticker)))
+    elif args.type == 'crypto':
+        print(json.dumps(get_crypto_price(args.ticker)))
+    elif args.type == 'forex':
+         print(json.dumps(get_forex_price(args.ticker)))
+    elif args.type == 'economy':
+         print(json.dumps(get_economy_data(args.ticker)))
     elif args.type == 'news':
         print(json.dumps(get_news(args.ticker)))
     elif args.type == 'profile':
