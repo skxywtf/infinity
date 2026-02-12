@@ -63,9 +63,9 @@ def get_mock_response(ticker, dtype):
 
     elif dtype == 'news':
         base_news = [
-            {"title": f"{ticker} Market Update", "date": datetime.now().isoformat(), "source": "Bloomberg", "url": "#"},
-            {"title": "Global Markets Rally", "date": (datetime.now() - timedelta(days=1)).isoformat(), "source": "Reuters", "url": "#"},
-            {"title": f"Analysis: {ticker} Outlook", "date": (datetime.now() - timedelta(days=2)).isoformat(), "source": "Benzinga", "url": "#"},
+            {"title": f"{ticker} Market Update", "date": datetime.now().isoformat(), "source": "Bloomberg", "url": f"https://www.google.com/search?q={ticker}+market+update"},
+            {"title": "Global Markets Rally", "date": (datetime.now() - timedelta(days=1)).isoformat(), "source": "Reuters", "url": f"https://www.google.com/search?q={ticker}+global+markets"},
+            {"title": f"Analysis: {ticker} Outlook", "date": (datetime.now() - timedelta(days=2)).isoformat(), "source": "Benzinga", "url": f"https://www.google.com/search?q={ticker}+stock+analysis"},
         ]
         return {"data": base_news + base_news}
     elif dtype == 'profile':

@@ -154,9 +154,7 @@ export default function OpenBBTerminal() {
                     <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 tracking-tight">
                         INFINITY <span className="text-white/20 font-light">|</span> TERMINAL
                     </h1>
-                    <p className="text-slate-400 mt-2 text-sm tracking-wide">
-                        Powered by local <strong className="text-cyan-400">OpenBB</strong> runtime
-                    </p>
+
 
                     {/* Asset Class Tabs */}
                     <div className="flex gap-2 mt-4">

@@ -109,9 +109,9 @@ function getJsMockData(ticker: string, type: string) {
     if (type === 'news') {
         return {
             data: [
-                { title: `${ticker} launches new AI Cloud Platform`, source: "TechCrunch", date: new Date().toISOString(), url: "#" },
-                { title: "Market Outlook: Tech stocks surge", source: "Bloomberg", date: new Date().toISOString(), url: "#" },
-                { title: `${ticker} Quarterly Earnings Preview`, source: "WSJ", date: new Date().toISOString(), url: "#" },
+                { title: `${ticker} launches new AI Cloud Platform`, source: "TechCrunch", date: new Date().toISOString(), url: `https://www.google.com/search?q=${ticker}+AI+launch` },
+                { title: "Market Outlook: Tech stocks surge", source: "Bloomberg", date: new Date().toISOString(), url: `https://www.google.com/search?q=${ticker}+market+outlook` },
+                { title: `${ticker} Quarterly Earnings Preview`, source: "WSJ", date: new Date().toISOString(), url: `https://www.google.com/search?q=${ticker}+earnings+preview` },
             ]
         };
     }

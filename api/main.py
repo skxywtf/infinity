@@ -38,11 +38,11 @@ def get_mock_price(ticker):
 
 def get_mock_news(ticker):
     base_news = [
-        {"title": f"{ticker} announces revolutionary AI feature", "date": datetime.now().isoformat(), "source": "Bloomberg", "url": "#"},
-        {"title": "Market rally continues as tech stocks soar", "date": (datetime.now() - timedelta(days=1)).isoformat(), "source": "Reuters", "url": "#"},
-        {"title": f"Analyst upgrades {ticker} to 'Buy'", "date": (datetime.now() - timedelta(days=2)).isoformat(), "source": "Benzinga", "url": "#"},
-        {"title": "Fed signals potential rate cuts", "date": (datetime.now() - timedelta(days=3)).isoformat(), "source": "WSJ", "url": "#"},
-        {"title": f"Why {ticker} is the stock to watch this week", "date": (datetime.now() - timedelta(days=4)).isoformat(), "source": "TechCrunch", "url": "#"},
+        {"title": f"{ticker} announces revolutionary AI feature", "date": datetime.now().isoformat(), "source": "Bloomberg", "url": f"https://www.google.com/search?q={ticker}+AI+feature"},
+        {"title": "Market rally continues as tech stocks soar", "date": (datetime.now() - timedelta(days=1)).isoformat(), "source": "Reuters", "url": f"https://www.google.com/search?q={ticker}+stock+rally"},
+        {"title": f"Analyst upgrades {ticker} to 'Buy'", "date": (datetime.now() - timedelta(days=2)).isoformat(), "source": "Benzinga", "url": f"https://www.google.com/search?q={ticker}+analyst+upgrade"},
+        {"title": "Fed signals potential rate cuts", "date": (datetime.now() - timedelta(days=3)).isoformat(), "source": "WSJ", "url": f"https://www.google.com/search?q=fed+rate+cuts+{ticker}"},
+        {"title": f"Why {ticker} is the stock to watch this week", "date": (datetime.now() - timedelta(days=4)).isoformat(), "source": "TechCrunch", "url": f"https://www.google.com/search?q={ticker}+stock+news"},
     ]
     return {"data": base_news * 3}
 
