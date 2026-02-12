@@ -145,6 +145,13 @@ export default function OpenBBTerminal() {
         fetchData(ticker, assetClass, newRange);
     };
 
+    // Helper to ensure valid news URL
+    const getNewsUrl = (item: any) => {
+        const url = item.url || item.URL || item.link;
+        if (url && url !== '#' && url.startsWith('http')) return url;
+        return `https://www.google.com/search?q=${encodeURIComponent(`${ticker} ${item.title || 'stock news'}`)}`;
+    };
+
     return (
         <div className="min-h-screen bg-[var(--background)] text-white p-6 md:p-12 font-sans selection:bg-cyan-500/30">
 
@@ -366,7 +373,7 @@ export default function OpenBBTerminal() {
                                                 </h4>
                                                 <div className="space-y-3">
                                                     {newsData.slice(0, 3).map((item, idx) => (
-                                                        <a key={idx} href={item.url} target="_blank" rel="noopener noreferrer" className="block text-sm text-slate-300 hover:text-cyan-400 truncate transition-colors">
+                                                        <a key={idx} href={getNewsUrl(item)} target="_blank" rel="noopener noreferrer" className="block text-sm text-slate-300 hover:text-cyan-400 truncate transition-colors">
                                                             • {item.title}
                                                         </a>
                                                     ))}
@@ -466,7 +473,7 @@ export default function OpenBBTerminal() {
                                                     newsData.map((item, idx) => (
                                                         <a
                                                             key={idx}
-                                                            href={item.url || '#'}
+                                                            href={getNewsUrl(item)}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                             className="block group p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all"
