@@ -16,7 +16,7 @@ export default function OpenBBTerminal() {
     const [ticker, setTicker] = useState('AAPL'); // Default
     const [assetClass, setAssetClass] = useState('price'); // 'price' | 'crypto' | 'forex' | 'economy'
     // New State for Analysis View
-    const [analysisView, setAnalysisView] = useState('chart'); // 'chart', 'financials', 'options', 'quantitative', 'technical'
+    const [analysisView, setAnalysisView] = useState('summary'); // 'summary', 'financials', 'options', 'quantitative', 'news'
 
     const [loading, setLoading] = useState(false);
 
@@ -210,9 +210,9 @@ export default function OpenBBTerminal() {
             {/* Main Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-                {/* Chart Section (Main) */}
+                {/* Chart Section (Main - Left Column) */}
                 <div className="lg:col-span-8 space-y-6">
-                    <div className="glass-panel p-6 rounded-2xl min-h-[500px] flex flex-col">
+                    <div className="glass-panel p-6 rounded-2xl min-h-[600px] flex flex-col">
                         <div className="flex justify-between items-end mb-6">
                             <div>
                                 <h2 className="text-2xl font-bold text-white flex items-center gap-2">
@@ -239,7 +239,7 @@ export default function OpenBBTerminal() {
                         </div>
 
                         {/* Chart Area - Robust Container */}
-                        <div className="h-[400px] w-full relative bg-white/5 rounded-xl border border-white/5 overflow-hidden">
+                        <div className="flex-1 w-full relative bg-white/5 rounded-xl border border-white/5 overflow-hidden min-h-[400px]">
 
                             {/* Loading Overlay */}
                             {loading && (
@@ -253,7 +253,7 @@ export default function OpenBBTerminal() {
 
                             {/* Chart - Delayed Render to fix width(-1) crash */}
                             {!loading && priceData.length > 0 && chartReady ? (
-                                <div className="w-full h-full">
+                                <div className="w-full h-full absolute inset-0">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <AreaChart data={priceData}>
                                             <defs>
@@ -301,163 +301,196 @@ export default function OpenBBTerminal() {
                                 </div>
                             ) : null}
                         </div>
-
-                        {/* ANALYSIS TABS (New) */}
-                        {assetClass === 'price' && (
-                            <div className="mt-6 border-t border-white/5 pt-4">
-                                <div className="flex gap-4 mb-4">
-                                    {['chart', 'financials', 'options', 'quantitative'].map(view => (
-                                        <button
-                                            key={view}
-                                            onClick={() => setAnalysisView(view)}
-                                            className={`text-sm font-semibold uppercase tracking-wide px-3 py-1 rounded transition-all ${analysisView === view ? 'text-cyan-400 bg-cyan-500/10' : 'text-slate-500 hover:text-white'}`}
-                                        >
-                                            {view}
-                                        </button>
-                                    ))}
-                                </div>
-
-                                {/* ANALYSIS CONTENT */}
-                                <div className="min-h-[200px]">
-                                    {/* Financials Table */}
-                                    {analysisView === 'financials' && (
-                                        <div className="overflow-x-auto">
-                                            <table className="w-full text-left text-sm text-slate-300">
-                                                <thead className="text-xs uppercase text-slate-500 bg-white/5">
-                                                    <tr>
-                                                        <th className="px-4 py-2">Period</th>
-                                                        <th className="px-4 py-2">Revenue</th>
-                                                        <th className="px-4 py-2">Net Income</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {fundamentalsData.length > 0 ? fundamentalsData.map((row, i) => (
-                                                        <tr key={i} className="border-b border-white/5 hover:bg-white/5">
-                                                            <td className="px-4 py-2">{row.period || row.date || '---'}</td>
-                                                            <td className="px-4 py-2 text-green-400">{(row.revenue / 1e9).toFixed(2)}B</td>
-                                                            <td className="px-4 py-2">{(row.netIncome / 1e9).toFixed(2)}B</td>
-                                                        </tr>
-                                                    )) : <tr><td colSpan={3} className="p-4 text-center text-slate-500">No Data</td></tr>}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    )}
-
-                                    {/* Options Chain */}
-                                    {analysisView === 'options' && (
-                                        <div className="grid grid-cols-2 gap-4 h-[300px] overflow-y-auto custom-scrollbar">
-                                            <div>
-                                                <h4 className="text-center text-green-400 mb-2 font-bold text-xs uppercase">Calls</h4>
-                                                {optionsData.filter(o => o.optionType === 'call').map((opt, i) => (
-                                                    <div key={i} className="flex justify-between text-xs p-2 border-b border-white/5 hover:bg-white/5">
-                                                        <span>{opt.strike}</span>
-                                                        <span className="text-white">{opt.lastPrice?.toFixed(2)}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                            <div>
-                                                <h4 className="text-center text-red-400 mb-2 font-bold text-xs uppercase">Puts</h4>
-                                                {optionsData.filter(o => o.optionType === 'put').map((opt, i) => (
-                                                    <div key={i} className="flex justify-between text-xs p-2 border-b border-white/5 hover:bg-white/5">
-                                                        <span>{opt.strike}</span>
-                                                        <span className="text-white">{opt.lastPrice?.toFixed(2)}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Quantitative Stats */}
-                                    {analysisView === 'quantitative' && (
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                            {quantitativeData.length > 0 ? quantitativeData.map((metric, i) => (
-                                                <div key={i} className="bg-white/5 p-4 rounded-lg text-center">
-                                                    <div className="text-xs text-slate-400 uppercase">{metric.metric}</div>
-                                                    <div className="text-xl font-mono text-cyan-400 mt-1">{metric.value?.toFixed(2)}</div>
-                                                </div>
-                                            )) : <div className="col-span-4 text-center text-slate-500 py-10">No Quantitative Data Available</div>}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-                    </div>{/* End glass-panel */}
-                </div> {/* End col-span-8 */}
-
-                {/* Sidebar (Stats & News) */}
-                <div className="lg:col-span-4 space-y-6">
-
-                    {/* Key Stats */}
-                    <div className="glass-panel p-6 rounded-2xl">
-                        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                            <Activity className="h-4 w-4 text-cyan-400" />
-                            Key Metrics
-                        </h3>
-                        {loading ? (
-                            <div className="space-y-4 animate-pulse opacity-50">
-                                {[1, 2, 3, 4].map(i => <div key={i} className="h-8 bg-white/10 rounded"></div>)}
-                            </div>
-                        ) : (
-                            <div className="space-y-4">
-                                <div className="flex justify-between items-center py-2 border-b border-white/5">
-                                    <span className="text-slate-400 text-sm">Market Cap</span>
-                                    <span className="font-mono">{profileData?.marketCap ? (profileData.marketCap / 1e9).toFixed(2) + 'B' : '---'}</span>
-                                </div>
-                                <div className="flex justify-between items-center py-2 border-b border-white/5">
-                                    <span className="text-slate-400 text-sm">Sector</span>
-                                    <span className="text-right text-sm">{profileData?.sector || '---'}</span>
-                                </div>
-                                <div className="flex justify-between items-center py-2 border-b border-white/5">
-                                    <span className="text-slate-400 text-sm">Industry</span>
-                                    <span className="text-right text-sm">{profileData?.industry || '---'}</span>
-                                </div>
-                                <div className="flex justify-between items-center py-2 border-b border-white/5">
-                                    <span className="text-slate-400 text-sm">Exchange</span>
-                                    <span className="font-mono">{profileData?.exchange || '---'}</span>
-                                </div>
-                            </div>
-                        )}
                     </div>
+                </div>
 
-                    {/* Latest News */}
-                    <div className="glass-panel p-6 rounded-2xl max-h-[400px] overflow-y-auto custom-scrollbar">
-                        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                            <Newspaper className="h-4 w-4 text-purple-400" />
-                            Latest News
-                        </h3>
-                        {loading ? (
-                            <div className="space-y-4 animate-pulse opacity-50">
-                                {[1, 2, 3].map(i => <div key={i} className="h-24 bg-white/10 rounded-xl"></div>)}
-                            </div>
-                        ) : (
-                            <div className="space-y-4">
-                                {newsData.length === 0 ? (
-                                    <p className="text-slate-500 text-sm">No news found.</p>
-                                ) : (
-                                    newsData.map((item, idx) => (
-                                        <a
-                                            key={idx}
-                                            href={item.url || '#'}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="block group p-3 rounded-lg hover:bg-white/5 transition-colors"
-                                        >
-                                            <div className="flex justify-between items-start mb-1">
-                                                <span className="text-[10px] uppercase text-cyan-500/70 font-bold bg-cyan-950/30 px-2 py-0.5 rounded">
-                                                    {item.source || 'News'}
-                                                </span>
-                                                <span className="text-slate-500 text-[10px]">
-                                                    {new Date(item.date).toLocaleDateString()}
-                                                </span>
+                {/* Analysis Panel (Right Column) */}
+                <div className="lg:col-span-4 flex flex-col gap-6 h-full">
+                    <div className="glass-panel rounded-2xl flex-1 flex flex-col min-h-[600px] overflow-hidden">
+
+                        {/* Tab Navigation */}
+                        <div className="flex border-b border-white/10 overflow-x-auto no-scrollbar">
+                            {['summary', 'financials', 'options', 'quantitative', 'news'].map(view => (
+                                <button
+                                    key={view}
+                                    onClick={() => setAnalysisView(view)}
+                                    className={`flex-1 px-4 py-3 text-xs font-bold uppercase tracking-wider transition-colors whitespace-nowrap
+                                        ${analysisView === view
+                                            ? 'text-cyan-400 border-b-2 border-cyan-400 bg-cyan-500/5'
+                                            : 'text-slate-500 hover:text-white hover:bg-white/5'
+                                        }`}
+                                >
+                                    {view}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Content Area */}
+                        <div className="p-6 flex-1 overflow-y-auto custom-scrollbar relative">
+                            {loading ? (
+                                <div className="absolute inset-0 flex items-center justify-center bg-[#0A0C14]/50 backdrop-blur-sm z-10">
+                                    <Loader2 className="h-8 w-8 animate-spin text-cyan-400" />
+                                </div>
+                            ) : (
+                                <>
+                                    {/* 1. SUMMARY VIEW (Key Metrics) */}
+                                    {analysisView === 'summary' && (
+                                        <div className="space-y-6">
+                                            <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                                                <Activity className="h-4 w-4 text-cyan-400" />
+                                                Key Metrics
+                                            </h3>
+                                            <div className="space-y-4">
+                                                <div className="flex justify-between items-center py-2 border-b border-white/5">
+                                                    <span className="text-slate-400 text-sm">Market Cap</span>
+                                                    <span className="font-mono">{profileData?.marketCap ? (profileData.marketCap / 1e9).toFixed(2) + 'B' : '---'}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center py-2 border-b border-white/5">
+                                                    <span className="text-slate-400 text-sm">Sector</span>
+                                                    <span className="text-right text-sm">{profileData?.sector || '---'}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center py-2 border-b border-white/5">
+                                                    <span className="text-slate-400 text-sm">Industry</span>
+                                                    <span className="text-right text-sm">{profileData?.industry || '---'}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center py-2 border-b border-white/5">
+                                                    <span className="text-slate-400 text-sm">Exchange</span>
+                                                    <span className="font-mono">{profileData?.exchange || '---'}</span>
+                                                </div>
                                             </div>
-                                            <h4 className="text-sm font-medium text-slate-200 group-hover:text-cyan-300 transition-colors line-clamp-2">
-                                                {item.title}
-                                            </h4>
-                                        </a>
-                                    ))
-                                )}
-                            </div>
-                        )}
+
+                                            {/* Mini News Feed in Summary */}
+                                            <div className="pt-6 border-t border-white/5">
+                                                <h4 className="text-sm font-semibold text-slate-400 mb-3 flex items-center gap-2">
+                                                    <Newspaper className="h-3 w-3" /> Recent Headlines
+                                                </h4>
+                                                <div className="space-y-3">
+                                                    {newsData.slice(0, 3).map((item, idx) => (
+                                                        <a key={idx} href={item.url} target="_blank" rel="noopener noreferrer" className="block text-sm text-slate-300 hover:text-cyan-400 truncate transition-colors">
+                                                            • {item.title}
+                                                        </a>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* 2. FINANCIALS VIEW */}
+                                    {analysisView === 'financials' && (
+                                        <div className="space-y-4">
+                                            <h3 className="text-lg font-semibold text-white mb-4">Financial Statements</h3>
+                                            <div className="overflow-x-auto">
+                                                <table className="w-full text-left text-sm text-slate-300">
+                                                    <thead className="text-xs uppercase text-slate-500 bg-white/5">
+                                                        <tr>
+                                                            <th className="px-2 py-2">Period</th>
+                                                            <th className="px-2 py-2 text-right">Rev (B)</th>
+                                                            <th className="px-2 py-2 text-right">Net (B)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {fundamentalsData.length > 0 ? fundamentalsData.map((row, i) => (
+                                                            <tr key={i} className="border-b border-white/5 hover:bg-white/5">
+                                                                <td className="px-2 py-2 text-xs">{row.period || row.date}</td>
+                                                                <td className="px-2 py-2 text-right text-green-400 font-mono">{(row.revenue / 1e9).toFixed(1)}</td>
+                                                                <td className="px-2 py-2 text-right font-mono">{(row.netIncome / 1e9).toFixed(1)}</td>
+                                                            </tr>
+                                                        )) : <tr><td colSpan={3} className="p-4 text-center text-slate-500">No Data</td></tr>}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* 3. OPTIONS VIEW */}
+                                    {analysisView === 'options' && (
+                                        <div className="space-y-4">
+                                            <div className="flex justify-between items-center mb-2">
+                                                <h3 className="text-lg font-semibold text-white">Options Chain</h3>
+                                                <span className="text-xs text-slate-500 uppercase bg-white/5 px-2 py-1 rounded">Nearest Expiry</span>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 gap-6">
+                                                <div>
+                                                    <h4 className="text-center text-green-400 mb-2 font-bold text-xs uppercase border-b border-green-500/20 pb-1">Calls</h4>
+                                                    <div className="space-y-1">
+                                                        {optionsData.filter(o => o.optionType === 'call').slice(0, 10).map((opt, i) => (
+                                                            <div key={i} className="flex justify-between text-xs p-2 hover:bg-white/5 rounded">
+                                                                <span className="text-slate-400 font-mono">{opt.strike}</span>
+                                                                <span className="text-white font-bold">{opt.lastPrice?.toFixed(2)}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <h4 className="text-center text-red-400 mb-2 font-bold text-xs uppercase border-b border-red-500/20 pb-1">Puts</h4>
+                                                    <div className="space-y-1">
+                                                        {optionsData.filter(o => o.optionType === 'put').slice(0, 10).map((opt, i) => (
+                                                            <div key={i} className="flex justify-between text-xs p-2 hover:bg-white/5 rounded">
+                                                                <span className="text-slate-400 font-mono">{opt.strike}</span>
+                                                                <span className="text-white font-bold">{opt.lastPrice?.toFixed(2)}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* 4. QUANT VIEW */}
+                                    {analysisView === 'quantitative' && (
+                                        <div className="space-y-4">
+                                            <h3 className="text-lg font-semibold text-white mb-4">Risk Metrics</h3>
+                                            <div className="grid grid-cols-2 gap-3">
+                                                {quantitativeData.length > 0 ? quantitativeData.map((metric, i) => (
+                                                    <div key={i} className="bg-white/5 p-3 rounded-lg text-center border border-white/5">
+                                                        <div className="text-[10px] text-slate-400 uppercase tracking-wider mb-1">{metric.metric}</div>
+                                                        <div className="text-lg font-mono text-cyan-400 font-bold">{metric.value?.toFixed(2)}</div>
+                                                    </div>
+                                                )) : <div className="col-span-2 text-center text-slate-500 py-10">No Data</div>}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* 5. NEWS VIEW */}
+                                    {analysisView === 'news' && (
+                                        <div className="space-y-4">
+                                            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                                                <Newspaper className="h-4 w-4 text-purple-400" />
+                                                Latest News
+                                            </h3>
+                                            <div className="space-y-3">
+                                                {newsData.length === 0 ? (
+                                                    <p className="text-slate-500 text-sm">No news found.</p>
+                                                ) : (
+                                                    newsData.map((item, idx) => (
+                                                        <a
+                                                            key={idx}
+                                                            href={item.url || '#'}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="block group p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all"
+                                                        >
+                                                            <div className="flex justify-between items-start mb-2">
+                                                                <span className="text-[10px] uppercase text-cyan-500/70 font-bold bg-cyan-950/30 px-2 py-0.5 rounded">
+                                                                    {item.source || 'News'}
+                                                                </span>
+                                                                <span className="text-slate-500 text-[10px]">
+                                                                    {new Date(item.date).toLocaleDateString()}
+                                                                </span>
+                                                            </div>
+                                                            <h4 className="text-sm font-medium text-slate-200 group-hover:text-cyan-300 transition-colors line-clamp-2 leading-relaxed">
+                                                                {item.title}
+                                                            </h4>
+                                                        </a>
+                                                    ))
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
