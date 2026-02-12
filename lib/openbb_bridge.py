@@ -122,8 +122,29 @@ def get_economy_data(ticker):
 def get_news(ticker):
     if USE_MOCK: return get_mock_response(ticker, 'news')
     try:
-        try: df = obb.news.company(symbol=ticker, provider="benzinga").to_dataframe()
-        except: df = obb.news.world(limit=5, provider="benzinga").to_dataframe()
+        df = None
+        # Try 1: Yahoo Finance
+        try:
+            df = obb.news.company(symbol=ticker, provider="yfinance").to_dataframe()
+        except: pass
+
+        # Try 2: Benzinga
+        if df is None or df.empty:
+            try: df = obb.news.company(symbol=ticker, provider="benzinga").to_dataframe()
+            except: pass
+            
+        # Try 3: World News
+        if df is None or df.empty:
+             try: df = obb.news.world(limit=5, provider="benzinga").to_dataframe()
+             except: pass
+
+        if df is None or df.empty:
+            return get_mock_response(ticker, 'news')
+
+        # Standardize URL
+        if 'link' in df.columns: df = df.rename(columns={'link': 'url'})
+        if 'URL' in df.columns: df = df.rename(columns={'URL': 'url'})
+
         if 'date' not in df.columns: df = df.reset_index()
         result = json.loads(df.to_json(orient="records", date_format="iso"))
         return {"data": result}

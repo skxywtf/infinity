@@ -77,10 +77,36 @@ async def openbb_endpoint(request: OpenBBRequest):
     elif data_type == 'news':
         if USE_MOCK: return get_mock_news(ticker)
         try:
+            df = None
+            # Try 1: Yahoo Finance (Broad coverage, usually no key needed)
             try:
-                 df = obb.news.company(symbol=ticker, provider="benzinga").to_dataframe()
-            except:
-                 df = obb.news.world(limit=5, provider="benzinga").to_dataframe()
+                df = obb.news.company(symbol=ticker, provider="yfinance").to_dataframe()
+            except Exception as e:
+                print(f"YFinance news failed: {e}")
+
+            # Try 2: Benzinga (Needs key usually, but good fallback)
+            if df is None or df.empty:
+                try:
+                    df = obb.news.company(symbol=ticker, provider="benzinga").to_dataframe()
+                except Exception as e:
+                     print(f"Benzinga news failed: {e}")
+
+            # Try 3: World News (If company specific fails)
+            if df is None or df.empty:
+                 try:
+                    df = obb.news.world(limit=5, provider="benzinga").to_dataframe()
+                 except:
+                    pass
+
+            if df is None or df.empty:
+                return get_mock_news(ticker)
+
+            # Standardize URL column name
+            if 'link' in df.columns:
+                df = df.rename(columns={'link': 'url'})
+            if 'URL' in df.columns:
+                df = df.rename(columns={'URL': 'url'})
+
             if 'date' not in df.columns and 'Date' not in df.columns:
                  df = df.reset_index()
             result = json.loads(df.to_json(orient="records", date_format="iso"))
