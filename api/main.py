@@ -120,6 +120,23 @@ async def openbb_endpoint(request: OpenBBRequest):
                     pass
 
             if df is None or df.empty:
+                # Fallback: Try direct yfinance even if OpenBB is loaded but failed
+                if HAS_YFINANCE:
+                    try:
+                        news = yf.Ticker(ticker).news
+                        formatted_news = []
+                        for item in news:
+                           formatted_news.append({
+                                "title": item.get('title'),
+                                "date": datetime.fromtimestamp(item.get('providerPublishTime', 0)).isoformat(),
+                                "source": item.get('publisher'),
+                                "url": item.get('link')
+                            })
+                        if formatted_news: return {"data": formatted_news}
+                    except Exception as e:
+                        print(f"Direct YFinance fallback failed: {e}")
+
+            if df is None or df.empty:
                 return get_mock_news(ticker)
 
             # Standardize URL column name
@@ -134,6 +151,20 @@ async def openbb_endpoint(request: OpenBBRequest):
             return {"data": result}
         except Exception as e:
             print(f"Error fetching news: {e}")
+            # Fallback 2: Direct YFinance on error
+            if HAS_YFINANCE:
+                 try:
+                    news = yf.Ticker(ticker).news
+                    formatted_news = []
+                    for item in news:
+                        formatted_news.append({
+                            "title": item.get('title'),
+                            "date": datetime.fromtimestamp(item.get('providerPublishTime', 0)).isoformat(),
+                            "source": item.get('publisher'),
+                            "url": item.get('link')
+                        })
+                    if formatted_news: return {"data": formatted_news}
+                 except: pass
             return get_mock_news(ticker)
 
     elif data_type == 'profile':
