@@ -16,6 +16,13 @@ except Exception as e:
     USE_MOCK = True
     print(f"Warning: OpenBB Error: {e}. Using MOCK data.", file=sys.stderr)
 
+# Fallback: Try to import yfinance directly if OpenBB is missing (it's lighter)
+try:
+    import yfinance as yf
+    HAS_YFINANCE = True
+except ImportError:
+    HAS_YFINANCE = False
+
 # --- MOCK LOGIC ---
 def get_mock_response(ticker, dtype):
     if dtype in ['price', 'crypto', 'forex', 'economy', 'bonds']:
@@ -120,6 +127,25 @@ def get_economy_data(ticker):
     except: return get_mock_response(ticker, 'economy')
 
 def get_news(ticker):
+    # Special Handling: If MOCK but we have YFinance, try to get real news directly
+    if USE_MOCK and HAS_YFINANCE:
+        try:
+            news = yf.Ticker(ticker).news
+            # Convert yfinance format to our format
+            # YF returns: [{'uuid':..., 'title':..., 'publisher':..., 'link':..., 'providerPublishTime':...}]
+            formatted_news = []
+            for item in news:
+                formatted_news.append({
+                    "title": item.get('title'),
+                    "date": datetime.fromtimestamp(item.get('providerPublishTime', 0)).isoformat(),
+                    "source": item.get('publisher'),
+                    "url": item.get('link')
+                })
+            return {"data": formatted_news}
+        except Exception as e:
+            print(f"Direct YFinance news failed: {e}", file=sys.stderr)
+            return get_mock_response(ticker, 'news')
+
     if USE_MOCK: return get_mock_response(ticker, 'news')
     try:
         df = None

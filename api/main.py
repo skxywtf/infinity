@@ -22,7 +22,13 @@ except ImportError:
     print("Warning: OpenBB module not found. Using MOCK data.", file=sys.stderr)
 except Exception as e:
     USE_MOCK = True
-    print(f"Warning: OpenBB Error: {e}. Using MOCK data.", file=sys.stderr)
+
+# Fallback: Try to import yfinance directly if OpenBB is missing (it's lighter)
+try:
+    import yfinance as yf
+    HAS_YFINANCE = True
+except ImportError:
+    HAS_YFINANCE = False
 
 # --- HELPER FUNCTIONS (Migrated from bridge script) ---
 def get_mock_price(ticker):
@@ -75,7 +81,22 @@ async def openbb_endpoint(request: OpenBBRequest):
             return get_mock_price(ticker)
 
     elif data_type == 'news':
-        if USE_MOCK: return get_mock_news(ticker)
+        if USE_MOCK:
+            if HAS_YFINANCE:
+                try:
+                    news = yf.Ticker(ticker).news
+                    formatted_news = []
+                    for item in news:
+                        formatted_news.append({
+                            "title": item.get('title'),
+                            "date": datetime.fromtimestamp(item.get('providerPublishTime', 0)).isoformat(),
+                            "source": item.get('publisher'),
+                            "url": item.get('link')
+                        })
+                    if formatted_news: return {"data": formatted_news}
+                except Exception as e:
+                    print(f"Direct YFinance news failed in API: {e}")
+            return get_mock_news(ticker)
         try:
             df = None
             # Try 1: Yahoo Finance (Broad coverage, usually no key needed)
