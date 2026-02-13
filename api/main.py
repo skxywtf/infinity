@@ -126,11 +126,16 @@ async def openbb_endpoint(request: OpenBBRequest):
                         news = yf.Ticker(ticker).news
                         formatted_news = []
                         for item in news:
+                           # Extract URL from nested content if top-level is missing
+                           url = item.get('link') or item.get('url')
+                           if not url:
+                               url = item.get('content', {}).get('clickThroughUrl', {}).get('url')
+
                            formatted_news.append({
                                 "title": item.get('title'),
                                 "date": datetime.fromtimestamp(item.get('providerPublishTime', 0)).isoformat(),
                                 "source": item.get('publisher'),
-                                "url": item.get('link')
+                                "url": url
                             })
                         if formatted_news: return {"data": formatted_news}
                     except Exception as e:
@@ -157,11 +162,16 @@ async def openbb_endpoint(request: OpenBBRequest):
                     news = yf.Ticker(ticker).news
                     formatted_news = []
                     for item in news:
+                        # Extract URL from nested content if top-level is missing
+                        url = item.get('link') or item.get('url')
+                        if not url:
+                            url = item.get('content', {}).get('clickThroughUrl', {}).get('url')
+
                         formatted_news.append({
                             "title": item.get('title'),
                             "date": datetime.fromtimestamp(item.get('providerPublishTime', 0)).isoformat(),
                             "source": item.get('publisher'),
-                            "url": item.get('link')
+                            "url": url
                         })
                     if formatted_news: return {"data": formatted_news}
                  except: pass

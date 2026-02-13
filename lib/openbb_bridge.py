@@ -135,11 +135,16 @@ def get_news(ticker):
             # YF returns: [{'uuid':..., 'title':..., 'publisher':..., 'link':..., 'providerPublishTime':...}]
             formatted_news = []
             for item in news:
+                # Extract URL from nested content if top-level is missing
+                url = item.get('link') or item.get('url')
+                if not url:
+                    url = item.get('content', {}).get('clickThroughUrl', {}).get('url')
+
                 formatted_news.append({
                     "title": item.get('title'),
                     "date": datetime.fromtimestamp(item.get('providerPublishTime', 0)).isoformat(),
                     "source": item.get('publisher'),
-                    "url": item.get('link')
+                    "url": url
                 })
             return {"data": formatted_news}
         except Exception as e:
