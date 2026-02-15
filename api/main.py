@@ -107,21 +107,7 @@ async def openbb_endpoint(request: OpenBBRequest):
 
     elif data_type == 'news':
         if USE_MOCK:
-            if HAS_YFINANCE:
-                try:
-                    news = yf.Ticker(ticker).news
-                    formatted_news = []
-                    for item in news:
-                        formatted_news.append({
-                            "title": item.get('title'),
-                            "date": datetime.fromtimestamp(item.get('providerPublishTime', 0)).isoformat(),
-                            "source": item.get('publisher'),
-                            "url": item.get('link')
-                        })
-                    if formatted_news: return {"data": formatted_news}
-                except Exception as e:
-                    print(f"Direct YFinance news failed in API: {e}")
-            return get_mock_news(ticker)
+             return get_mock_news(ticker)
         try:
             df = None
             # Try 1: Yahoo Finance (Broad coverage, usually no key needed)
@@ -145,26 +131,8 @@ async def openbb_endpoint(request: OpenBBRequest):
                     pass
 
             if df is None or df.empty:
-                # Fallback: Try direct yfinance even if OpenBB is loaded but failed
-                if HAS_YFINANCE:
-                    try:
-                        news = yf.Ticker(ticker).news
-                        formatted_news = []
-                        for item in news:
-                           # Extract URL from nested content if top-level is missing
-                           url = item.get('link') or item.get('url')
-                           if not url:
-                               url = item.get('content', {}).get('clickThroughUrl', {}).get('url')
+                pass
 
-                           formatted_news.append({
-                                "title": item.get('title'),
-                                "date": datetime.fromtimestamp(item.get('providerPublishTime', 0)).isoformat(),
-                                "source": item.get('publisher'),
-                                "url": url
-                            })
-                        if formatted_news: return {"data": formatted_news}
-                    except Exception as e:
-                        print(f"Direct YFinance fallback failed: {e}")
 
             if df is None or df.empty:
                 return get_mock_news(ticker)
@@ -269,56 +237,53 @@ async def openbb_endpoint(request: OpenBBRequest):
                 result = json.loads(df.to_json(orient="records", date_format="iso"))
                 return {"data": result}
             except:
-                # Direct YFinance Fallback for Options
-                if HAS_YFINANCE:
-                    y = yf.Ticker(ticker)
-                    exps = y.options
-                    if exps:
-                         opt = y.option_chain(exps[0])
-                         calls = opt.calls
-                         # Add 'type' column to distinguish
-                         calls['optionType'] = 'call'
-                         # Normalize columns
-                         if 'contractSymbol' in calls.columns: calls = calls.rename(columns={'contractSymbol': 'contract_symbol', 'strike': 'strike', 'lastPrice': 'lastPrice'})
-                         
-                         df = calls.head(50)
-                         result = json.loads(df.to_json(orient="records", date_format="iso"))
-                         return {"data": result}
                 return {"data": []}
+        except: return {"data": []}
+
+    elif data_type == 'analysts':
+        if USE_MOCK: return {"data": []}
+        try:
+            # OpenBB v4: obb.equity.estimates.consensus
+            df = obb.equity.estimates.consensus(symbol=ticker, provider="yfinance").to_dataframe()
+            result = json.loads(df.to_json(orient="records", date_format="iso"))
+            return {"data": result}
+        except: return {"data": []}
+
+    elif data_type == 'earnings':
+        if USE_MOCK: return {"data": []}
+        try:
+            # OpenBB v4: obb.equity.fundamental.earnings
+            df = obb.equity.fundamental.earnings(symbol=ticker, provider="yfinance").to_dataframe()
+            result = json.loads(df.to_json(orient="records", date_format="iso"))
+            return {"data": result}
+        except: return {"data": []}
+
+    elif data_type == 'holders':
+        if USE_MOCK: return {"data": []}
+        try:
+            # OpenBB v4: obb.equity.ownership.major_holders / institutional
+            # We'll try institutional first as it's more detailed
+            df = obb.equity.ownership.institutional(symbol=ticker, provider="yfinance").to_dataframe()
+            result = json.loads(df.to_json(orient="records", date_format="iso"))
+            return {"data": result}
         except: return {"data": []}
 
     elif data_type == 'fundamentals':
         if USE_MOCK: 
             return {"data": [{"period": "2023", "revenue": 1000, "netIncome": 200}]}
         try:
-            df = None
-            # Try OpenBB
-            try:
-                df = obb.equity.fundamental.income(symbol=ticker, provider="yfinance").to_dataframe().T
-            except: pass
-
-            # Fallback: Direct YFinance
-            if (df is None or df.empty) and HAS_YFINANCE:
-                try:
-                    tick = yf.Ticker(ticker)
-                    # yfinance returns metrics as index, dates as columns. We need to Transpose.
-                    df = tick.income_stmt.T
-                except: pass
+            # Use INCOME statement for Revenue/Net Income
+            # transpose() is KEY because yfinance returns metrics as rows (index)
+            # User requested "OpenBB Only", but we still need to transpose if OpenBB returns it sideways via yfinance provider
+            df = obb.equity.fundamental.income(symbol=ticker, provider="yfinance").to_dataframe().T
             
-            if df is None or df.empty: return {"data": []}
-
-            # Robust Column Renaming for both sources
-            # specific yfinance keys often vary (Total Revenue, TotalRevenue, OperatingRevenue, etc.)
+            # Robust Column Renaming
             cols = df.columns
-            
-            # Find Revenue
             for c in cols:
                 clean_c = str(c).lower().replace(" ", "")
                 if clean_c in ['totalrevenue', 'revenue', 'operatingrevenue']:
                     df = df.rename(columns={c: 'revenue'})
                     break
-            
-            # Find Net Income
             for c in cols:
                 clean_c = str(c).lower().replace(" ", "")
                 if clean_c in ['netincome', 'net_income', 'profit']:
@@ -326,7 +291,6 @@ async def openbb_endpoint(request: OpenBBRequest):
                     break
 
             if 'date' not in df.columns: df = df.reset_index()
-            # If date is still index name after reset, rename it
             if 'index' in df.columns: df = df.rename(columns={'index': 'period'})
 
             result = json.loads(df.to_json(orient="records", date_format="iso"))

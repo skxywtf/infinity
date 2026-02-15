@@ -229,21 +229,35 @@ if __name__ == "__main__":
                     result = json.loads(df.to_json(orient="records", date_format="iso"))
                     print(json.dumps({"data": result}))
                 except:
-                    # Direct YFinance Fallback
-                     if HAS_YFINANCE:
-                        y = yf.Ticker(args.ticker)
-                        exps = y.options
-                        if exps:
-                             opt = y.option_chain(exps[0])
-                             calls = opt.calls
-                             calls['optionType'] = 'call'
-                             if 'contractSymbol' in calls.columns: calls = calls.rename(columns={'contractSymbol': 'contract_symbol', 'strike': 'strike', 'lastPrice': 'lastPrice'})
-                             df = calls.head(50)
-                             result = json.loads(df.to_json(orient="records", date_format="iso"))
-                             print(json.dumps({"data": result}))
-                        else: print(json.dumps({"data": []}))
-                     else: print(json.dumps({"data": []}))
+                    print(json.dumps({"data": []}))
         except: print(json.dumps(get_mock_response(args.ticker, 'options')))
+
+    elif args.type == 'analysts':
+        try:
+             if USE_MOCK: print(json.dumps({"data": []}))
+             else:
+                df = obb.equity.estimates.consensus(symbol=args.ticker, provider="yfinance").to_dataframe()
+                result = json.loads(df.to_json(orient="records", date_format="iso"))
+                print(json.dumps({"data": result}))
+        except: print(json.dumps({"data": []}))
+
+    elif args.type == 'earnings':
+        try:
+             if USE_MOCK: print(json.dumps({"data": []}))
+             else:
+                df = obb.equity.fundamental.earnings(symbol=args.ticker, provider="yfinance").to_dataframe()
+                result = json.loads(df.to_json(orient="records", date_format="iso"))
+                print(json.dumps({"data": result}))
+        except: print(json.dumps({"data": []}))
+
+    elif args.type == 'holders':
+        try:
+             if USE_MOCK: print(json.dumps({"data": []}))
+             else:
+                df = obb.equity.ownership.institutional(symbol=args.ticker, provider="yfinance").to_dataframe()
+                result = json.loads(df.to_json(orient="records", date_format="iso"))
+                print(json.dumps({"data": result}))
+        except: print(json.dumps({"data": []}))
 
     elif args.type == 'fundamentals':
         try:
@@ -255,13 +269,6 @@ if __name__ == "__main__":
                     df = obb.equity.fundamental.income(symbol=args.ticker, provider="yfinance").to_dataframe().T
                 except: pass
 
-                # Fallback: Direct YFinance
-                if (df is None or df.empty) and HAS_YFINANCE:
-                    try:
-                        tick = yf.Ticker(args.ticker)
-                        # yfinance returns metrics as index, dates as columns. We need to Transpose.
-                        df = tick.income_stmt.T
-                    except: pass
                 
                 if df is None or df.empty: 
                     print(json.dumps({"data": []}))

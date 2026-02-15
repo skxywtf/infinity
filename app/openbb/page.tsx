@@ -32,6 +32,11 @@ export default function OpenBBTerminal() {
     const [fundamentalsData, setFundamentalsData] = useState<any[]>([]);
     const [bondsData, setBondsData] = useState<any[]>([]);
 
+    // New Data States (Phase 3)
+    const [analystsData, setAnalystsData] = useState<any[]>([]);
+    const [earningsData, setEarningsData] = useState<any[]>([]);
+    const [holdersData, setHoldersData] = useState<any[]>([]);
+
     const [error, setError] = useState('');
     const [chartReady, setChartReady] = useState(false);
     const [timeRange, setTimeRange] = useState('3M'); // Default to 3 Months
@@ -52,6 +57,9 @@ export default function OpenBBTerminal() {
         setQuantitativeData([]);
         setOptionsData([]);
         setFundamentalsData([]);
+        setAnalystsData([]);
+        setEarningsData([]);
+        setHoldersData([]);
 
         try {
             // 1. Fetch Main Price/Data
@@ -97,14 +105,22 @@ export default function OpenBBTerminal() {
                 const techRes = fetch('/api/openbb', { method: 'POST', body: JSON.stringify({ ticker: sym, type: 'technical' }) }).then(r => r.json());
                 const quantRes = fetch('/api/openbb', { method: 'POST', body: JSON.stringify({ ticker: sym, type: 'quantitative' }) }).then(r => r.json());
                 const fundRes = fetch('/api/openbb', { method: 'POST', body: JSON.stringify({ ticker: sym, type: 'fundamentals' }) }).then(r => r.json());
+                // Phase 3 Fetches
+                const analRes = fetch('/api/openbb', { method: 'POST', body: JSON.stringify({ ticker: sym, type: 'analysts' }) }).then(r => r.json());
+                const earnRes = fetch('/api/openbb', { method: 'POST', body: JSON.stringify({ ticker: sym, type: 'earnings' }) }).then(r => r.json());
+                const holdRes = fetch('/api/openbb', { method: 'POST', body: JSON.stringify({ ticker: sym, type: 'holders' }) }).then(r => r.json());
+
                 // Options can be heavy, maybe fetch on click? For now fetch top
                 const optRes = fetch('/api/openbb', { method: 'POST', body: JSON.stringify({ ticker: sym, type: 'options' }) }).then(r => r.json());
 
-                const [tech, quant, fund, opt] = await Promise.all([techRes, quantRes, fundRes, optRes]);
+                const [tech, quant, fund, anal, earn, hold, opt] = await Promise.all([techRes, quantRes, fundRes, analRes, earnRes, holdRes, optRes]);
 
                 setTechnicalData(tech.data || []);
                 setQuantitativeData(quant.data || []);
                 setFundamentalsData(fund.data || []);
+                setAnalystsData(anal.data || []);
+                setEarningsData(earn.data || []);
+                setHoldersData(hold.data || []);
                 setOptionsData(opt.data || []);
             }
 
@@ -317,7 +333,7 @@ export default function OpenBBTerminal() {
 
                         {/* Tab Navigation */}
                         <div className="flex border-b border-white/10 overflow-x-auto no-scrollbar">
-                            {['summary', 'financials', 'options', 'quantitative', 'news'].map(view => (
+                            {['summary', 'financials', 'analysts', 'earnings', 'holders', 'options', 'quantitative', 'news'].map(view => (
                                 <button
                                     key={view}
                                     onClick={() => setAnalysisView(view)}
@@ -327,7 +343,7 @@ export default function OpenBBTerminal() {
                                             : 'text-slate-500 hover:text-white hover:bg-white/5'
                                         }`}
                                 >
-                                    {view}
+                                    {view === 'quantitative' ? 'Quant' : view}
                                 </button>
                             ))}
                         </div>
@@ -493,6 +509,103 @@ export default function OpenBBTerminal() {
                                                     ))
                                                 )}
                                             </div>
+                                        </div>
+                                    )}
+
+                                    {/* 6. ANALYSTS VIEW (Phase 3) */}
+                                    {analysisView === 'analysts' && (
+                                        <div className="space-y-4">
+                                            <h3 className="text-lg font-semibold text-white mb-4">Analyst Consensus</h3>
+                                            {analystsData.length > 0 ? (
+                                                <div className="overflow-x-auto">
+                                                    <table className="w-full text-left text-sm text-slate-300">
+                                                        <thead className="text-xs uppercase text-slate-500 bg-white/5">
+                                                            <tr>
+                                                                <th className="px-2 py-2">Period</th>
+                                                                <th className="px-2 py-2 text-right">Strong Buy</th>
+                                                                <th className="px-2 py-2 text-right">Buy</th>
+                                                                <th className="px-2 py-2 text-right">Hold</th>
+                                                                <th className="px-2 py-2 text-right">Sell</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {analystsData.slice(0, 5).map((row, i) => (
+                                                                <tr key={i} className="border-b border-white/5 hover:bg-white/5">
+                                                                    <td className="px-2 py-2 text-xs">{row.period || 'Current'}</td>
+                                                                    <td className="px-2 py-2 text-right text-green-400 font-bold">{row.strongBuy || row.strong_buy || 0}</td>
+                                                                    <td className="px-2 py-2 text-right text-green-300">{row.buy}</td>
+                                                                    <td className="px-2 py-2 text-right text-yellow-500">{row.hold}</td>
+                                                                    <td className="px-2 py-2 text-right text-red-500">{row.sell}</td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            ) : <div className="text-center text-slate-500 py-10">No Analysts Data</div>}
+                                        </div>
+                                    )}
+
+                                    {/* 7. EARNINGS VIEW (Phase 3) */}
+                                    {analysisView === 'earnings' && (
+                                        <div className="space-y-4">
+                                            <h3 className="text-lg font-semibold text-white mb-4">Earnings History</h3>
+                                            {earningsData.length > 0 ? (
+                                                <div className="overflow-x-auto">
+                                                    <table className="w-full text-left text-sm text-slate-300">
+                                                        <thead className="text-xs uppercase text-slate-500 bg-white/5">
+                                                            <tr>
+                                                                <th className="px-2 py-2">Date</th>
+                                                                <th className="px-2 py-2 text-right">EPS Est</th>
+                                                                <th className="px-2 py-2 text-right">EPS Act</th>
+                                                                <th className="px-2 py-2 text-right">Surprise</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {earningsData.slice(0, 5).map((row, i) => (
+                                                                <tr key={i} className="border-b border-white/5 hover:bg-white/5">
+                                                                    <td className="px-2 py-2 text-xs">{new Date(row.date || row.reportDate).toLocaleDateString()}</td>
+                                                                    <td className="px-2 py-2 text-right text-slate-400">{row.epsEstimate?.toFixed(2)}</td>
+                                                                    <td className="px-2 py-2 text-right font-bold text-white">{row.epsActual?.toFixed(2)}</td>
+                                                                    <td className={`px-2 py-2 text-right font-mono ${(row.surprisePercent || 0) > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                                                        {row.surprisePercent ? `${(row.surprisePercent * 100).toFixed(1)}%` : '---'}
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            ) : <div className="text-center text-slate-500 py-10">No Earnings Data</div>}
+                                        </div>
+                                    )}
+
+                                    {/* 8. HOLDERS VIEW (Phase 3) */}
+                                    {analysisView === 'holders' && (
+                                        <div className="space-y-4">
+                                            <h3 className="text-lg font-semibold text-white mb-4">Institutional Holders</h3>
+                                            {holdersData.length > 0 ? (
+                                                <div className="overflow-x-auto">
+                                                    <table className="w-full text-left text-sm text-slate-300">
+                                                        <thead className="text-xs uppercase text-slate-500 bg-white/5">
+                                                            <tr>
+                                                                <th className="px-2 py-2">Holder</th>
+                                                                <th className="px-2 py-2 text-right">Shares</th>
+                                                                <th className="px-2 py-2 text-right">Value (M)</th>
+                                                                <th className="px-2 py-2 text-right">% Out</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {holdersData.slice(0, 10).map((row, i) => (
+                                                                <tr key={i} className="border-b border-white/5 hover:bg-white/5">
+                                                                    <td className="px-2 py-2 text-xs truncate max-w-[150px]" title={row.holder || row.Holder}>{row.holder || row.Holder}</td>
+                                                                    <td className="px-2 py-2 text-right font-mono text-slate-400">{(row.shares || row.Shares).toLocaleString()}</td>
+                                                                    <td className="px-2 py-2 text-right font-mono text-green-400">{((row.value || row.Value) / 1e6).toFixed(0)}</td>
+                                                                    <td className="px-2 py-2 text-right font-mono">{(row.percentHeld || row['% Out'] || 0) + '%'}</td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            ) : <div className="text-center text-slate-500 py-10">No Holders Data</div>}
                                         </div>
                                     )}
                                 </>
