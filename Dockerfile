@@ -23,6 +23,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir openbb
 
 # Copy API code
+# Copy API code and required modules
+COPY tradingagents ./tradingagents
 COPY api ./api
 
 # Expose port (Cloud Run defaults to 8080)
