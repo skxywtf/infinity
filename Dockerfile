@@ -20,7 +20,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Install OpenBB explicitly for Cloud Run environment (where size limits are higher than Vercel)
 # Using openbb-core or openbb to get the SDK
-RUN pip install --no-cache-dir openbb
+RUN pip install --no-cache-dir openbb openbb-yfinance openbb-benzinga
 
 # Copy API code
 # Copy API code and required modules

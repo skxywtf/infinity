@@ -247,7 +247,9 @@ async def openbb_endpoint(request: OpenBBRequest):
             df = obb.equity.estimates.consensus(symbol=ticker, provider="yfinance").to_dataframe()
             result = json.loads(df.to_json(orient="records", date_format="iso"))
             return {"data": result}
-        except: return {"data": []}
+        except Exception as e:
+            print(f"Error in analysts for {ticker}: {e}")
+            return {"data": []}
 
     elif data_type == 'earnings':
         if USE_MOCK: return {"data": []}
@@ -256,7 +258,9 @@ async def openbb_endpoint(request: OpenBBRequest):
             df = obb.equity.fundamental.earnings(symbol=ticker, provider="yfinance").to_dataframe()
             result = json.loads(df.to_json(orient="records", date_format="iso"))
             return {"data": result}
-        except: return {"data": []}
+        except Exception as e:
+            print(f"Error in earnings for {ticker}: {e}")
+            return {"data": []}
 
     elif data_type == 'holders':
         if USE_MOCK: return {"data": []}
@@ -266,7 +270,9 @@ async def openbb_endpoint(request: OpenBBRequest):
             df = obb.equity.ownership.institutional(symbol=ticker, provider="yfinance").to_dataframe()
             result = json.loads(df.to_json(orient="records", date_format="iso"))
             return {"data": result}
-        except: return {"data": []}
+        except Exception as e:
+            print(f"Error in holders for {ticker}: {e}")
+            return {"data": []}
 
     elif data_type == 'fundamentals':
         if USE_MOCK: 
