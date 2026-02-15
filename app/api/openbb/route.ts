@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
             try {
                 // Ensure no double slash issues
                 const baseUrl = CLOUD_API_URL.endsWith('/') ? CLOUD_API_URL.slice(0, -1) : CLOUD_API_URL;
-                const endpoint = `${baseUrl}/data`;
+                const endpoint = `${baseUrl}/api/openbb`;
 
                 const response = await fetch(endpoint, {
                     method: 'POST',
