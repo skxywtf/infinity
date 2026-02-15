@@ -101,27 +101,19 @@ export default function OpenBBTerminal() {
 
             // 4. Lazy Load / Parallel Load Analysis Data based on Asset Class
             if (type === 'price') {
-                // For stocks, we fetch everything
+                // For stocks, we fetch Technicals and Quant only (others removed)
                 const techRes = fetch('/api/openbb', { method: 'POST', body: JSON.stringify({ ticker: sym, type: 'technical' }) }).then(r => r.json());
                 const quantRes = fetch('/api/openbb', { method: 'POST', body: JSON.stringify({ ticker: sym, type: 'quantitative' }) }).then(r => r.json());
-                const fundRes = fetch('/api/openbb', { method: 'POST', body: JSON.stringify({ ticker: sym, type: 'fundamentals' }) }).then(r => r.json());
-                // Phase 3 Fetches
-                const analRes = fetch('/api/openbb', { method: 'POST', body: JSON.stringify({ ticker: sym, type: 'analysts' }) }).then(r => r.json());
-                const earnRes = fetch('/api/openbb', { method: 'POST', body: JSON.stringify({ ticker: sym, type: 'earnings' }) }).then(r => r.json());
-                const holdRes = fetch('/api/openbb', { method: 'POST', body: JSON.stringify({ ticker: sym, type: 'holders' }) }).then(r => r.json());
 
-                // Options can be heavy, maybe fetch on click? For now fetch top
-                const optRes = fetch('/api/openbb', { method: 'POST', body: JSON.stringify({ ticker: sym, type: 'options' }) }).then(r => r.json());
-
-                const [tech, quant, fund, anal, earn, hold, opt] = await Promise.all([techRes, quantRes, fundRes, analRes, earnRes, holdRes, optRes]);
+                const [tech, quant] = await Promise.all([techRes, quantRes]);
 
                 setTechnicalData(tech.data || []);
                 setQuantitativeData(quant.data || []);
-                setFundamentalsData(fund.data || []);
-                setAnalystsData(anal.data || []);
-                setEarningsData(earn.data || []);
-                setHoldersData(hold.data || []);
-                setOptionsData(opt.data || []);
+                setFundamentalsData([]);
+                setAnalystsData([]);
+                setEarningsData([]);
+                setHoldersData([]);
+                setOptionsData([]);
             }
 
         } catch (err: any) {
@@ -333,7 +325,7 @@ export default function OpenBBTerminal() {
 
                         {/* Tab Navigation */}
                         <div className="flex border-b border-white/10 overflow-x-auto no-scrollbar">
-                            {['summary', 'financials', 'analysts', 'earnings', 'holders', 'options', 'quantitative', 'news'].map(view => (
+                            {['summary', 'quantitative', 'news'].map(view => (
                                 <button
                                     key={view}
                                     onClick={() => setAnalysisView(view)}

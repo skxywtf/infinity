@@ -227,100 +227,44 @@ async def openbb_endpoint(request: OpenBBRequest):
             return {"data": []}
         except: return {"data": []}
 
-    elif data_type == 'options':
-        if USE_MOCK: return {"data": []}
+    # --- ASSET CLASS ENDPOINTS (Fixing Invalid Type) ---
+    elif data_type == 'crypto':
+        if USE_MOCK: return get_mock_price(ticker)
         try:
-             # Try OpenBB first
-            try:
-                df = obb.derivatives.options.chains(symbol=ticker, provider="yfinance").to_dataframe()
-                df = df.head(50)
-                result = json.loads(df.to_json(orient="records", date_format="iso"))
-                return {"data": result}
-            except:
-                return {"data": []}
-        except: return {"data": []}
-
-    elif data_type == 'analysts':
-        if USE_MOCK: return {"data": []}
-        try:
-            # Try Consensus first
-            df = obb.equity.estimates.consensus(symbol=ticker, provider="yfinance").to_dataframe()
-            result = json.loads(df.to_json(orient="records", date_format="iso"))
-            return {"data": result}
-        except Exception as e:
-            print(f"Error in analysts (consensus) for {ticker}: {e}")
-            try:
-                # Fallback to Price Target if Consensus fails
-                df = obb.equity.price.target(symbol=ticker, provider="yfinance").to_dataframe()
-                result = json.loads(df.to_json(orient="records", date_format="iso"))
-                return {"data": result}
-            except Exception as e2:
-                 print(f"Error in analysts (target) for {ticker}: {e2}")
-                 return {"data": []}
-
-    elif data_type == 'earnings':
-        if USE_MOCK: return {"data": []}
-        try:
-            # FIX: OpenBB v4 uses 'calendar.earnings' or 'earnings' under calendar, NOT fundamental
-            # Trying calendar.earnings first
-            df = obb.equity.calendar.earnings(symbol=ticker, provider="yfinance").to_dataframe()
-            result = json.loads(df.to_json(orient="records", date_format="iso"))
-            return {"data": result}
-        except Exception as e:
-            print(f"Error in earnings for {ticker}: {e}")
-            return {"data": []}
-
-    elif data_type == 'holders':
-        if USE_MOCK: return {"data": []}
-        try:
-            # FIX: 'institutional' might not be supported by yfinance in all versions. 
-            # 'major_holders' is the standard yfinance endpoint.
-            df = obb.equity.ownership.major_holders(symbol=ticker, provider="yfinance").to_dataframe()
-            result = json.loads(df.to_json(orient="records", date_format="iso"))
-            return {"data": result}
-        except Exception as e:
-            print(f"Error in holders for {ticker}: {e}")
-            return {"data": []}
-
-    elif data_type == 'fundamentals':
-        if USE_MOCK: 
-            return {"data": [{"period": "2023", "revenue": 1000, "netIncome": 200}]}
-        try:
-            # Use INCOME statement for Revenue/Net Income
-            # transpose() is KEY because yfinance returns metrics as rows (index)
-            # User requested "OpenBB Only", but we still need to transpose if OpenBB returns it sideways via yfinance provider
-            df = obb.equity.fundamental.income(symbol=ticker, provider="yfinance").to_dataframe().T
-            
-            # Robust Column Renaming
-            cols = df.columns
-            for c in cols:
-                clean_c = str(c).lower().replace(" ", "")
-                if clean_c in ['totalrevenue', 'revenue', 'operatingrevenue']:
-                    df = df.rename(columns={c: 'revenue'})
-                    break
-            for c in cols:
-                clean_c = str(c).lower().replace(" ", "")
-                if clean_c in ['netincome', 'net_income', 'profit']:
-                    df = df.rename(columns={c: 'netIncome'})
-                    break
-
-            if 'date' not in df.columns: df = df.reset_index()
-            if 'index' in df.columns: df = df.rename(columns={'index': 'period'})
-
-            result = json.loads(df.to_json(orient="records", date_format="iso"))
-            return {"data": result}
-        except Exception as e: 
-            print(f"Propagating error for fundamentals: {e}")
-            return  {"data": []}
-
-    elif data_type == 'bonds':
-        if USE_MOCK: return {"data": []}
-        try:
-            df = obb.economy.fred.series("DGS10", start_date="2023-01-01").to_dataframe()
+            # OpenBB v4: obb.crypto.price.historical(symbol, provider)
+            df = obb.crypto.price.historical(symbol=ticker, provider="yfinance").to_dataframe()
             if 'date' not in df.columns: df = df.reset_index()
             result = json.loads(df.to_json(orient="records", date_format="iso"))
             return {"data": result}
-        except: return {"data": []}
+        except Exception as e:
+            print(f"Error fetching crypto: {e}")
+            return get_mock_price(ticker)
+
+    elif data_type == 'forex':
+        if USE_MOCK: return get_mock_price(ticker)
+        try:
+            # OpenBB v4: obb.currency.price.historical(symbol, provider)
+            df = obb.currency.price.historical(symbol=ticker, provider="yfinance").to_dataframe()
+            if 'date' not in df.columns: df = df.reset_index()
+            # Standardize 'close' column if needed (yfinance often returns Adj Close, Close)
+            result = json.loads(df.to_json(orient="records", date_format="iso"))
+            return {"data": result}
+        except Exception as e:
+            print(f"Error fetching forex: {e}")
+            return get_mock_price(ticker)
+
+    elif data_type == 'economy':
+        if USE_MOCK: return {"data": []}
+        try:
+            # OpenBB v4: obb.economy.fred.series(series_id)
+            # Ticker passed from frontend is the Series ID (e.g. GDP, CPI, DGS10)
+            df = obb.economy.fred.series(symbol=ticker).to_dataframe()
+            if 'date' not in df.columns: df = df.reset_index()
+            result = json.loads(df.to_json(orient="records", date_format="iso"))
+            return {"data": result}
+        except Exception as e:
+            print(f"Error fetching economy: {e}")
+            return {"data": []}
 
     return {"error": "Invalid type"}
 
