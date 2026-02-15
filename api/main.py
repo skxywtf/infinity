@@ -14,6 +14,17 @@ import random
 from datetime import datetime, timedelta
 
 # OPENBB SETUP
+app = FastAPI(title="Infinity Trading Agent API - v2.1 Concise Mode")
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # For dev, allow all. Restrict in prod.
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 USE_MOCK = False
 try:
     from openbb import obb
@@ -225,10 +236,9 @@ async def openbb_endpoint(request: OpenBBRequest):
 
     # --- NEW ENDPOINTS (Ported from bridge) ---
     elif data_type == 'technical':
-        if USE_MOCK: return {"data": []} # complex to mock
+        if USE_MOCK: return {"data": []}
         try:
-            # RSI as proxy for technicals
-            rsi = obb.technical.rsi(data=ticker, provider="yfinance").to_dataframe() # provider changed to yfinance if supported, or generic
+            rsi = obb.technical.rsi(data=ticker, provider="yfinance").to_dataframe()
             if 'date' not in rsi.columns: rsi = rsi.reset_index()
             result = json.loads(rsi.to_json(orient="records", date_format="iso"))
             return {"data": result}
@@ -238,7 +248,6 @@ async def openbb_endpoint(request: OpenBBRequest):
         if USE_MOCK: 
              return {"data": [{"metric": "Sharpe", "value": 1.2}, {"metric": "Beta", "value": 1.1}]}
         try:
-            # Return some basic metrics
             if HAS_YFINANCE:
                 info = yf.Ticker(ticker).info
                 return {"data": [
@@ -263,16 +272,8 @@ async def openbb_endpoint(request: OpenBBRequest):
         if USE_MOCK: 
             return {"data": [{"period": "2023", "revenue": 1000, "netIncome": 200}]}
         try:
-            # Use INCOME statement for Revenue/Net Income
             df = obb.equity.fundamental.income(symbol=ticker, provider="yfinance").to_dataframe()
-            # Rename for frontend
             df = df.rename(columns={'Total Revenue': 'revenue', 'Net Income': 'netIncome'})
-            
-            # If columns are missing (yfinance sometimes differs), try standardized
-            if 'revenue' not in df.columns:
-                 # fallback to simple extraction if possible or check common keys
-                 pass 
-
             if 'date' not in df.columns: df = df.reset_index()
             result = json.loads(df.to_json(orient="records", date_format="iso"))
             return {"data": result}
@@ -288,17 +289,6 @@ async def openbb_endpoint(request: OpenBBRequest):
         except: return {"data": []}
 
     return {"error": "Invalid type"}
-
-app = FastAPI(title="Infinity Trading Agent API - v2.1 Concise Mode")
-
-# Configure CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # For dev, allow all. Restrict in prod.
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 @app.post("/api/analyze", response_model=AnalysisResponse)
 async def analyze(request: AnalysisRequest):
