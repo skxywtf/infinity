@@ -243,19 +243,27 @@ async def openbb_endpoint(request: OpenBBRequest):
     elif data_type == 'analysts':
         if USE_MOCK: return {"data": []}
         try:
-            # OpenBB v4: obb.equity.estimates.consensus
+            # Try Consensus first
             df = obb.equity.estimates.consensus(symbol=ticker, provider="yfinance").to_dataframe()
             result = json.loads(df.to_json(orient="records", date_format="iso"))
             return {"data": result}
         except Exception as e:
-            print(f"Error in analysts for {ticker}: {e}")
-            return {"data": []}
+            print(f"Error in analysts (consensus) for {ticker}: {e}")
+            try:
+                # Fallback to Price Target if Consensus fails
+                df = obb.equity.price.target(symbol=ticker, provider="yfinance").to_dataframe()
+                result = json.loads(df.to_json(orient="records", date_format="iso"))
+                return {"data": result}
+            except Exception as e2:
+                 print(f"Error in analysts (target) for {ticker}: {e2}")
+                 return {"data": []}
 
     elif data_type == 'earnings':
         if USE_MOCK: return {"data": []}
         try:
-            # OpenBB v4: obb.equity.fundamental.earnings
-            df = obb.equity.fundamental.earnings(symbol=ticker, provider="yfinance").to_dataframe()
+            # FIX: OpenBB v4 uses 'calendar.earnings' or 'earnings' under calendar, NOT fundamental
+            # Trying calendar.earnings first
+            df = obb.equity.calendar.earnings(symbol=ticker, provider="yfinance").to_dataframe()
             result = json.loads(df.to_json(orient="records", date_format="iso"))
             return {"data": result}
         except Exception as e:
@@ -265,9 +273,9 @@ async def openbb_endpoint(request: OpenBBRequest):
     elif data_type == 'holders':
         if USE_MOCK: return {"data": []}
         try:
-            # OpenBB v4: obb.equity.ownership.major_holders / institutional
-            # We'll try institutional first as it's more detailed
-            df = obb.equity.ownership.institutional(symbol=ticker, provider="yfinance").to_dataframe()
+            # FIX: 'institutional' might not be supported by yfinance in all versions. 
+            # 'major_holders' is the standard yfinance endpoint.
+            df = obb.equity.ownership.major_holders(symbol=ticker, provider="yfinance").to_dataframe()
             result = json.loads(df.to_json(orient="records", date_format="iso"))
             return {"data": result}
         except Exception as e:
