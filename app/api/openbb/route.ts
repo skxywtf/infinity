@@ -9,7 +9,7 @@ const CLOUD_API_URL = process.env.OPENBB_API_URL;
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
-        const { ticker, type } = body;
+        const { ticker, type, range } = body;
 
         if (!ticker || !type) {
             return NextResponse.json({ error: "Ticker and type are required" }, { status: 400 });
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
                 const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ticker, type }),
+                    body: JSON.stringify({ ticker, type, range }),
                 });
 
                 if (!response.ok) {

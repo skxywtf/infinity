@@ -20,3 +20,4 @@ class AnalysisResponse(BaseModel):
 class OpenBBRequest(BaseModel):
     ticker: str
     type: str # price, news, profile
+    range: Optional[str] = "3M"
