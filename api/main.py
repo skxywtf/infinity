@@ -62,15 +62,29 @@ def get_mock_profile(ticker):
         "exchange": "NASDAQ"
     }]}
 
+# Helper for Time Range
+def get_start_date(range_str):
+    now = datetime.now()
+    if range_str == '1D': return (now - timedelta(days=5)).strftime('%Y-%m-%d') # 5 days to ensure we get some intraday/recent data
+    if range_str == '1W': return (now - timedelta(days=7)).strftime('%Y-%m-%d')
+    if range_str == '1M': return (now - timedelta(days=30)).strftime('%Y-%m-%d')
+    if range_str == '3M': return (now - timedelta(days=90)).strftime('%Y-%m-%d')
+    if range_str == '6M': return (now - timedelta(days=180)).strftime('%Y-%m-%d')
+    if range_str == '1Y': return (now - timedelta(days=365)).strftime('%Y-%m-%d')
+    if range_str == '5Y': return (now - timedelta(days=365*5)).strftime('%Y-%m-%d')
+    return (now - timedelta(days=365)).strftime('%Y-%m-%d') # Default 1Y
+
 @app.post("/api/openbb")
 async def openbb_endpoint(request: OpenBBRequest):
     ticker = request.ticker
     data_type = request.type
+    time_range = getattr(request, 'range', '3M') # Default if not passed
     
     if data_type == 'price':
         if USE_MOCK: return get_mock_price(ticker)
         try:
-            start_date = (datetime.now() - timedelta(days=180)).strftime('%Y-%m-%d')
+            start_date = get_start_date(time_range)
+            # Use 'yfinance' for history
             df = obb.equity.price.historical(ticker, start_date=start_date, provider="yfinance").to_dataframe()
             if 'date' not in df.columns and 'Date' not in df.columns:
                 df = df.reset_index()
@@ -180,13 +194,99 @@ async def openbb_endpoint(request: OpenBBRequest):
     elif data_type == 'profile':
         if USE_MOCK: return get_mock_profile(ticker)
         try:
-            df = obb.equity.fundamental.overview(symbol=ticker, provider="yfinance").to_dataframe()
+            # Try OpenBB
+            try:
+                df = obb.equity.fundamental.overview(symbol=ticker, provider="yfinance").to_dataframe()
+                # Rename columns to match frontend expectations (camelCase)
+                df = df.rename(columns={
+                    'Market Cap': 'marketCap', 'Sector': 'sector', 'Industry': 'industry',
+                    'Exchange': 'exchange', 'Currency': 'currency', 'Name': 'shortName',
+                    'market_cap': 'marketCap' 
+                })
+            except:
+                # Fallback to direct YFinance if OpenBB fails
+                 if HAS_YFINANCE:
+                     info = yf.Ticker(ticker).info
+                     return {"data": [{
+                         "shortName": info.get('shortName'),
+                         "currency": info.get('currency'),
+                         "marketCap": info.get('marketCap'),
+                         "sector": info.get('sector'),
+                         "industry": info.get('industry'),
+                         "exchange": info.get('exchange')
+                     }]}
+                 raise Exception("Profile fetch failed")
+
             result = json.loads(df.to_json(orient="records", date_format="iso"))
             return {"data": result}
         except Exception as e:
             print(f"Error fetching profile: {e}")
             return get_mock_profile(ticker)
+
+    # --- NEW ENDPOINTS (Ported from bridge) ---
+    elif data_type == 'technical':
+        if USE_MOCK: return {"data": []} # complex to mock
+        try:
+            # RSI as proxy for technicals
+            rsi = obb.technical.rsi(data=ticker, provider="yfinance").to_dataframe() # provider changed to yfinance if supported, or generic
+            if 'date' not in rsi.columns: rsi = rsi.reset_index()
+            result = json.loads(rsi.to_json(orient="records", date_format="iso"))
+            return {"data": result}
+        except: return {"data": []}
+
+    elif data_type == 'quantitative':
+        if USE_MOCK: 
+             return {"data": [{"metric": "Sharpe", "value": 1.2}, {"metric": "Beta", "value": 1.1}]}
+        try:
+            # Return some basic metrics
+            if HAS_YFINANCE:
+                info = yf.Ticker(ticker).info
+                return {"data": [
+                    {"metric": "Beta", "value": info.get('beta', 0)},
+                    {"metric": "PE Ratio", "value": info.get('trailingPE', 0)},
+                    {"metric": "EPS", "value": info.get('trailingEps', 0)},
+                    {"metric": "Div Yield", "value": info.get('dividendYield', 0)}
+                ]}
+            return {"data": []}
+        except: return {"data": []}
+
+    elif data_type == 'options':
+        if USE_MOCK: return {"data": []}
+        try:
+            df = obb.derivatives.options.chains(symbol=ticker, provider="yfinance").to_dataframe()
+            df = df.head(50)
+            result = json.loads(df.to_json(orient="records", date_format="iso"))
+            return {"data": result}
+        except: return {"data": []}
+
+    elif data_type == 'fundamentals':
+        if USE_MOCK: 
+            return {"data": [{"period": "2023", "revenue": 1000, "netIncome": 200}]}
+        try:
+            # Use INCOME statement for Revenue/Net Income
+            df = obb.equity.fundamental.income(symbol=ticker, provider="yfinance").to_dataframe()
+            # Rename for frontend
+            df = df.rename(columns={'Total Revenue': 'revenue', 'Net Income': 'netIncome'})
             
+            # If columns are missing (yfinance sometimes differs), try standardized
+            if 'revenue' not in df.columns:
+                 # fallback to simple extraction if possible or check common keys
+                 pass 
+
+            if 'date' not in df.columns: df = df.reset_index()
+            result = json.loads(df.to_json(orient="records", date_format="iso"))
+            return {"data": result}
+        except: return  {"data": []}
+
+    elif data_type == 'bonds':
+        if USE_MOCK: return {"data": []}
+        try:
+            df = obb.economy.fred.series("DGS10", start_date="2023-01-01").to_dataframe()
+            if 'date' not in df.columns: df = df.reset_index()
+            result = json.loads(df.to_json(orient="records", date_format="iso"))
+            return {"data": result}
+        except: return {"data": []}
+
     return {"error": "Invalid type"}
 
 app = FastAPI(title="Infinity Trading Agent API - v2.1 Concise Mode")

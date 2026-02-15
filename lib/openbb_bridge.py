@@ -233,7 +233,10 @@ if __name__ == "__main__":
         try:
             if USE_MOCK: print(json.dumps(get_mock_response(args.ticker, 'fundamentals')))
             else:
-                df = obb.equity.fundamental.balance(symbol=args.ticker, provider="yfinance").to_dataframe()
+                # Use INCOME statement for Revenue/Net Income
+                df = obb.equity.fundamental.income(symbol=args.ticker, provider="yfinance").to_dataframe()
+                # Rename for frontend
+                df = df.rename(columns={'Total Revenue': 'revenue', 'Net Income': 'netIncome'})
                 result = json.loads(df.to_json(orient="records", date_format="iso"))
                 print(json.dumps({"data": result}))
         except: print(json.dumps(get_mock_response(args.ticker, 'fundamentals')))
