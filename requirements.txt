@@ -1,7 +1,7 @@
 typing-extensions
 langchain-core
 langchain-openai
-yfinance
+yfinance>=0.2.40
 feedparser
 stockstats
 langgraph

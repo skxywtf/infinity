@@ -18,6 +18,9 @@ COPY requirements.txt .
 # Install dependencies (ignoring the commented out openbb in requirements.txt)
 RUN pip install --no-cache-dir -r requirements.txt
 
+# OpenBB often needs a writable user data dir (Cloud Run root is read-only)
+ENV OPENBB_USER_DATA_DIRECTORY=/tmp
+
 # Install OpenBB explicitly for Cloud Run environment (where size limits are higher than Vercel)
 # Using openbb-core or openbb to get the SDK
 RUN pip install --no-cache-dir openbb openbb-yfinance openbb-benzinga
