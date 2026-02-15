@@ -291,11 +291,23 @@ async def openbb_endpoint(request: OpenBBRequest):
         if USE_MOCK: 
             return {"data": [{"period": "2023", "revenue": 1000, "netIncome": 200}]}
         try:
-            # Use INCOME statement for Revenue/Net Income
-            # transpose() is KEY because yfinance returns metrics as rows (index)
-            df = obb.equity.fundamental.income(symbol=ticker, provider="yfinance").to_dataframe().T
+            df = None
+            # Try OpenBB
+            try:
+                df = obb.equity.fundamental.income(symbol=ticker, provider="yfinance").to_dataframe().T
+            except: pass
+
+            # Fallback: Direct YFinance
+            if (df is None or df.empty) and HAS_YFINANCE:
+                try:
+                    tick = yf.Ticker(ticker)
+                    # yfinance returns metrics as index, dates as columns. We need to Transpose.
+                    df = tick.income_stmt.T
+                except: pass
             
-            # Robust Column Renaming
+            if df is None or df.empty: return {"data": []}
+
+            # Robust Column Renaming for both sources
             # specific yfinance keys often vary (Total Revenue, TotalRevenue, OperatingRevenue, etc.)
             cols = df.columns
             

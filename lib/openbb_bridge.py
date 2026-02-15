@@ -249,29 +249,42 @@ if __name__ == "__main__":
         try:
             if USE_MOCK: print(json.dumps(get_mock_response(args.ticker, 'fundamentals')))
             else:
-                # Use INCOME statement for Revenue/Net Income
-                # transpose() is KEY because yfinance returns metrics as rows (index)
-                df = obb.equity.fundamental.income(symbol=args.ticker, provider="yfinance").to_dataframe().T
+                df = None
+                # Try OpenBB
+                try:
+                    df = obb.equity.fundamental.income(symbol=args.ticker, provider="yfinance").to_dataframe().T
+                except: pass
+
+                # Fallback: Direct YFinance
+                if (df is None or df.empty) and HAS_YFINANCE:
+                    try:
+                        tick = yf.Ticker(args.ticker)
+                        # yfinance returns metrics as index, dates as columns. We need to Transpose.
+                        df = tick.income_stmt.T
+                    except: pass
                 
-                # Robust Column Renaming
-                cols = df.columns
-                for c in cols:
-                    clean_c = str(c).lower().replace(" ", "")
-                    if clean_c in ['totalrevenue', 'revenue', 'operatingrevenue']:
-                        df = df.rename(columns={c: 'revenue'})
-                        break
-                for c in cols:
-                    clean_c = str(c).lower().replace(" ", "")
-                    if clean_c in ['netincome', 'net_income', 'profit']:
-                        df = df.rename(columns={c: 'netIncome'})
-                        break
+                if df is None or df.empty: 
+                    print(json.dumps({"data": []}))
+                else:
+                    # Robust Column Renaming for both sources
+                    cols = df.columns
+                    for c in cols:
+                        clean_c = str(c).lower().replace(" ", "")
+                        if clean_c in ['totalrevenue', 'revenue', 'operatingrevenue']:
+                            df = df.rename(columns={c: 'revenue'})
+                            break
+                    for c in cols:
+                        clean_c = str(c).lower().replace(" ", "")
+                        if clean_c in ['netincome', 'net_income', 'profit']:
+                            df = df.rename(columns={c: 'netIncome'})
+                            break
 
-                if 'date' not in df.columns: df = df.reset_index()
-                # If date is still index name after reset, rename it
-                if 'index' in df.columns: df = df.rename(columns={'index': 'period'})
+                    if 'date' not in df.columns: df = df.reset_index()
+                    # If date is still index name after reset, rename it
+                    if 'index' in df.columns: df = df.rename(columns={'index': 'period'})
 
-                result = json.loads(df.to_json(orient="records", date_format="iso"))
-                print(json.dumps({"data": result}))
+                    result = json.loads(df.to_json(orient="records", date_format="iso"))
+                    print(json.dumps({"data": result}))
         except: print(json.dumps(get_mock_response(args.ticker, 'fundamentals')))
 
     elif args.type == 'bonds':
