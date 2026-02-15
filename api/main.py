@@ -272,8 +272,27 @@ async def openbb_endpoint(request: OpenBBRequest):
         if USE_MOCK: 
             return {"data": [{"period": "2023", "revenue": 1000, "netIncome": 200}]}
         try:
+            # Use INCOME statement for Revenue/Net Income
             df = obb.equity.fundamental.income(symbol=ticker, provider="yfinance").to_dataframe()
-            df = df.rename(columns={'Total Revenue': 'revenue', 'Net Income': 'netIncome'})
+            
+            # Robust Column Renaming
+            # specific yfinance keys often vary (Total Revenue, TotalRevenue, OperatingRevenue, etc.)
+            cols = df.columns
+            
+            # Find Revenue
+            for c in cols:
+                clean_c = c.lower().replace(" ", "")
+                if clean_c in ['totalrevenue', 'revenue', 'operatingrevenue']:
+                    df = df.rename(columns={c: 'revenue'})
+                    break
+            
+            # Find Net Income
+            for c in cols:
+                clean_c = c.lower().replace(" ", "")
+                if clean_c in ['netincome', 'net_income', 'profit']:
+                    df = df.rename(columns={c: 'netIncome'})
+                    break
+
             if 'date' not in df.columns: df = df.reset_index()
             result = json.loads(df.to_json(orient="records", date_format="iso"))
             return {"data": result}
