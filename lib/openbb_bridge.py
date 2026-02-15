@@ -223,10 +223,26 @@ if __name__ == "__main__":
         try:
             if USE_MOCK: print(json.dumps(get_mock_response(args.ticker, 'options')))
             else:
-                df = obb.derivatives.options.chains(symbol=args.ticker, provider="yfinance").to_dataframe()
-                df = df.head(50)
-                result = json.loads(df.to_json(orient="records", date_format="iso"))
-                print(json.dumps({"data": result}))
+                try:
+                    df = obb.derivatives.options.chains(symbol=args.ticker, provider="yfinance").to_dataframe()
+                    df = df.head(50)
+                    result = json.loads(df.to_json(orient="records", date_format="iso"))
+                    print(json.dumps({"data": result}))
+                except:
+                    # Direct YFinance Fallback
+                     if HAS_YFINANCE:
+                        y = yf.Ticker(args.ticker)
+                        exps = y.options
+                        if exps:
+                             opt = y.option_chain(exps[0])
+                             calls = opt.calls
+                             calls['optionType'] = 'call'
+                             if 'contractSymbol' in calls.columns: calls = calls.rename(columns={'contractSymbol': 'contract_symbol', 'strike': 'strike', 'lastPrice': 'lastPrice'})
+                             df = calls.head(50)
+                             result = json.loads(df.to_json(orient="records", date_format="iso"))
+                             print(json.dumps({"data": result}))
+                        else: print(json.dumps({"data": []}))
+                     else: print(json.dumps({"data": []}))
         except: print(json.dumps(get_mock_response(args.ticker, 'options')))
 
     elif args.type == 'fundamentals':
@@ -234,9 +250,26 @@ if __name__ == "__main__":
             if USE_MOCK: print(json.dumps(get_mock_response(args.ticker, 'fundamentals')))
             else:
                 # Use INCOME statement for Revenue/Net Income
-                df = obb.equity.fundamental.income(symbol=args.ticker, provider="yfinance").to_dataframe()
-                # Rename for frontend
-                df = df.rename(columns={'Total Revenue': 'revenue', 'Net Income': 'netIncome'})
+                # transpose() is KEY because yfinance returns metrics as rows (index)
+                df = obb.equity.fundamental.income(symbol=args.ticker, provider="yfinance").to_dataframe().T
+                
+                # Robust Column Renaming
+                cols = df.columns
+                for c in cols:
+                    clean_c = str(c).lower().replace(" ", "")
+                    if clean_c in ['totalrevenue', 'revenue', 'operatingrevenue']:
+                        df = df.rename(columns={c: 'revenue'})
+                        break
+                for c in cols:
+                    clean_c = str(c).lower().replace(" ", "")
+                    if clean_c in ['netincome', 'net_income', 'profit']:
+                        df = df.rename(columns={c: 'netIncome'})
+                        break
+
+                if 'date' not in df.columns: df = df.reset_index()
+                # If date is still index name after reset, rename it
+                if 'index' in df.columns: df = df.rename(columns={'index': 'period'})
+
                 result = json.loads(df.to_json(orient="records", date_format="iso"))
                 print(json.dumps({"data": result}))
         except: print(json.dumps(get_mock_response(args.ticker, 'fundamentals')))

@@ -262,10 +262,29 @@ async def openbb_endpoint(request: OpenBBRequest):
     elif data_type == 'options':
         if USE_MOCK: return {"data": []}
         try:
-            df = obb.derivatives.options.chains(symbol=ticker, provider="yfinance").to_dataframe()
-            df = df.head(50)
-            result = json.loads(df.to_json(orient="records", date_format="iso"))
-            return {"data": result}
+             # Try OpenBB first
+            try:
+                df = obb.derivatives.options.chains(symbol=ticker, provider="yfinance").to_dataframe()
+                df = df.head(50)
+                result = json.loads(df.to_json(orient="records", date_format="iso"))
+                return {"data": result}
+            except:
+                # Direct YFinance Fallback for Options
+                if HAS_YFINANCE:
+                    y = yf.Ticker(ticker)
+                    exps = y.options
+                    if exps:
+                         opt = y.option_chain(exps[0])
+                         calls = opt.calls
+                         # Add 'type' column to distinguish
+                         calls['optionType'] = 'call'
+                         # Normalize columns
+                         if 'contractSymbol' in calls.columns: calls = calls.rename(columns={'contractSymbol': 'contract_symbol', 'strike': 'strike', 'lastPrice': 'lastPrice'})
+                         
+                         df = calls.head(50)
+                         result = json.loads(df.to_json(orient="records", date_format="iso"))
+                         return {"data": result}
+                return {"data": []}
         except: return {"data": []}
 
     elif data_type == 'fundamentals':
@@ -273,7 +292,8 @@ async def openbb_endpoint(request: OpenBBRequest):
             return {"data": [{"period": "2023", "revenue": 1000, "netIncome": 200}]}
         try:
             # Use INCOME statement for Revenue/Net Income
-            df = obb.equity.fundamental.income(symbol=ticker, provider="yfinance").to_dataframe()
+            # transpose() is KEY because yfinance returns metrics as rows (index)
+            df = obb.equity.fundamental.income(symbol=ticker, provider="yfinance").to_dataframe().T
             
             # Robust Column Renaming
             # specific yfinance keys often vary (Total Revenue, TotalRevenue, OperatingRevenue, etc.)
@@ -281,22 +301,27 @@ async def openbb_endpoint(request: OpenBBRequest):
             
             # Find Revenue
             for c in cols:
-                clean_c = c.lower().replace(" ", "")
+                clean_c = str(c).lower().replace(" ", "")
                 if clean_c in ['totalrevenue', 'revenue', 'operatingrevenue']:
                     df = df.rename(columns={c: 'revenue'})
                     break
             
             # Find Net Income
             for c in cols:
-                clean_c = c.lower().replace(" ", "")
+                clean_c = str(c).lower().replace(" ", "")
                 if clean_c in ['netincome', 'net_income', 'profit']:
                     df = df.rename(columns={c: 'netIncome'})
                     break
 
             if 'date' not in df.columns: df = df.reset_index()
+            # If date is still index name after reset, rename it
+            if 'index' in df.columns: df = df.rename(columns={'index': 'period'})
+
             result = json.loads(df.to_json(orient="records", date_format="iso"))
             return {"data": result}
-        except: return  {"data": []}
+        except Exception as e: 
+            print(f"Propagating error for fundamentals: {e}")
+            return  {"data": []}
 
     elif data_type == 'bonds':
         if USE_MOCK: return {"data": []}
