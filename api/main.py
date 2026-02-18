@@ -206,8 +206,28 @@ async def openbb_endpoint(request: OpenBBRequest):
     elif data_type == 'technical':
         if USE_MOCK: return {"data": []}
         try:
+            # 1. RSI
             rsi = obb.technical.rsi(data=ticker, provider="yfinance").to_dataframe()
             if 'date' not in rsi.columns: rsi = rsi.reset_index()
+            
+            # 2. MACD
+            try:
+                macd = obb.technical.macd(data=ticker, provider="yfinance").to_dataframe()
+                if 'date' not in macd.columns: macd = macd.reset_index()
+                # Merge MACD into RSI df (on date)
+                if not rsi.empty and not macd.empty:
+                    rsi = rsi.merge(macd, on='date', how='left')
+            except: pass
+
+            # 3. BBands
+            try:
+                bbands = obb.technical.bbands(data=ticker, provider="yfinance").to_dataframe()
+                if 'date' not in bbands.columns: bbands = bbands.reset_index()
+                # Merge BBands
+                if not rsi.empty and not bbands.empty:
+                    rsi = rsi.merge(bbands, on='date', how='left')
+            except: pass
+
             result = json.loads(rsi.to_json(orient="records", date_format="iso"))
             return {"data": result}
         except: return {"data": []}
@@ -222,10 +242,48 @@ async def openbb_endpoint(request: OpenBBRequest):
                     {"metric": "Beta", "value": info.get('beta', 0)},
                     {"metric": "PE Ratio", "value": info.get('trailingPE', 0)},
                     {"metric": "EPS", "value": info.get('trailingEps', 0)},
-                    {"metric": "Div Yield", "value": info.get('dividendYield', 0)}
+                    {"metric": "Div Yield", "value": info.get('dividendYield', 0)},
+                    # Phase 4 Additions
+                    {"metric": "Price/Sales", "value": info.get('priceToSalesTrailing12Months', 0)},
+                    {"metric": "Price/Book", "value": info.get('priceToBook', 0)},
+                    {"metric": "EV/EBITDA", "value": info.get('enterpriseToEbitda', 0)},
+                    {"metric": "PEG Ratio", "value": info.get('pegRatio', 0)},
+                    {"metric": "Debt/Equity", "value": info.get('debtToEquity', 0)},
+                    {"metric": "Current Ratio", "value": info.get('currentRatio', 0)},
+                    {"metric": "Quick Ratio", "value": info.get('quickRatio', 0)},
+                    {"metric": "Return on Equity", "value": info.get('returnOnEquity', 0)},
                 ]}
             return {"data": []}
         except: return {"data": []}
+
+    # --- MARKET MOVERS (Phase 4) ---
+    elif data_type == 'market':
+        if USE_MOCK: return {"data": {"gainers": [], "losers": [], "active": []}}
+        try:
+            # OpenBB v4 Discovery
+            gainers = []
+            losers = []
+            active = []
+            
+            try:
+                df_g = obb.equity.discovery.gainers(provider="yfinance").to_dataframe()
+                gainers = json.loads(df_g.head(5).to_json(orient="records"))
+            except: pass
+
+            try:
+                df_l = obb.equity.discovery.losers(provider="yfinance").to_dataframe()
+                losers = json.loads(df_l.head(5).to_json(orient="records"))
+            except: pass
+
+            try:
+                df_a = obb.equity.discovery.active(provider="yfinance").to_dataframe()
+                active = json.loads(df_a.head(5).to_json(orient="records"))
+            except: pass
+
+            return {"data": {"gainers": gainers, "losers": losers, "active": active}}
+        except Exception as e:
+            print(f"Error fetching market data: {e}")
+            return {"data": {"gainers": [], "losers": [], "active": []}}
 
     # --- ASSET CLASS ENDPOINTS (Fixing Invalid Type) ---
     elif data_type == 'crypto':
