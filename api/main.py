@@ -208,31 +208,56 @@ async def openbb_endpoint(request: OpenBBRequest):
     elif data_type == 'technical':
         if USE_MOCK: return {"data": []}
         try:
-            # 1. RSI
-            rsi = obb.technical.rsi(data=ticker, provider="yfinance").to_dataframe()
-            if 'date' not in rsi.columns: rsi = rsi.reset_index()
-            
-            # 2. MACD
-            try:
-                macd = obb.technical.macd(data=ticker, provider="yfinance").to_dataframe()
-                if 'date' not in macd.columns: macd = macd.reset_index()
-                # Merge MACD into RSI df (on date)
-                if not rsi.empty and not macd.empty:
-                    rsi = rsi.merge(macd, on='date', how='left')
-            except: pass
+            if HAS_YFINANCE:
+                import pandas as pd
+                # Fetch 1 year of data to calculate indicators properly
+                hist = yf.download(ticker, period="1y", progress=False)
+                if hist.empty: return {"data": []}
+                
+                # Flatten multi-index if necessary
+                hist.columns = [c[0] if isinstance(c, tuple) else c for c in hist.columns]
+                hist.reset_index(inplace=True)
+                
+                # Close price
+                close = hist['Close'] if 'Close' in hist.columns else hist['close']
+                
+                # 1. MACD
+                exp1 = close.ewm(span=12, adjust=False).mean()
+                exp2 = close.ewm(span=26, adjust=False).mean()
+                macd = exp1 - exp2
 
-            # 3. BBands
-            try:
-                bbands = obb.technical.bbands(data=ticker, provider="yfinance").to_dataframe()
-                if 'date' not in bbands.columns: bbands = bbands.reset_index()
-                # Merge BBands
-                if not rsi.empty and not bbands.empty:
-                    rsi = rsi.merge(bbands, on='date', how='left')
-            except: pass
+                # 2. BBands
+                sma = close.rolling(window=20).mean()
+                std = close.rolling(window=20).std()
+                upper = sma + (std * 2)
+                lower = sma - (std * 2)
 
-            result = json.loads(rsi.to_json(orient="records", date_format="iso"))
-            return {"data": result}
-        except: return {"data": []}
+                # 3. RSI
+                delta = close.diff()
+                gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
+                loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
+                rs = gain / loss
+                rsi = 100 - (100 / (1 + rs))
+
+                # Combine into resulting dataframe
+                hist['macd'] = macd
+                hist['upper_band'] = upper
+                hist['lower_band'] = lower
+                hist['rsi'] = rsi
+               
+                date_col = 'Date' if 'Date' in hist.columns else 'index'
+                hist['date'] = pd.to_datetime(hist[date_col]).dt.strftime('%Y-%m-%d')
+
+                # We only need the last ~180 rows to match the frontend, drop internal NaNs
+                res_df = hist[['date', 'macd', 'upper_band', 'lower_band', 'rsi']].dropna().tail(180)
+                
+                # Convert numbers to valid JSON values (e.g. replace inf/nan if any, but dropna covers it)
+                return {"data": res_df.to_dict(orient="records")}
+            else:
+                 return {"data": []}
+        except Exception as e: 
+            print("Technical error:", e)
+            return {"data": []}
 
     elif data_type == 'quantitative':
         if USE_MOCK: 

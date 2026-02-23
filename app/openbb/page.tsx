@@ -66,7 +66,7 @@ export default function OpenBBTerminal() {
         setAnalystsData([]);
         setEarningsData([]);
         setHoldersData([]);
-        setMarketData({ gainers: [], losers: [], active: [] });
+        // Do not reset market data here so it persists when searching new tickers
 
         try {
             // PHASE 4: Handle 'market' type specially
@@ -360,6 +360,12 @@ export default function OpenBBTerminal() {
                                             hide
                                             domain={[0, (dataMax: number) => dataMax * 4]} // Compress volume to bottom 25%
                                         />
+                                        <YAxis
+                                            yAxisId="macd"
+                                            orientation="left"
+                                            hide
+                                            domain={['auto', 'auto']}
+                                        />
                                         <Tooltip
                                             contentStyle={{ backgroundColor: '#0A0C14', borderColor: '#334155', borderRadius: '8px' }}
                                             itemStyle={{ color: '#06b6d4' }}
@@ -388,6 +394,17 @@ export default function OpenBBTerminal() {
                                             />
                                         )}
                                         {/* Phase 4 Overlays */}
+                                        {showMacd && (
+                                            <Area
+                                                yAxisId="macd"
+                                                type="monotone"
+                                                dataKey="macd"
+                                                stroke="#a855f7"
+                                                strokeWidth={2}
+                                                fill="transparent"
+                                                animationDuration={500}
+                                            />
+                                        )}
                                         {showBbands && (
                                             <>
                                                 <Area yAxisId="price" type="monotone" dataKey="upper_band" stroke="#eab308" strokeWidth={1} fill="none" dot={false} strokeOpacity={0.7} />
