@@ -41,6 +41,7 @@ export default function OpenBBTerminal() {
     const [marketData, setMarketData] = useState<any>({ gainers: [], losers: [], active: [] });
     const [showMacd, setShowMacd] = useState(false);
     const [showBbands, setShowBbands] = useState(false);
+    const [showVolume, setShowVolume] = useState(false); // NEW FEATURE
 
     const [error, setError] = useState('');
     const [chartReady, setChartReady] = useState(false);
@@ -96,6 +97,7 @@ export default function OpenBBTerminal() {
                 // Normalize date for merging (YYYY-MM-DD)
                 dateKey: new Date(item.date || item.Date).toISOString().split('T')[0],
                 close: item.Close || item.close,
+                volume: item.Volume || item.volume || 0, // NEW FEATURE
             }));
             setPriceData(cleanData);
 
@@ -305,6 +307,10 @@ export default function OpenBBTerminal() {
                         {assetClass === 'price' && (
                             <div className="absolute top-4 right-4 flex gap-3 z-10">
                                 <label className="flex items-center gap-2 text-xs text-slate-400 bg-black/40 px-2 py-1 rounded cursor-pointer hover:text-white border border-white/10 hover:border-cyan-500/50 transition-colors">
+                                    <input type="checkbox" className="accent-cyan-500" checked={showVolume} onChange={e => setShowVolume(e.target.checked)} />
+                                    Volume
+                                </label>
+                                <label className="flex items-center gap-2 text-xs text-slate-400 bg-black/40 px-2 py-1 rounded cursor-pointer hover:text-white border border-white/10 hover:border-cyan-500/50 transition-colors">
                                     <input type="checkbox" className="accent-cyan-500" checked={showMacd} onChange={e => setShowMacd(e.target.checked)} />
                                     MACD
                                 </label>
@@ -340,6 +346,7 @@ export default function OpenBBTerminal() {
                                             minTickGap={30}
                                         />
                                         <YAxis
+                                            yAxisId="price"
                                             orientation="right"
                                             stroke="#94a3b8"
                                             tick={{ fontSize: 10 }}
@@ -347,12 +354,19 @@ export default function OpenBBTerminal() {
                                             axisLine={false}
                                             domain={['auto', 'auto']}
                                         />
+                                        <YAxis
+                                            yAxisId="volume"
+                                            orientation="left"
+                                            hide
+                                            domain={[0, (dataMax: number) => dataMax * 4]} // Compress volume to bottom 25%
+                                        />
                                         <Tooltip
                                             contentStyle={{ backgroundColor: '#0A0C14', borderColor: '#334155', borderRadius: '8px' }}
                                             itemStyle={{ color: '#06b6d4' }}
                                             labelStyle={{ color: '#94a3b8' }}
                                         />
                                         <Area
+                                            yAxisId="price"
                                             type="monotone"
                                             dataKey="close"
                                             stroke="#06b6d4"
@@ -361,11 +375,23 @@ export default function OpenBBTerminal() {
                                             fill="url(#colorPrice)"
                                             animationDuration={500}
                                         />
+                                        {/* Phase 5 Overlays */}
+                                        {showVolume && (
+                                            <Area
+                                                yAxisId="volume"
+                                                type="monotone" // Usually a Bar, but Area also works well and doesn't require importing Bar
+                                                dataKey="volume"
+                                                stroke="none"
+                                                fill="#ffffff"
+                                                fillOpacity={0.1}
+                                                animationDuration={500}
+                                            />
+                                        )}
                                         {/* Phase 4 Overlays */}
                                         {showBbands && (
                                             <>
-                                                <Area type="monotone" dataKey="upper_band" stroke="#eab308" strokeWidth={1} fill="none" dot={false} strokeOpacity={0.7} />
-                                                <Area type="monotone" dataKey="lower_band" stroke="#eab308" strokeWidth={1} fill="none" dot={false} strokeOpacity={0.7} />
+                                                <Area yAxisId="price" type="monotone" dataKey="upper_band" stroke="#eab308" strokeWidth={1} fill="none" dot={false} strokeOpacity={0.7} />
+                                                <Area yAxisId="price" type="monotone" dataKey="lower_band" stroke="#eab308" strokeWidth={1} fill="none" dot={false} strokeOpacity={0.7} />
                                             </>
                                         )}
                                     </AreaChart>
@@ -385,7 +411,7 @@ export default function OpenBBTerminal() {
 
                         {/* Tab Navigation */}
                         <div className="flex border-b border-white/10 overflow-x-auto no-scrollbar">
-                            {['summary', 'quantitative', 'news'].map(view => (
+                            {['summary', 'about', 'quantitative', 'news'].map(view => (
                                 <button
                                     key={view}
                                     onClick={() => setAnalysisView(view)}
@@ -446,6 +472,36 @@ export default function OpenBBTerminal() {
                                                         </a>
                                                     ))}
                                                 </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* 2. ABOUT VIEW (Company Info) */}
+                                    {analysisView === 'about' && (
+                                        <div className="space-y-6">
+                                            <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                                                <Activity className="h-4 w-4 text-cyan-400" />
+                                                Company Profile
+                                            </h3>
+                                            <div className="space-y-4 text-sm text-slate-300 leading-relaxed">
+                                                {profileData?.description ? (
+                                                    <p>{profileData.description}</p>
+                                                ) : (
+                                                    <p className="text-slate-500 text-center py-6">No description available.</p>
+                                                )}
+
+                                                {profileData?.website && (
+                                                    <div className="pt-4 border-t border-white/5">
+                                                        <a
+                                                            href={profileData.website}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="flex items-center gap-2 text-cyan-400 hover:text-cyan-300 transition-colors font-medium"
+                                                        >
+                                                            Official Website <ArrowRight className="h-3 w-3" />
+                                                        </a>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     )}

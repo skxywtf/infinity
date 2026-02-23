@@ -180,7 +180,7 @@ async def openbb_endpoint(request: OpenBBRequest):
                 df = df.rename(columns={
                     'Market Cap': 'marketCap', 'Sector': 'sector', 'Industry': 'industry',
                     'Exchange': 'exchange', 'Currency': 'currency', 'Name': 'shortName',
-                    'market_cap': 'marketCap' 
+                    'market_cap': 'marketCap', 'Description': 'description', 'Website': 'website'
                 })
             except:
                 # Fallback to direct YFinance if OpenBB fails
@@ -192,7 +192,9 @@ async def openbb_endpoint(request: OpenBBRequest):
                          "marketCap": info.get('marketCap'),
                          "sector": info.get('sector'),
                          "industry": info.get('industry'),
-                         "exchange": info.get('exchange')
+                         "exchange": info.get('exchange'),
+                         "description": info.get('longBusinessSummary'),
+                         "website": info.get('website')
                      }]}
                  raise Exception("Profile fetch failed")
 
