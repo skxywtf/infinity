@@ -1,0 +1,19 @@
+typing-extensions
+langchain-core
+langchain-openai
+yfinance>=0.2.40
+feedparser
+stockstats
+langgraph
+requests
+pytz
+fastapi
+uvicorn
+python-dotenv
+finnhub-python
+langchain_anthropic
+langchain-google-genai
+pandas
+# openbb  <-- REMOVED because it's too large for Vercel. We use Google Cloud Run now!
+sqlalchemy
+psycopg2-binary
