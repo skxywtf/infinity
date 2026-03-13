@@ -78,7 +78,7 @@ export default function MacroLineChart({ seriesId }: MacroLineChartProps) {
   }, [chartData, transform]);
 
   if (loading) {
-    return <div className="flex items-center justify-center h-full text-slate-400">Loading {seriesId}...</div>;
+    return <div className="flex items-center justify-center h-full text-slate-400" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#888' }}>Loading {seriesId}...</div>;
   }
 
   const options = {

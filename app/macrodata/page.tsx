@@ -4,8 +4,7 @@ import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import ChatPanel from '@/components/macrodata/ChatPanel'; // <-- Updated Path
 
-// This forces Next.js to skip Server-Side Rendering for the chart, 
-// which stops the "removeChild" DOM mismatch crash dead in its tracks!
+// This forces Next.js to skip Server-Side Rendering for the chart
 const MacroLineChart = dynamic(() => import('@/components/macrodata/MacroLineChart'), { // <-- Updated Path
   ssr: false,
   loading: () => <p style={{ color: '#888', padding: '20px' }}>Loading chart data...</p>
@@ -23,6 +22,9 @@ export default function MacroPage() {
   });
   const [news, setNews] = useState<any[]>([]);
   const [latestGDP, setLatestGDP] = useState<number | null>(null);
+  
+  // NEW: State to control sidebar visibility on mobile
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     // 1. Fetch Dynamic Tabs
@@ -30,7 +32,6 @@ export default function MacroPage() {
       .then(res => res.json())
       .then(data => {
         setMetadata(data);
-        // Automatically set the first tab as active upon loading
         if (data.length > 0) {
           setActiveTab(data[0].tab_name);
         }
@@ -41,7 +42,6 @@ export default function MacroPage() {
     fetch("/api/latest/BEA_REAL_GDP")
       .then(res => res.json())
       .then(data => {
-        // Ensure it's safely parsed as a number
         const val = parseFloat(data.value);
         setLatestGDP(isNaN(val) ? null : val);
       })
@@ -79,7 +79,7 @@ export default function MacroPage() {
     }
     
     loadWatchlist();
-  }, []); // <-- CRITICAL FIX: Empty array means this ONLY runs once on page load! No more traffic jams when switching tabs.
+  }, []); 
 
   const dynamicTabs = Array.from(new Set(metadata.map((item) => item.tab_name)));
   const activeCharts = metadata.filter((item) => item.tab_name === activeTab);
@@ -96,11 +96,19 @@ export default function MacroPage() {
         </div>
       </header>
 
+      {/* MOBILE TOGGLE BUTTON */}
+      <button 
+        className="mobile-toggle" 
+        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+      >
+        {isSidebarOpen ? 'Hide Terminal Menu ▲' : 'Show Terminal Menu ▼'}
+      </button>
+
       {/* MAIN GRID */}
-      <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '30px' }}>
+      <div className="terminal-grid">
         
         {/* LEFT SIDEBAR */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+        <div className={`sidebar-container ${isSidebarOpen ? 'open' : ''}`}>
           
           {/* WATCHLIST */}
           <aside className="card" style={{ background: '#0b0f0f', border: '1px solid #1b2226', borderRadius: '16px', padding: '20px' }}>
@@ -127,7 +135,6 @@ export default function MacroPage() {
                    <a key={i} href={item.link} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', color: 'inherit', display: 'block', paddingBottom: '15px', borderBottom: '1px solid #1b2226' }}>
                      <div style={{ fontSize: '11px', color: '#d4af37', marginBottom: '5px', fontWeight: 'bold' }}>{item.publisher || 'News'}</div>
                      <div style={{ fontSize: '13px', lineHeight: '1.4', fontWeight: 500, marginBottom: '5px' }}>{item.title || 'Untitled'}</div>
-                     {/* CRITICAL FIX: Safely check for item.time before converting it to a Date */}
                      <div style={{ fontSize: '10px', opacity: 0.4 }}>
                        {!item.time || isNaN(Number(item.time)) 
                          ? 'Recent' 
@@ -154,7 +161,7 @@ export default function MacroPage() {
         <section style={{ display: 'flex', flexDirection: 'column', gap: '20px', minWidth: 0 }}>
           
           {/* TAB NAVIGATION */}
-          <div style={{ display: 'flex', gap: '10px', borderBottom: '1px solid #1b2226', paddingBottom: '10px', overflowX: 'auto' }}>
+          <div style={{ display: 'flex', gap: '10px', borderBottom: '1px solid #1b2226', paddingBottom: '10px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
             {dynamicTabs.map(tab => (
               <button 
                 key={tab} 
@@ -176,11 +183,10 @@ export default function MacroPage() {
             ))}
           </div>
 
-
           {/* DYNAMIC CHARTS VERTICAL STACK */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
             {activeCharts.map((chart) => (
-               <div key={chart.series_id} className="card" style={{ height: '550px', width: '95%', background: '#0b0f0f', border: '1px solid #1b2226', borderRadius: '16px', padding: '20px', overflow: 'hidden' }}>
+               <div key={chart.series_id} className="card chart-wrapper" style={{ background: '#0b0f0f', border: '1px solid #1b2226', borderRadius: '16px', padding: '20px', overflow: 'hidden' }}>
                  <div style={{ marginBottom: '10px' }}>
                     <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#fff' }}>{chart.title}</h3>
                     <p style={{ margin: 0, fontSize: '12px', color: '#888' }}>Source: {chart.source}</p>
@@ -203,6 +209,57 @@ export default function MacroPage() {
         news={news}
         dynamicTabs={dynamicTabs}
       />
+
+      {/* STYLES FOR RESPONSIVENESS */}
+      <style jsx>{`
+        .terminal-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 30px;
+        }
+        .sidebar-container {
+          display: none;
+          flex-direction: column;
+          gap: 30px;
+        }
+        .sidebar-container.open {
+          display: flex;
+        }
+        .mobile-toggle {
+          display: block;
+          width: 100%;
+          padding: 12px;
+          background: #1b2226;
+          color: white;
+          border: 1px solid #333;
+          border-radius: 8px;
+          margin-bottom: 20px;
+          font-weight: bold;
+          cursor: pointer;
+          text-align: center;
+        }
+        .chart-wrapper {
+          height: 400px;
+          width: 100%;
+        }
+        
+        /* DESKTOP LAYOUT */
+        @media (min-width: 1024px) {
+          .terminal-grid {
+            grid-template-columns: 320px 1fr;
+          }
+          .sidebar-container {
+            display: flex; /* Always show on desktop */
+          }
+          .mobile-toggle {
+            display: none; /* Hide toggle on desktop */
+          }
+          .chart-wrapper {
+            height: 550px;
+            width: 95%;
+          }
+        }
+      `}</style>
 
     </main>
   );
