@@ -21,7 +21,7 @@ fredapi
 fastapi
 uvicorn
 sqlalchemy
-pg8000
+psycopg2-binary
 
 # --- Utilities ---
 typing-extensions
