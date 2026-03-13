@@ -1,19 +1,32 @@
-typing-extensions
+# --- Core AI & Agents ---
+langchain
 langchain-core
+langchain-community
 langchain-openai
-yfinance>=0.2.40
-feedparser
-stockstats
-langgraph
-requests
-pytz
-fastapi
-uvicorn
-python-dotenv
-finnhub-python
 langchain_anthropic
 langchain-google-genai
+langchain-groq
+langgraph
+groq
+
+# --- Financial & Macro Data ---
+yfinance>=0.2.40
+stockstats
+finnhub-python
+feedparser
 pandas
-# openbb  <-- REMOVED because it's too large for Vercel. We use Google Cloud Run now!
+fredapi
+
+# --- Backend API & Database ---
+fastapi
+uvicorn
 sqlalchemy
 psycopg2-binary
+
+# --- Utilities ---
+typing-extensions
+requests
+pytz
+python-dotenv
+
+# openbb  <-- REMOVED because it's too large for Vercel. We use Google Cloud Run now!
