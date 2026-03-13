@@ -1,13 +1,13 @@
 # --- Core AI & Agents ---
 langchain
 langchain-core
-langchain-community
 langchain-openai
 langchain_anthropic
 langchain-google-genai
 langchain-groq
 langgraph
 groq
+# langchain-community <-- REMOVED to save 50MB+ of Vercel space!
 
 # --- Financial & Macro Data ---
 yfinance>=0.2.40
@@ -21,7 +21,7 @@ fredapi
 fastapi
 uvicorn
 sqlalchemy
-psycopg2-binary
+pg8000
 
 # --- Utilities ---
 typing-extensions
@@ -30,3 +30,4 @@ pytz
 python-dotenv
 
 # openbb  <-- REMOVED because it's too large for Vercel. We use Google Cloud Run now!
+# psycopg2-binary <-- REMOVED due to Vercel wheel errors. Replaced with pg8000.
