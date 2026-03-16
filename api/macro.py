@@ -59,6 +59,20 @@ def get_latest_value(series_id: str, response: Response):
             return {"value": result["value"]}
         return {"value": None}
 
+@router.get("/api/keep-alive")
+def keep_db_alive():
+    # NO CACHE HEADERS HERE! 
+    # We want this request to pierce through Vercel and hit Neon directly.
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1")) # The lightest possible database query
+        return {
+            "status": "Neon database is awake!", 
+            "timestamp": datetime.datetime.now().isoformat() # Ensures the response is always unique
+        }
+    except Exception as e:
+        return {"status": "Error", "message": str(e)}
+
 # --- DIRECT YAHOO FINANCE ROUTES (No yfinance library needed!) ---
 
 @router.get("/api/market/{symbol}")
