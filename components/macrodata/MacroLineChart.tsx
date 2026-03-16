@@ -43,6 +43,7 @@ interface MacroLineChartProps {
 export default function MacroLineChart({ seriesId }: MacroLineChartProps) {
   const [transform, setTransform] = useState<'level' | 'yoy'>('level');
   const [chartData, setChartData] = useState<{ time: string; value: number }[]>([]);
+  const [recessionData, setRecessionData] = useState<{ time: string; value: number }[]>([]);
   const [loading, setLoading] = useState(true);
 
   // 1. THIS IS THE FETCH! (Updated for Vercel production)
@@ -63,6 +64,20 @@ export default function MacroLineChart({ seriesId }: MacroLineChartProps) {
         setLoading(false);
       });
   }, [seriesId]);
+
+  // NEW: Fetch the NBER Recession Data for background shading
+  useEffect(() => {
+    fetch(`/api/data/USREC`)
+      .then(res => res.json())
+      .then(data => {
+        const formattedRecession = data.map((d: any) => ({
+          time: d.date,
+          value: parseFloat(d.value)
+        }));
+        setRecessionData(formattedRecession);
+      })
+      .catch(err => console.error("Error fetching recession data:", err));
+  }, []);
 
   // 2. Calculate YoY Data
   const transformedData = useMemo(() => {
@@ -105,7 +120,7 @@ export default function MacroLineChart({ seriesId }: MacroLineChartProps) {
           label: (ctx: any) => `${ctx.dataset.label}: ${ctx.parsed.y}${transform === 'yoy' ? '%' : ''}`
         }
       },
-      recessionBars: { data: [] }
+      recessionBars: { data: recessionData } // <-- Feeds the recession data into the plugin!
     },
     scales: {
       x: { grid: { display: false }, ticks: { color: '#444', maxTicksLimit: 6 } },

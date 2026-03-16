@@ -81,7 +81,10 @@ export default function MacroPage() {
     loadWatchlist();
   }, []); 
 
-  const dynamicTabs = Array.from(new Set(metadata.map((item) => item.tab_name)));
+  // FILTER OUT THE RECESSION TAB SO IT STAYS HIDDEN
+  const dynamicTabs = Array.from(new Set(metadata.map((item) => item.tab_name)))
+    .filter(tab => tab !== 'Recession Data');
+
   const activeCharts = metadata.filter((item) => item.tab_name === activeTab);
 
   return (
