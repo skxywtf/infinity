@@ -21,17 +21,52 @@ const recessionPlugin = {
   beforeDraw: (chart: any, args: any, options: any) => {
     const { ctx, chartArea: { top, bottom }, scales: { x } } = chart;
     const recessionData = options.data;
-    if (!recessionData || recessionData.length === 0) return;
+    const labels = chart.data.labels;
+    
+    if (!recessionData || recessionData.length === 0 || !labels || labels.length === 0) return;
+
+    // MAGIC FIX: Create a fast lookup Set of "YYYY-MM" strings for months that are in a recession
+    // This allows monthly NBER data to perfectly align with daily Yield Curve data!
+    const recessionMonths = new Set(
+      recessionData
+        .filter((r: any) => r.value === 1)
+        .map((r: any) => r.time.substring(0, 7))
+    );
+
     ctx.save();
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
-    recessionData.forEach((point: any, index: number) => {
-      if (point.value === 1) {
-        const xPos = x.getPixelForValue(point.time);
-        const nextXPos = x.getPixelForValue(recessionData[index + 1]?.time || point.time);
-        const width = Math.max(nextXPos - xPos, 2);
-        ctx.fillRect(xPos, top, width, bottom - top);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.05)'; 
+
+    let isRecession = false;
+    let startX: number | null = null;
+
+    labels.forEach((label: string) => {
+      const monthPrefix = label.substring(0, 7); // Extracts "YYYY-MM"
+      const currentlyInRecession = recessionMonths.has(monthPrefix);
+      
+      const currentX = x.getPixelForValue(label);
+
+      if (currentlyInRecession && !isRecession) {
+        // A recession just started
+        startX = currentX;
+        isRecession = true;
+      } else if (!currentlyInRecession && isRecession) {
+        // A recession just ended
+        if (startX !== null) {
+          const width = Math.max(currentX - startX, 2);
+          ctx.fillRect(startX, top, width, bottom - top);
+        }
+        startX = null;
+        isRecession = false;
       }
     });
+
+    // If the chart's data ends while we are still currently in a recession
+    if (isRecession && startX !== null) {
+      const endX = x.getPixelForValue(labels[labels.length - 1]);
+      const width = Math.max(endX - startX, 2);
+      ctx.fillRect(startX, top, width, bottom - top);
+    }
+
     ctx.restore();
   }
 };
@@ -46,10 +81,10 @@ export default function MacroLineChart({ seriesId }: MacroLineChartProps) {
   const [recessionData, setRecessionData] = useState<{ time: string; value: number }[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // 1. THIS IS THE FETCH! (Updated for Vercel production)
+  // 1. Fetch main chart data
   useEffect(() => {
     setLoading(true);
-    fetch(`/api/data/${seriesId}`) // <--- REMOVED localhost URL HERE
+    fetch(`/api/data/${seriesId}`)
       .then(res => res.json())
       .then(data => {
         const formattedData = data.map((d: any) => ({
@@ -65,7 +100,7 @@ export default function MacroLineChart({ seriesId }: MacroLineChartProps) {
       });
   }, [seriesId]);
 
-  // NEW: Fetch the NBER Recession Data for background shading
+  // 2. Fetch the NBER Recession Data for background shading
   useEffect(() => {
     fetch(`/api/data/USREC`)
       .then(res => res.json())
@@ -79,7 +114,7 @@ export default function MacroLineChart({ seriesId }: MacroLineChartProps) {
       .catch(err => console.error("Error fetching recession data:", err));
   }, []);
 
-  // 2. Calculate YoY Data
+  // 3. Calculate YoY Data
   const transformedData = useMemo(() => {
     if (transform === 'level') return chartData;
     
@@ -99,7 +134,6 @@ export default function MacroLineChart({ seriesId }: MacroLineChartProps) {
   const options = {
     responsive: true,
     maintainAspectRatio: false,
-    // MAGIC FIX: Tells Chart.js to leave 50px of breathing room on the right
     layout: {
       padding: {
         right: 50 
@@ -120,7 +154,7 @@ export default function MacroLineChart({ seriesId }: MacroLineChartProps) {
           label: (ctx: any) => `${ctx.dataset.label}: ${ctx.parsed.y}${transform === 'yoy' ? '%' : ''}`
         }
       },
-      recessionBars: { data: recessionData } // <-- Feeds the recession data into the plugin!
+      recessionBars: { data: recessionData } 
     },
     scales: {
       x: { grid: { display: false }, ticks: { color: '#444', maxTicksLimit: 6 } },
@@ -134,7 +168,7 @@ export default function MacroLineChart({ seriesId }: MacroLineChartProps) {
       label: seriesId,
       data: transformedData.map(d => d.value),
       borderColor: '#fccb0b',
-      borderWidth: 3, // BUMPED THIS UP from 2 to 3 for bolder lines!
+      borderWidth: 3, 
       pointRadius: 0,
       tension: 0.1,
     }]
