@@ -71,14 +71,16 @@ const recessionPlugin = {
   }
 };
 
+// NEW: Added recessionData to the expected props
 interface MacroLineChartProps {
   seriesId: string;
+  recessionData?: any[]; 
 }
 
-export default function MacroLineChart({ seriesId }: MacroLineChartProps) {
+// NEW: Accept recessionData from the parent component
+export default function MacroLineChart({ seriesId, recessionData = [] }: MacroLineChartProps) {
   const [transform, setTransform] = useState<'level' | 'yoy'>('level');
   const [chartData, setChartData] = useState<{ time: string; value: number }[]>([]);
-  const [recessionData, setRecessionData] = useState<{ time: string; value: number }[]>([]);
   const [loading, setLoading] = useState(true);
 
   // 1. Fetch main chart data
@@ -100,21 +102,9 @@ export default function MacroLineChart({ seriesId }: MacroLineChartProps) {
       });
   }, [seriesId]);
 
-  // 2. Fetch the NBER Recession Data for background shading
-  useEffect(() => {
-    fetch(`/api/data/USREC`)
-      .then(res => res.json())
-      .then(data => {
-        const formattedRecession = data.map((d: any) => ({
-          time: d.date,
-          value: parseFloat(d.value)
-        }));
-        setRecessionData(formattedRecession);
-      })
-      .catch(err => console.error("Error fetching recession data:", err));
-  }, []);
+  // REMOVED: The duplicate USREC fetch is gone! It is now handled purely by props.
 
-  // 3. Calculate YoY Data
+  // 2. Calculate YoY Data
   const transformedData = useMemo(() => {
     if (transform === 'level') return chartData;
     
@@ -134,6 +124,8 @@ export default function MacroLineChart({ seriesId }: MacroLineChartProps) {
   const options = {
     responsive: true,
     maintainAspectRatio: false,
+    animation: false as const, // PERFORMANCE BOOST: Disables the slow drawing animation for huge datasets
+    normalized: true, // PERFORMANCE BOOST: Tells Chart.js data is already sorted, saving heavy calculations
     layout: {
       padding: {
         right: 50 
@@ -154,7 +146,7 @@ export default function MacroLineChart({ seriesId }: MacroLineChartProps) {
           label: (ctx: any) => `${ctx.dataset.label}: ${ctx.parsed.y}${transform === 'yoy' ? '%' : ''}`
         }
       },
-      recessionBars: { data: recessionData } 
+      recessionBars: { data: recessionData } // Uses the prop data now!
     },
     scales: {
       x: { grid: { display: false }, ticks: { color: '#444', maxTicksLimit: 6 } },

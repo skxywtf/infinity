@@ -26,6 +26,9 @@ export default function MacroPage() {
   // NEW: State to control sidebar visibility on mobile
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+  // NEW: State to hold recession data for ALL charts
+  const [recessionData, setRecessionData] = useState<any[]>([]);
+
   useEffect(() => {
     // 1. Fetch Dynamic Tabs
     fetch("/api/tabs")
@@ -69,6 +72,18 @@ export default function MacroPage() {
         setNews([]);
       }
     };
+
+    // 5. NEW: Fetch Recession Data ONCE for the whole page
+    fetch("/api/data/USREC")
+      .then(res => res.json())
+      .then(data => {
+        const formattedRecession = data.map((d: any) => ({
+          time: d.date,
+          value: parseFloat(d.value)
+        }));
+        setRecessionData(formattedRecession);
+      })
+      .catch(err => console.error("Failed to load recession data", err));
 
     async function loadWatchlist() {
       const [spy, ief, uup, btc, gold] = await Promise.all([
@@ -195,7 +210,8 @@ export default function MacroPage() {
                     <p style={{ margin: 0, fontSize: '12px', color: '#888' }}>Source: {chart.source}</p>
                  </div>
                  <div style={{ height: 'calc(100% - 40px)' }}>
-                    <MacroLineChart seriesId={chart.series_id} />
+                    {/* NEW: Passing recessionData to the chart! */}
+                    <MacroLineChart seriesId={chart.series_id} recessionData={recessionData} />
                  </div>
                </div>
             ))}
