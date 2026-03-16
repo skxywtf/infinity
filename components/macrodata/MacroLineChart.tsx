@@ -100,17 +100,33 @@ export default function MacroLineChart({ seriesId, recessionData = [] }: MacroLi
       });
   }, [seriesId]);
 
-  // 2. Calculate YoY Data
+  // 2. Calculate YoY Data & Decimate (Thin) the Data for Performance
   const transformedData = useMemo(() => {
-    if (transform === 'level') return chartData;
-    
-    return chartData.map((point, i) => {
-      const prevYearIndex = i - 12; // Assuming monthly data spacing
-      if (prevYearIndex < 0) return { ...point, value: null };
-      const prevValue = chartData[prevYearIndex].value;
-      const yoy = ((point.value / prevValue) - 1) * 100;
-      return { ...point, value: parseFloat(yoy.toFixed(2)) };
-    }).filter(p => p.value !== null);
+    let processedData = chartData;
+
+    // A. Apply YoY Transformation if selected
+    if (transform === 'yoy') {
+      processedData = chartData.map((point, i) => {
+        const prevYearIndex = i - 12; // Assuming monthly data spacing roughly
+        if (prevYearIndex < 0) return { ...point, value: null };
+        const prevValue = chartData[prevYearIndex].value;
+        const yoy = ((point.value / prevValue) - 1) * 100;
+        return { ...point, value: parseFloat(yoy.toFixed(2)) };
+      }).filter(p => p.value !== null) as typeof chartData;
+    }
+
+    // B. DECIMATION: The Free Speed Boost
+    // If we have more than 600 data points, thin them out so the browser doesn't freeze
+    const MAX_POINTS = 600;
+    if (processedData.length > MAX_POINTS) {
+      const step = Math.ceil(processedData.length / MAX_POINTS);
+      processedData = processedData.filter((_, index) => {
+        // Always keep the very first point, the very last point, and every "step" point in between
+        return index === 0 || index === processedData.length - 1 || index % step === 0;
+      });
+    }
+
+    return processedData;
   }, [chartData, transform]);
 
   if (loading) {
