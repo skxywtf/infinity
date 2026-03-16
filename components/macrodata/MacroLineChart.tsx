@@ -71,13 +71,11 @@ const recessionPlugin = {
   }
 };
 
-// NEW: Added recessionData to the expected props
 interface MacroLineChartProps {
   seriesId: string;
   recessionData?: any[]; 
 }
 
-// NEW: Accept recessionData from the parent component
 export default function MacroLineChart({ seriesId, recessionData = [] }: MacroLineChartProps) {
   const [transform, setTransform] = useState<'level' | 'yoy'>('level');
   const [chartData, setChartData] = useState<{ time: string; value: number }[]>([]);
@@ -102,8 +100,6 @@ export default function MacroLineChart({ seriesId, recessionData = [] }: MacroLi
       });
   }, [seriesId]);
 
-  // REMOVED: The duplicate USREC fetch is gone! It is now handled purely by props.
-
   // 2. Calculate YoY Data
   const transformedData = useMemo(() => {
     if (transform === 'level') return chartData;
@@ -124,8 +120,8 @@ export default function MacroLineChart({ seriesId, recessionData = [] }: MacroLi
   const options = {
     responsive: true,
     maintainAspectRatio: false,
-    animation: false as const, // PERFORMANCE BOOST: Disables the slow drawing animation for huge datasets
-    normalized: true, // PERFORMANCE BOOST: Tells Chart.js data is already sorted, saving heavy calculations
+    // THE FIX: Animation is turned back on naturally by removing the line that disabled it!
+    normalized: true, // PERFORMANCE BOOST: We keep this! Tells Chart.js data is already sorted, saving heavy calculations
     layout: {
       padding: {
         right: 50 
@@ -146,7 +142,7 @@ export default function MacroLineChart({ seriesId, recessionData = [] }: MacroLi
           label: (ctx: any) => `${ctx.dataset.label}: ${ctx.parsed.y}${transform === 'yoy' ? '%' : ''}`
         }
       },
-      recessionBars: { data: recessionData } // Uses the prop data now!
+      recessionBars: { data: recessionData } 
     },
     scales: {
       x: { grid: { display: false }, ticks: { color: '#444', maxTicksLimit: 6 } },
