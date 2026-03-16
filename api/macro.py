@@ -1,5 +1,5 @@
 import os
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Response
 from sqlalchemy import create_engine, text
 import datetime
 from dotenv import load_dotenv
@@ -26,7 +26,9 @@ router = APIRouter()
 # --- PHASE 3 ROUTES (Dynamic Tabs & Charts) ---
 
 @router.get("/api/tabs")
-def get_tabs_metadata():
+def get_tabs_metadata(response: Response):
+    # MAGIC FIX: 12-hour Vercel Edge Cache
+    response.headers["Cache-Control"] = "public, s-maxage=43200, stale-while-revalidate=86400"
     with engine.connect() as conn:
         result = conn.execute(text("""
             SELECT series_id, title, source, tab_name, tab_order 
@@ -36,7 +38,9 @@ def get_tabs_metadata():
         return [dict(row) for row in result]
 
 @router.get("/api/data/{series_id}")
-def get_chart_data(series_id: str):
+def get_chart_data(series_id: str, response: Response):
+    # MAGIC FIX: 12-hour Vercel Edge Cache
+    response.headers["Cache-Control"] = "public, s-maxage=43200, stale-while-revalidate=86400"
     with engine.connect() as conn:
         result = conn.execute(text(
             "SELECT date, value FROM macro_data WHERE series_id = :series_id ORDER BY date"
@@ -44,7 +48,9 @@ def get_chart_data(series_id: str):
         return [dict(row) for row in result]
 
 @router.get("/api/latest/{series_id}")
-def get_latest_value(series_id: str):
+def get_latest_value(series_id: str, response: Response):
+    # MAGIC FIX: 12-hour Vercel Edge Cache
+    response.headers["Cache-Control"] = "public, s-maxage=43200, stale-while-revalidate=86400"
     with engine.connect() as conn:
         result = conn.execute(text(
             "SELECT value FROM macro_data WHERE series_id = :series_id ORDER BY date DESC LIMIT 1"
