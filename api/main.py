@@ -9,6 +9,7 @@ load_dotenv()
 from api.models import AnalysisRequest, AnalysisResponse, OpenBBRequest
 from api.manager import manager
 from api.macro import router as macro_router
+from api.spec_routes import spec_router
 import sys
 import json
 import random
@@ -17,6 +18,7 @@ from datetime import datetime, timedelta
 # OPENBB SETUP
 app = FastAPI(title="Infinity Trading Agent API - v2.1 Concise Mode")
 app.include_router(macro_router)
+app.include_router(spec_router)
 
 # Configure CORS
 app.add_middleware(
