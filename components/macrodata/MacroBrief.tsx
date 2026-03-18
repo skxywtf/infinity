@@ -21,8 +21,8 @@ export default function MacroBrief() {
     setLoading(true);
     fetch('/api/brief/latest')
       .then(r=>r.ok?r.json():Promise.reject(r.status))
-      .then(d=>{setBrief(d);setLoading(false);})
-      .catch(c=>{setLoading(false);setError(c===404?'No brief yet. Click Generate.':'Failed to load.');});
+      .then((d:Brief)=>{setBrief(d);setLoading(false);})
+      .catch((c:unknown)=>{setLoading(false);setError(c===404?'No brief yet. Click Generate.':'Failed to load.');});
   };
   useEffect(()=>{fetchLatest();},[]);
 
@@ -36,7 +36,11 @@ export default function MacroBrief() {
     setGen(false);
   };
 
-  const skore=brief?(typeof brief.skore_json==='string'?JSON.parse(brief.skore_json):(brief.skore_json as Record<string,SkoreEntry>)||{}):{}; 
+  const skore: Record<string,SkoreEntry> = brief
+    ? (typeof brief.skore_json==='string'
+        ? (JSON.parse(brief.skore_json) as Record<string,SkoreEntry>)
+        : (brief.skore_json as Record<string,SkoreEntry>))
+    : {};
 
   return(
     <div style={{background:'#0b0f0f',border:'1px solid #1b2226',borderRadius:'16px',padding:'20px'}}>
@@ -56,7 +60,7 @@ export default function MacroBrief() {
           {Object.keys(skore).length>0&&(
             <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
               {Object.entries(skore).map(([slug,entry])=>{
-                const ts=TAG_STYLE[entry.tag]||TAG_STYLE['Watch'];
+                const ts=TAG_STYLE[entry.tag]??TAG_STYLE['Watch'];
                 return(<div key={slug} style={{padding:'12px 14px',borderRadius:'10px',background:'#080c0c',border:'1px solid #141e1e'}}>
                   <span style={{fontWeight:700,color:'#dde8e8'}}>{slug}</span>
                   <span style={{background:ts.bg,color:ts.color,padding:'3px 10px',borderRadius:'4px',marginLeft:'8px'}}>{entry.tag.toUpperCase()}</span>
