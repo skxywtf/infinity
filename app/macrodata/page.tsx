@@ -1,140 +1,120 @@
 "use client";
-
 import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import ChatPanel from '@/components/macrodata/ChatPanel';
 import RegimeWidget from '@/components/macrodata/RegimeWidget';
 import WTFNewsFeed from '@/components/macrodata/WTFNewsFeed';
 import EconCalendar from '@/components/macrodata/EconCalendar';
-import MacroBrief from '@/components/macrodata/MacroBrief'; // <-- Updated Path
+import MacroBrief from '@/components/macrodata/MacroBrief';
 
-// This forces Next.js to skip Server-Side Rendering for the chart
-const MacroLineChart = dynamic(() => import('@/components/macrodata/MacroLineChart'), { // <-- Updated Path
-  ssr: false,
-  loading: () => <p style={{ color: '#888', padding: '20px' }}>Loading chart data...</p>
-});
+// SSR-disabled chart (unchanged from original)
+const MacroLineChart = dynamic(
+  () => import('@/components/macrodata/MacroLineChart'),
+  {
+    ssr: false,
+    loading: () => (
+      <p style={{ color: '#888', padding: '20px' }}>Loading chart data...</p>
+    ),
+  }
+);
+
+const SPECIABL_TABS = ['Calendar', 'WTF Brief', 'Positioning'];
+const HIDDEN_TABS = ['Recession Data'];
 
 export default function MacroPage() {
-  const [activeTab, setActiveTab] = useState(''); 
-  const [metadata, setMetadata] = useState<any[]>([]);
+  const [activeTab, setActiveTab]     = useState('');
+  const [metadata, setMetadata]       = useState<any[]>([]);
+  const [recessionData, setRecession] = useState<any[]>([]);
+  const [latestGDP, setLatestGDP]     = useState<number | null>(null);
+  const [isSidebarOpen, setSidebar]   = useState(false);
   const [market, setMarket] = useState<any>({
-    spy: { price: "---", change: "0.00%", pos: true },
-    ief: { price: "---", change: "0.00%", pos: true },
-    uup: { price: "---", change: "0.00%", pos: true },
-    btc: { price: "---", change: "0.00%", pos: true },
-    gold: { price: "---", change: "0.00%", pos: true },
+    spy:  { price: '---', change: '0.00%', pos: true },
+    ief:  { price: '---', change: '0.00%', pos: true },
+    uup:  { price: '---', change: '0.00%', pos: true },
+    btc:  { price: '---', change: '0.00%', pos: true },
+    gold: { price: '---', change: '0.00%', pos: true },
   });
   const [news, setNews] = useState<any[]>([]);
-  const [latestGDP, setLatestGDP] = useState<number | null>(null);
-  
-  // NEW: State to control sidebar visibility on mobile
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  // NEW: State to hold recession data for ALL charts
-  const [recessionData, setRecessionData] = useState<any[]>([]);
 
   useEffect(() => {
-    // 1. Fetch Dynamic Tabs
-    fetch("/api/tabs")
-      .then(res => res.json())
-      .then(data => {
-        setMetadata(data);
-        if (data.length > 0) {
-          setActiveTab(data[0].tab_name);
-        }
-      })
-      .catch(err => console.error("Failed to load tabs", err));
+    fetch('/api/tabs').then(r => r.json()).then(data => {
+      setMetadata(data);
+      if (data.length > 0) setActiveTab(data[0].tab_name);
+    }).catch(console.error);
 
-    // 2. Fetch Latest BEA GDP
-    fetch("/api/latest/BEA_REAL_GDP")
-      .then(res => res.json())
-      .then(data => {
-        const val = parseFloat(data.value);
-        setLatestGDP(isNaN(val) ? null : val);
-      })
-      .catch(err => console.error("Failed to load GDP", err));
+    fetch('/api/latest/BEA_REAL_GDP').then(r => r.json()).then(d => {
+      const v = parseFloat(d.value);
+      setLatestGDP(isNaN(v) ? null : v);
+    }).catch(console.error);
 
-    // 3. Fetch Yahoo Finance Market Data safely
+    fetch('/api/data/USREC').then(r => r.json()).then(data => {
+      setRecession(data.map((d: any) => ({ time: d.date, value: parseFloat(d.value) })));
+    }).catch(console.error);
+
     const fetchMarket = async (symbol: string) => {
       try {
-        const res = await fetch(`/api/market/${symbol}`);
-        if (!res.ok) throw new Error("Bad response");
-        return await res.json();
-      } catch (e) {
-        return { price: "---", change: "0.00%", pos: true };
-      }
+        const r = await fetch(`/api/market/${symbol}`);
+        if (!j.ok) throw new Error('bad');
+        return await r.json();
+      } catch { return { price: '---', change: '0.00%', pos: true }; }
     };
 
-    // 4. Fetch Yahoo Finance News safely
-    const fetchNews = async () => {
+    const fetchYahooNews = async () => {
       try {
-        const res = await fetch(`/api/news`);
-        const json = await res.json();
-        setNews(json.data || []);
-      } catch (e) {
-        console.error("News fetch failed", e);
-        setNews([]);
-      }
+        const r = await fetch('/api/news');
+        const j = await r.json();
+        setNews(j.data || []);
+      } catch { setNews([]); }
     };
 
-    // 5. NEW: Fetch Recession Data ONCE for the whole page
-    fetch("/api/data/USREC")
-      .then(res => res.json())
-      .then(data => {
-        const formattedRecession = data.map((d: any) => ({
-          time: d.date,
-          value: parseFloat(d.value)
-        }));
-        setRecessionData(formattedRecession);
-      })
-      .catch(err => console.error("Failed to load recession data", err));
-
-    async function loadWatchlist() {
+    (async () => {
       const [spy, ief, uup, btc, gold] = await Promise.all([
-        fetchMarket('SPY'), fetchMarket('IEF'), fetchMarket('UUP'), fetchMarket('BTC-USD'), fetchMarket('GC=F')
+        fetchMarket('SPY'), fetchMarket('IEF'), fetchMarket('UUP'),
+        fetchMarket('BTC-USD'), fetchMarket('GC=F'),
       ]);
       setMarket({ spy, ief, uup, btc, gold });
-      fetchNews();
-    }
-    
-    loadWatchlist();
-  }, []); 
+      fetchYahooNews();
+    })();
+  }, []);
 
-  // FILTER OUT THE RECESSION TAB SO IT STAYS HIDDEN
-  const dynamicTabs = Array.from(new Set(metadata.map((item) => item.tab_name)))
-    .filter(tab => tab !== 'Recession Data');
+  const dbTabs = Array.from(new Set(metadata.map((m: any) => m.tab_name)))
+    .filter(tab => !HIDDEN_TABS-ncludes(tab));
 
-  const activeCharts = metadata.filter((item) => item.tab_name === activeTab);
+  const allTabs = [
+    ...dbTabs,
+    ...SPECIAL_TABS.filter(t => !dbTabs.includes(t)),
+  ];
+
+  const activeCharts = metadata.filter((m: any) => m.tab_name === activeTab);
 
   return (
-    <main style={{ maxWidth: '1800px', margin: '0 auto', padding: '20px', backgroundColor: '#000', minHeight: '100vh', color: 'white', fontFamily: 'sans-serif' }}>
-      
-      {/* HEADER */}
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', borderBottom: '1px solid #1b2226', paddingBottom: '15px' }}>
-        <div><h1 style={{ fontSize: '26px', fontWeight: 900, letterSpacing: '-1.5px', margin: 0, color: '#fff' }}>SKXY TERMINAL</h1></div>
+    <main style={{
+      maxWidth: '1800px', margin: '0 auto', padding: '20px',
+      backgroundColor: '#000', minHeight: '100vh', color: 'white', fontFamily: 'sans-serif',
+    }}>
+      <header style={{
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        marginBottom: '30px', borderBottom: '1px solid #1b2226', paddingBottom: '15px',
+      }}>
+        <div>
+          <h1 style={{ fontSize: '26px', fontWeight: 900, letterSpacing: '-1.5px', margin: 0, color: '#fff' }}>SKXY TERMINAL</h1>
+        </div>
         <div style={{ textAlign: 'right', fontSize: '11px', opacity: 0.5, letterSpacing: '1px' }}>
-          <div>LIVE CONNECTION: <span style={{ color: '#4caf50' }}>ACTIVE</span></div>
-          <div>DATASET: US_MACRO_CORE</div>
+          <div>LIVE COMNECTION: <span style={{ color: '#4caf50' }}>ACTIVE</span></div>
+          <div>DATAsET: US_MACRO_CORE>/div>
         </div>
       </header>
 
-      {/* MOBILE TOGGLE BUTTON */}
-      <button 
-        className="mobile-toggle" 
-        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-      >
-        {isSidebarOpen ? 'Hide Terminal Menu â²' : 'Show Terminal Menu â¼'}
+      <button className="mobile-toggle" onClick={() => setSidebar(!isSidebarOpen)}>
+        {isSidebarOpen ? 'Hide Terminal Menu ▶' : 'Show Terminal Menu ▼'}
       </button>
 
-      {/* MAIN GRID */}
       <div className="terminal-grid">
-        
-        {/* LEFT SIDEBAR */}
         <div className={`sidebar-container ${isSidebarOpen ? 'open' : ''}`}>
-          
-          {/* WATCHLIST */}
-          <aside className="card" style={{ background: '#0b0f0f', border: '1px solid #1b2226', borderRadius: '16px', padding: '20px' }}>
-            <div style={{ fontSize: '12px', fontWeight: 700, opacity: 0.5, marginBottom: '20px', letterSpacing: '1px' }}>WATCHLIST</div>
+          <aside className="card" style={{
+            background: '#0b0f0f', border: '1px solid #1b2226', borderRadius: '16px', padding: '20px',
+          }}>
+            <div style={{ fontSize: '12px', fontWeight: 700, opacity: 0.5, marginBottom: '20px', letterSpacing: '1px' }}>WATCHBST</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <WatchlistItem label="S&P 500 (SPY)" value={market.spy.price} change={market.spy.change} isPositive={market.spy.pos} />
               <WatchlistItem label="US 10Y Yield (IEF)" value={market.ief.price} change={market.ief.change} isPositive={market.ief.pos} />
@@ -142,152 +122,97 @@ export default function MacroPage() {
               <WatchlistItem label="Bitcoin (BTC)" value={market.btc.price} change={market.btc.change} isPositive={market.btc.pos} />
               <WatchlistItem label="Gold (GC=F)" value={market.gold.price} change={market.gold.change} isPositive={market.gold.pos} />
               <div style={{ height: '1px', background: '#1b2226', margin: '5px 0' }} />
-              <WatchlistItem label="Real GDP (BEA)" value={latestGDP !== null ? `${(latestGDP / 1000).toFixed(2)}T` : "---"} change="Quarterly" isPositive={true} />
-            </div>
-          <RegimeWidget />
-        <WTFNewsFeed maxItems={10} />
-        </aside>
-
-          {/* LIVE WIRE */}
-          <aside className="card" style={{ flex: 1, background: '#0b0f0f', border: '1px solid #1b2226', borderRadius: '16px', padding: '20px', maxHeight: '400px', overflowY: 'auto' }}>
-            <div style={{ fontSize: '12px', fontWeight: 700, opacity: 0.5, marginBottom: '20px', letterSpacing: '1px' }}>LIVE WIRE</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-              {news.length === 0 ? (
-                 <div style={{opacity: 0.3, fontSize: '12px'}}>Connecting to wire...</div>
-              ) : (
-                 news.map((item: any, i: number) => (
-                   <a key={i} href={item.link} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', color: 'inherit', display: 'block', paddingBottom: '15px', borderBottom: '1px solid #1b2226' }}>
-                     <div style={{ fontSize: '11px', color: '#d4af37', marginBottom: '5px', fontWeight: 'bold' }}>{item.publisher || 'News'}</div>
-                     <div style={{ fontSize: '13px', lineHeight: '1.4', fontWeight: 500, marginBottom: '5px' }}>{item.title || 'Untitled'}</div>
-                     <div style={{ fontSize: '10px', opacity: 0.4 }}>
-                       {!item.time || isNaN(Number(item.time)) 
-                         ? 'Recent' 
-                         : new Date(Number(item.time) * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                     </div>
-                   </a>
-                 ))
-              )}
+              <WatchlistItem label="Real GDP (BEA)" value={latestGDP !== null ? `${(latestGDP / 1000).toFixed(2)}T` : '---'} change="Quarterly" isPositive />
             </div>
           </aside>
 
-          {/* ADVERTISEMENT BOX */}
-          <aside className="card" style={{ background: '#0b0f0f', border: '1px solid #1b2226', borderRadius: '16px', padding: '20px', textAlign: 'center', marginTop: 'auto' }}>
+          <RegimeWidget />
+          <WTFNewsFeed maxItems={15} />
+
+          <aside className="card" style={{
+            background: '#0b0f0f', border: '1px solid #1b2226',
+            borderRadius: '16px', padding: '20px', textAlign: 'center', marginTop: 'auto',
+          }}>
             <div style={{ fontSize: '10px', fontWeight: 700, opacity: 0.5, marginBottom: '10px', letterSpacing: '1px', color: '#888' }}>SPONSORED</div>
             <div style={{ fontSize: '13px', color: '#aaa', padding: '10px 0', lineHeight: '1.5' }}>
-              Advertisement Space Available<br/>
+              Advertisement Space Available<br />
               <span style={{ fontSize: '11px', opacity: 0.6 }}>(Contact sage@worldtradefactory.com)</span>
             </div>
           </aside>
-
         </div>
 
-        {/* RIGHT CONTENT */}
         <section style={{ display: 'flex', flexDirection: 'column', gap: '20px', minWidth: 0 }}>
-          
-          {/* TAB NAVIGATION */}
-          <div style={{ display: 'flex', gap: '10px', borderBottom: '1px solid #1b2226', paddingBottom: '10px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-            {dynamicTabs.map(tab => (
-              <button 
-                key={tab} 
-                onClick={() => setActiveTab(tab)} 
-                style={{ 
-                  background: activeTab === tab ? '#1b2226' : 'transparent', 
-                  color: activeTab === tab ? '#fff' : '#888', 
-                  border: 'none', 
-                  padding: '10px 20px', 
-                  borderRadius: '8px', 
-                  cursor: 'pointer', 
-                  fontWeight: 600,
-                  transition: '0.2s',
-                  whiteSpace: 'nowrap'
-                }}
-              >
+          <div style={{
+            display: 'flex', gap: '10px', borderBottom: '1px solid #1b2226',
+            paddingBottom: '10px', overflowX: 'auto',
+          }}>
+            {allTabs.map(tab => (
+              <button key={tab} onClick={() => setActiveTab(tab)} style={{
+                background: activeTab === tab ? '#1b2226' : 'transparent',
+                color: activeTab === tab ? '#fff' : '#888',
+                border: SPECIAL_TABS.includes(tab) ? '1px solid #1b222666' : 'none',
+                padding: '10px 20px', borderRadius: '8px',
+                cursor: 'pointer', fontWeight: 600, transition: '0.2s', whiteSpace: 'nowrap',
+                ...(SPECIAL_TABS.includes(tab) && activeTab !== tab ? { color: '#d4af3799' } : {}),
+                ...(SPECIAL_TABS.includes(tab) && activeTab === tab ? { borderColor: '#d4af3733', color: '#d4af37' } : {}),
+              }}>
                 {tab}
               </button>
             ))}
           </div>
 
-          {/* DYNAMIC CHARTS VERTICAL STACK */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
-            {activeCharts.map((chart) => (
-               <div key={chart.series_id} className="card chart-wrapper" style={{ background: '#0b0f0f', border: '1px solid #1b2226', borderRadius: '16px', padding: '20px', overflow: 'hidden' }}>
-                 <div style={{ marginBottom: '10px' }}>
-                    <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#fff' }}>{chart.title}</h3>
-                    <p style={{ margin: 0, fontSize: '12px', color: '#888' }}>Source: {chart.source}</p>
-                 </div>
-                 <div style={{ height: 'calc(100% - 40px)' }}>
-                    {/* NEW: Passing recessionData to the chart! */}
-                    <MacroLineChart seriesId={chart.series_id} recessionData={recessionData} />
-                 </div>
-               </div>
+            {activeTab === 'Calendar' && <EconCalendar />}
+            {activeTab === 'WTF Brief' && <MacroBrief />}
+            {activeTab === 'Positioning' && activeCharts.length === 0 && (
+              <div style={{ background: '#0b0f0f', border: '1px solid #1b2226', borderRadius: '16px', padding: '40px', textAlign: 'center', color: '#444', fontSize: '13px' }}>
+                No positioning data yet.
+              </div>
+            )}
+            {!SPECIAL_TABS.includes(activeTab) && activeCharts.map((chart: any) => (
+              <div key={chart.series_id} className="card chart-wrapper" style={{ background: '#0b0f0f', border: '1px solid #1b2226', borderRadius: '16px', padding: '20px', overflow: 'hidden' }}>
+                <div style={{ marginBottom: '10px' }}>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#fff' }}>{chart.title}</h3>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#888' }}>Source: {chart.source}</p>
+                </div>
+                <div style={{ height: 'calc(100% - 40px)' }}>
+                  <MacroLineChart seriesId={chart.series_id} recessionData={recessionData} />
+                </div>
+              </div>
             ))}
-            {activeCharts.length === 0 && activeTab !== '' && <p style={{ color: '#888' }}>Loading charts...</p>}
+            {activeTab === 'Positioning' && activeCharts.map((chart: any) => (
+              <div key={chart.series_id} className="card chart-wrapper" style={{ background: '#0b0f0f', border: '1px solid #1b2226', borderRadius: '16px', padding: '20px', overflow: 'hidden' }}>
+                <div style={{ marginBottom: '10px' }}>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#fff' }}>{chart.title}</h3>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#888' }}>Source: {chart.source}</p>
+                </div>
+                <div style={{ height: 'calc(100% - 40px)' }}>
+                  <MacroLineChart seriesId={chart.series_id} recessionData={recessionData} />
+                </div>
+              </div>
+            ))}
+            {!SPECIABL_TABS.includes(activeTab) && activeCharts.length === 0 && activeTab !== '' && (
+              <p style={{ color: '#888' }}>Loading charts...</p>
+            )}
           </div>
-
         </section>
       </div>
 
-      {selectedTab === 'Calendar' && <EconCalendar />}
-          {selectedTab === 'WTF Brief' && <MacroBrief />}
-          <ChatPanel 
-        activeTab={activeTab} 
-        activeCharts={activeCharts} 
-        market={market}
-        news={news}
-        dynamicTabs={dynamicTabs}
-      />
+      <ChatPanel activeTab={activeTab} activeCharts={activeCharts} market={market} news={news} dynamicTabs={allTabs} />
 
-      {/* STYLES FOR RESPONSIVENESS */}
       <style jsx>{`
-        .terminal-grid {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 30px;
-        }
-        .sidebar-container {
-          display: none;
-          flex-direction: column;
-          gap: 30px;
-        }
-        .sidebar-container.open {
-          display: flex;
-        }
-        .mobile-toggle {
-          display: block;
-          width: 100%;
-          padding: 12px;
-          background: #1b2226;
-          color: white;
-          border: 1px solid #333;
-          border-radius: 8px;
-          margin-bottom: 20px;
-          font-weight: bold;
-          cursor: pointer;
-          text-align: center;
-        }
-        .chart-wrapper {
-          height: 400px;
-          width: 100%;
-        }
-        
-        /* DESKTOP LAYOUT */
+        .terminal-grid { display: grid; grid-template-columns: 1fr; gap: 30px; }
+        .sidebar-container { display: none; flex-direction: column; gap: 30px; }
+        .sidebar-container.open { display: flex; }
+        .mobile-toggle { display: block; width: 100%; padding: 12px; background: #1b2226; color: white; border: 1px solid #333; border-radius: 8px; margin-bottom: 20px; font-weight: bold; cursor: pointer; text-align: center; }
+        .chart-wrapper { height: 400px; width: 100%; }
         @media (min-width: 1024px) {
-          .terminal-grid {
-            grid-template-columns: 320px 1fr;
-          }
-          .sidebar-container {
-            display: flex; /* Always show on desktop */
-          }
-          .mobile-toggle {
-            display: none; /* Hide toggle on desktop */
-          }
-          .chart-wrapper {
-            height: 550px;
-            width: 95%;
-          }
+          .terminal-grid { grid-template-columns: 320px 1fr; }
+          .sidebar-container { display: flex; }
+          .mobile-toggle { display: none; }
+          .chart-wrapper { height: 550px; width: 95%; }
         }
       `}</style>
-
     </main>
   );
 }
