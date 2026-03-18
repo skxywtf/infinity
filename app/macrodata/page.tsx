@@ -2,9 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
-import ChatPanel from '@/components/macrodata/ChatPanel';
-import RegimeWidget from '@/components/macrodata/RegimeWidget';
-import WTFNewsFeed from '@/components/macrodata/WTFNewsFeed'; // <-- Updated Path
+import ChatPanel from '@/components/macrodata/ChatPanel'; // <-- Updated Path
 
 // This forces Next.js to skip Server-Side Rendering for the chart
 const MacroLineChart = dynamic(() => import('@/components/macrodata/MacroLineChart'), { // <-- Updated Path
@@ -121,7 +119,7 @@ export default function MacroPage() {
         className="mobile-toggle" 
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
       >
-        {isSidebarOpen ? 'Hide Terminal Menu â²' : 'Show Terminal Menu â¼'}
+        {isSidebarOpen ? 'Hide Terminal Menu ▲' : 'Show Terminal Menu ▼'}
       </button>
 
       {/* MAIN GRID */}
