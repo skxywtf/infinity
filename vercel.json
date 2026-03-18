@@ -2,23 +2,19 @@
   "crons": [
     {
       "path": "/api/cron/ingest-rss",
-      "schedule": "*/15 * * * *",
-      "comment": "RSS feed ingester — every 15 minutes"
+      "schedule": "*/15 * * * *"
     },
     {
       "path": "/api/cron/ingest-series",
-      "schedule": "0 6 * * *",
-      "comment": "FRED + Treasury + CFTC series refresh — daily at 6am UTC"
+      "schedule": "0 6 * * *"
     },
     {
       "path": "/api/cron/generate-brief",
-      "schedule": "0 14 * * 1-5",
-      "comment": "AI Macro Brief — weekdays at 2pm UTC (after major US releases)"
+      "schedule": "0 14 * * 1-5"
     },
     {
       "path": "/api/keep-alive",
-      "schedule": "*/5 * * * *",
-      "comment": "Keep Neon DB warm"
+      "schedule": "*/5 * * * *"
     }
   ]
 }
