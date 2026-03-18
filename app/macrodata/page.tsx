@@ -7,18 +7,12 @@ import WTFNewsFeed from '@/components/macrodata/WTFNewsFeed';
 import EconCalendar from '@/components/macrodata/EconCalendar';
 import MacroBrief from '@/components/macrodata/MacroBrief';
 
-// SSR-disabled chart (unchanged from original)
 const MacroLineChart = dynamic(
   () => import('@/components/macrodata/MacroLineChart'),
-  {
-    ssr: false,
-    loading: () => (
-      <p style={{ color: '#888', padding: '20px' }}>Loading chart data...</p>
-    ),
-  }
+  { ssr: false, loading: () => <p style={{ color: '#888', padding: '20px' }}>Loading chart data...</p> }
 );
 
-const SPECIABL_TABS = ['Calendar', 'WTF Brief', 'Positioning'];
+const SPECIAL_TABS = ['Calendar', 'WTF Brief', 'Positioning'];
 const HIDDEN_TABS = ['Recession Data'];
 
 export default function MacroPage() {
@@ -54,7 +48,7 @@ export default function MacroPage() {
     const fetchMarket = async (symbol: string) => {
       try {
         const r = await fetch(`/api/market/${symbol}`);
-        if (!j.ok) throw new Error('bad');
+        if (!r.ok) throw new Error('bad');
         return await r.json();
       } catch { return { price: '---', change: '0.00%', pos: true }; }
     };
@@ -78,7 +72,7 @@ export default function MacroPage() {
   }, []);
 
   const dbTabs = Array.from(new Set(metadata.map((m: any) => m.tab_name)))
-    .filter(tab => !HIDDEN_TABS-ncludes(tab));
+    .filter(tab => !HIDDEN_TABS.includes(tab));
 
   const allTabs = [
     ...dbTabs,
@@ -88,39 +82,29 @@ export default function MacroPage() {
   const activeCharts = metadata.filter((m: any) => m.tab_name === activeTab);
 
   return (
-    <main style={{
-      maxWidth: '1800px', margin: '0 auto', padding: '20px',
-      backgroundColor: '#000', minHeight: '100vh', color: 'white', fontFamily: 'sans-serif',
-    }}>
-      <header style={{
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        marginBottom: '30px', borderBottom: '1px solid #1b2226', paddingBottom: '15px',
-      }}>
-        <div>
-          <h1 style={{ fontSize: '26px', fontWeight: 900, letterSpacing: '-1.5px', margin: 0, color: '#fff' }}>SKXY TERMINAL</h1>
-        </div>
+    <main style={{ maxWidth: '1800px', margin: '0 auto', padding: '20px', backgroundColor: '#000', minHeight: '100vh', color: 'white', fontFamily: 'sans-serif' }}>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', borderBottom: '1px solid #1b2226', paddingBottom: '15px' }}>
+        <div><h1 style={{ fontSize: '26px', fontWeight: 900, letterSpacing: '-1.5px', margin: 0, color: '#fff' }}>SKXY TERMINAL</h1></div>
         <div style={{ textAlign: 'right', fontSize: '11px', opacity: 0.5, letterSpacing: '1px' }}>
-          <div>LIVE COMNECTION: <span style={{ color: '#4caf50' }}>ACTIVE</span></div>
-          <div>DATAsET: US_MACRO_CORE>/div>
+          <div>LIVE CONNECTION: <span style={{ color: '#4caf50' }}>ACTIVE</span></div>
+          <div>DATASET: US_MACRO_CORE</div>
         </div>
       </header>
 
       <button className="mobile-toggle" onClick={() => setSidebar(!isSidebarOpen)}>
-        {isSidebarOpen ? 'Hide Terminal Menu ▶' : 'Show Terminal Menu ▼'}
+        {isSidebarOpen ? 'Hide Terminal Menu ▲' : 'Show Terminal Menu ▼'}
       </button>
 
       <div className="terminal-grid">
         <div className={`sidebar-container ${isSidebarOpen ? 'open' : ''}`}>
-          <aside className="card" style={{
-            background: '#0b0f0f', border: '1px solid #1b2226', borderRadius: '16px', padding: '20px',
-          }}>
-            <div style={{ fontSize: '12px', fontWeight: 700, opacity: 0.5, marginBottom: '20px', letterSpacing: '1px' }}>WATCHBST</div>
+          <aside className="card" style={{ background: '#0b0f0f', border: '1px solid #1b2226', borderRadius: '16px', padding: '20px' }}>
+            <div style={{ fontSize: '12px', fontWeight: 700, opacity: 0.5, marginBottom: '20px', letterSpacing: '1px' }}>WATCHLIST</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <WatchlistItem label="S&P 500 (SPY)" value={market.spy.price} change={market.spy.change} isPositive={market.spy.pos} />
+              <WatchlistItem label="S&P 500 (SPY)"     value={market.spy.price}  change={market.spy.change}  isPositive={market.spy.pos} />
               <WatchlistItem label="US 10Y Yield (IEF)" value={market.ief.price} change={market.ief.change} isPositive={market.ief.pos} />
-              <WatchlistItem label="DXY Index (UUP)" value={market.uup.price} change={market.uup.change} isPositive={market.uup.pos} />
-              <WatchlistItem label="Bitcoin (BTC)" value={market.btc.price} change={market.btc.change} isPositive={market.btc.pos} />
-              <WatchlistItem label="Gold (GC=F)" value={market.gold.price} change={market.gold.change} isPositive={market.gold.pos} />
+              <WatchlistItem label="DXY Index (UUP)"  value={market.uup.price}  change={market.uup.change}  isPositive={market.uup.pos} />
+              <WatchlistItem label="Bitcoin (BTC)"    value={market.btc.price}  change={market.btc.change}  isPositive={market.btc.pos} />
+              <WatchlistItem label="Gold (GC=F)"      value={market.gold.price} change={market.gold.change} isPositive={market.gold.pos} />
               <div style={{ height: '1px', background: '#1b2226', margin: '5px 0' }} />
               <WatchlistItem label="Real GDP (BEA)" value={latestGDP !== null ? `${(latestGDP / 1000).toFixed(2)}T` : '---'} change="Quarterly" isPositive />
             </div>
@@ -129,10 +113,7 @@ export default function MacroPage() {
           <RegimeWidget />
           <WTFNewsFeed maxItems={15} />
 
-          <aside className="card" style={{
-            background: '#0b0f0f', border: '1px solid #1b2226',
-            borderRadius: '16px', padding: '20px', textAlign: 'center', marginTop: 'auto',
-          }}>
+          <aside className="card" style={{ background: '#0b0f0f', border: '1px solid #1b2226', borderRadius: '16px', padding: '20px', textAlign: 'center', marginTop: 'auto' }}>
             <div style={{ fontSize: '10px', fontWeight: 700, opacity: 0.5, marginBottom: '10px', letterSpacing: '1px', color: '#888' }}>SPONSORED</div>
             <div style={{ fontSize: '13px', color: '#aaa', padding: '10px 0', lineHeight: '1.5' }}>
               Advertisement Space Available<br />
@@ -142,10 +123,7 @@ export default function MacroPage() {
         </div>
 
         <section style={{ display: 'flex', flexDirection: 'column', gap: '20px', minWidth: 0 }}>
-          <div style={{
-            display: 'flex', gap: '10px', borderBottom: '1px solid #1b2226',
-            paddingBottom: '10px', overflowX: 'auto',
-          }}>
+          <div style={{ display: 'flex', gap: '10px', borderBottom: '1px solid #1b2226', paddingBottom: '10px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
             {allTabs.map(tab => (
               <button key={tab} onClick={() => setActiveTab(tab)} style={{
                 background: activeTab === tab ? '#1b2226' : 'transparent',
@@ -191,7 +169,7 @@ export default function MacroPage() {
                 </div>
               </div>
             ))}
-            {!SPECIABL_TABS.includes(activeTab) && activeCharts.length === 0 && activeTab !== '' && (
+            {!SPECIAL_TABS.includes(activeTab) && activeCharts.length === 0 && activeTab !== '' && (
               <p style={{ color: '#888' }}>Loading charts...</p>
             )}
           </div>
