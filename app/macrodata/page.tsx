@@ -2,7 +2,11 @@
 
 import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
-import ChatPanel from '@/components/macrodata/ChatPanel'; // <-- Updated Path
+import ChatPanel from '@/components/macrodata/ChatPanel';
+import RegimeWidget from '@/components/macrodata/RegimeWidget';
+import WTFNewsFeed from '@/components/macrodata/WTFNewsFeed';
+import EconCalendar from '@/components/macrodata/EconCalendar';
+import MacroBrief from '@/components/macrodata/MacroBrief'; // <-- Updated Path
 
 // This forces Next.js to skip Server-Side Rendering for the chart
 const MacroLineChart = dynamic(() => import('@/components/macrodata/MacroLineChart'), { // <-- Updated Path
@@ -119,7 +123,7 @@ export default function MacroPage() {
         className="mobile-toggle" 
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
       >
-        {isSidebarOpen ? 'Hide Terminal Menu ▲' : 'Show Terminal Menu ▼'}
+        {isSidebarOpen ? 'Hide Terminal Menu â²' : 'Show Terminal Menu â¼'}
       </button>
 
       {/* MAIN GRID */}
@@ -140,7 +144,9 @@ export default function MacroPage() {
               <div style={{ height: '1px', background: '#1b2226', margin: '5px 0' }} />
               <WatchlistItem label="Real GDP (BEA)" value={latestGDP !== null ? `${(latestGDP / 1000).toFixed(2)}T` : "---"} change="Quarterly" isPositive={true} />
             </div>
-          </aside>
+          <RegimeWidget />
+        <WTFNewsFeed maxItems={10} />
+        </aside>
 
           {/* LIVE WIRE */}
           <aside className="card" style={{ flex: 1, background: '#0b0f0f', border: '1px solid #1b2226', borderRadius: '16px', padding: '20px', maxHeight: '400px', overflowY: 'auto' }}>
@@ -221,7 +227,9 @@ export default function MacroPage() {
         </section>
       </div>
 
-      <ChatPanel 
+      {selectedTab === 'Calendar' && <EconCalendar />}
+          {selectedTab === 'WTF Brief' && <MacroBrief />}
+          <ChatPanel 
         activeTab={activeTab} 
         activeCharts={activeCharts} 
         market={market}
