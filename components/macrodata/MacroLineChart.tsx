@@ -34,7 +34,7 @@ const recessionPlugin = {
     );
 
     ctx.save();
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.05)'; 
+    ctx.fillStyle = 'rgba(128, 128, 128, 0.25)'; 
 
     let isRecession = false;
     let startX: number | null = null;
