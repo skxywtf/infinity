@@ -12,7 +12,8 @@ const MacroLineChart = dynamic(
   { ssr: false, loading: () => <p style={{ color: '#888', padding: '20px' }}>Loading chart data...</p> }
 );
 
-const SPECIAL_TABS = ['Calendar', 'WTF Brief', 'Positioning'];
+// --- ADDED 'Vintage Data' RIGHT BEFORE CALENDAR ---
+const SPECIAL_TABS = ['Vintage Data', 'Calendar', 'WTF Brief', 'Positioning'];
 const HIDDEN_TABS = ['Recession Data'];
 
 export default function MacroPage() {
@@ -100,7 +101,7 @@ export default function MacroPage() {
           <aside className="card" style={{ background: '#0b0f0f', border: '1px solid #1b2226', borderRadius: '16px', padding: '20px' }}>
             <div style={{ fontSize: '12px', fontWeight: 700, opacity: 0.5, marginBottom: '20px', letterSpacing: '1px' }}>WATCHLIST</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <WatchlistItem label="S&P 500 (SPY)"     value={market.spy.price}  change={market.spy.change}  isPositive={market.spy.pos} />
+              <WatchlistItem label="S&P 500 (SPY)"    value={market.spy.price}  change={market.spy.change}  isPositive={market.spy.pos} />
               <WatchlistItem label="US 10Y Yield (IEF)" value={market.ief.price} change={market.ief.change} isPositive={market.ief.pos} />
               <WatchlistItem label="DXY Index (UUP)"  value={market.uup.price}  change={market.uup.change}  isPositive={market.uup.pos} />
               <WatchlistItem label="Bitcoin (BTC)"    value={market.btc.price}  change={market.btc.change}  isPositive={market.btc.pos} />
@@ -140,6 +141,19 @@ export default function MacroPage() {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
+            {/* --- NEW VINTAGE DATA CANVAS --- */}
+            {activeTab === 'Vintage Data' && (
+              <div style={{ background: '#0b0f0f', border: '1px solid #1b2226', borderRadius: '16px', padding: '40px', textAlign: 'center' }}>
+                <h2 style={{ color: '#d4af37', margin: '0 0 10px 0' }}>ALFRED Vintage Data Tracker</h2>
+                <p style={{ color: '#888', fontSize: '14px', marginBottom: '30px' }}>
+                  View unrevised, historical macroeconomic data prints exactly as they appeared to the market on a specific date.
+                </p>
+                <div style={{ padding: '40px', border: '1px dashed #333', borderRadius: '8px', color: '#555' }}>
+                  [ Date Selector & Vintage Chart Canvas Ready for Development ]
+                </div>
+              </div>
+            )}
+
             {activeTab === 'Calendar' && <EconCalendar />}
             {activeTab === 'WTF Brief' && <MacroBrief />}
             {activeTab === 'Positioning' && activeCharts.length === 0 && (

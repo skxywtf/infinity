@@ -59,6 +59,40 @@ def get_latest_value(series_id: str, response: Response):
             return {"value": result["value"]}
         return {"value": None}
 
+# --- NEW: FRED ALFRED VINTAGE ROUTE ---
+@router.get("/api/vintage/{series_id}")
+def get_vintage_data(series_id: str, date: str, response: Response):
+    """
+    Fetches the unrevised 'vintage' data for a series exactly as it looked on the requested date.
+    Requires FRED_API_KEY in your .env / Vercel environment.
+    """
+    api_key = os.getenv("FRED_API_KEY")
+    if not api_key:
+        return {"error": "FRED_API_KEY is missing from environment variables."}
+    
+    # The magic ALFRED parameters: realtime_start and realtime_end
+    url = f"https://api.stlouisfed.org/fred/series/observations?series_id={series_id}&api_key={api_key}&file_type=json&realtime_start={date}&realtime_end={date}"
+    
+    try:
+        res = requests.get(url, timeout=5)
+        data = res.json()
+        
+        if "observations" not in data:
+            return {"error": "Invalid series ID or no vintage data found for this date."}
+            
+        observations = data["observations"]
+        clean_data = []
+        for obs in observations:
+            # FRED sometimes returns "." for null values
+            if obs["value"] != ".":
+                clean_data.append({
+                    "date": obs["date"],
+                    "value": float(obs["value"])
+                })
+        return clean_data
+    except Exception as e:
+        return {"error": f"Failed to fetch ALFRED data: {str(e)}"}
+
 @router.get("/api/keep-alive")
 def keep_db_alive():
     # NO CACHE HEADERS HERE! 
