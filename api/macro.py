@@ -235,14 +235,14 @@ def update_cftc_cot():
     ]
 
     try:
+        # Strict mapping to avoid catching Yield contracts
         contract_map = {
-        "E-MINI S&P 500": "cot_sp500_net",
-        "10-YEAR U.S. TREASURY": "cot_treasury_net", # Legacy CFTC format
-        "10 YEAR U.S. TREASURY": "cot_treasury_net", # Unhyphenated legacy format
-        "UST 10Y NOTE": "cot_treasury_net",          # Modern CFTC format
-        "EURO FX": "cot_eurusd_net",
-        "CRUDE OIL, LIGHT SWEET": "cot_oil_net",
-        "GOLD - COMMODITY": "cot_gold_net"
+            "E-MINI S&P 500": "cot_sp500_net",
+            "10-YEAR U.S. TREASURY NOTES": "cot_treasury_net", # Must explicitly include NOTES
+            "UST 10Y NOTE": "cot_treasury_net",                # Modern CFTC format
+            "EURO FX": "cot_eurusd_net",
+            "CRUDE OIL, LIGHT SWEET": "cot_oil_net",
+            "GOLD - COMMODITY": "cot_gold_net"
         }
 
         metadata_records = [
@@ -283,6 +283,10 @@ def update_cftc_cot():
 
                     for row in reader:
                         market = str(row.get("Market_and_Exchange_Names", "")).upper()
+                        
+                        # THE FIX: Prevent tiny Yield and Micro contracts from overwriting our primary data!
+                        if "YIELD" in market or "MICRO" in market:
+                            continue
                         
                         series_id = None
                         for key, slug in contract_map.items():
