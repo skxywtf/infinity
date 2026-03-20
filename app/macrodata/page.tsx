@@ -13,8 +13,8 @@ const MacroLineChart = dynamic(
   { ssr: false, loading: () => <p style={{ color: '#888', padding: '20px' }}>Loading chart data...</p> }
 );
 
-// --- ADDED 'Vintage Data' RIGHT BEFORE CALENDAR ---
-const SPECIAL_TABS = ['Vintage Data', 'Calendar', 'WTF Brief', 'Positioning'];
+// --- FIXED: Removed 'Positioning' from here so it renders normal charts! ---
+const SPECIAL_TABS = ['Vintage Data', 'Calendar', 'WTF Brief'];
 const HIDDEN_TABS = ['Recession Data'];
 
 export default function MacroPage() {
@@ -150,10 +150,12 @@ export default function MacroPage() {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
-            {/* --- NEW VINTAGE DATA CANVAS (Updated to catch the data broadcast) --- */}
+            {/* --- SPECIAL CUSTOM TABS (Fixed: Added Calendar and WTF Brief back here!) --- */}
             {activeTab === 'Vintage Data' && <VintageTracker onDataFetched={setVintageChatData} />}
+            {activeTab === 'Calendar' && <EconCalendar />}
+            {activeTab === 'WTF Brief' && <MacroBrief />}
             
-            {/* Note: I kept your existing rendering logic exactly as you provided it! */}
+            {/* --- STANDARD DATABASE TABS --- */}
             {!SPECIAL_TABS.includes(activeTab) && activeCharts.map((chart: any) => (
               <div key={chart.series_id} className="card chart-wrapper" style={{ background: '#0b0f0f', border: '1px solid #1b2226', borderRadius: '16px', padding: '20px', overflow: 'hidden' }}>
                 <div style={{ marginBottom: '10px' }}>
