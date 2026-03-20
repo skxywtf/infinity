@@ -233,67 +233,70 @@ def update_cftc_cot():
         res = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
         res.raise_for_status()
 
-        # 2. Unzip it directly in memory (No saving to hard drive needed!)
+        # 2. Unzip it directly in memory
         with zipfile.ZipFile(io.BytesIO(res.content)) as z:
-            # The data file is usually called f_year.txt
             txt_files = [f for f in z.namelist() if f.endswith('.txt')]
             if not txt_files:
                 return {"error": "No data file found in the CFTC zip."}
             
-            filename = txt_files[0]
-            with z.open(filename) as f:
-                content = f.read().decode('utf-8')
+            with z.open(txt_files[0]) as f:
+                content = f.read().decode('utf-8', errors='ignore')
 
-        # 3. Define the exact CFTC contract names we care about
+        # 3. Use simpler keywords to catch messy government naming conventions
         contract_map = {
-            "E-MINI S&P 500 STOCK INDEX": "cot_sp500_net",
-            "10-YEAR U.S. TREASURY NOTES": "cot_treasury_net",
+            "S&P 500": "cot_sp500_net",
+            "10-YEAR U.S. TREASURY": "cot_treasury_net",
             "EURO FX": "cot_eurusd_net",
-            "CRUDE OIL, LIGHT SWEET - NYMEX": "cot_oil_net",
-            "GOLD-COMMODITY EXCHANGE INC.": "cot_gold_net"
+            "CRUDE OIL": "cot_oil_net",
+            "GOLD": "cot_gold_net"
         }
 
         records_to_insert = []
+        lines = content.splitlines()
         
-        # Parse the CSV (The spec says pipe-delimited, but we check for commas just in case)
-        reader = csv.DictReader(content.splitlines(), delimiter=',')
-        if "Market_and_Exchange_Names" not in reader.fieldnames:
-            reader = csv.DictReader(content.splitlines(), delimiter='|')
+        # Parse the CSV and handle the delimiter
+        reader = csv.DictReader(lines, delimiter=',')
+        if "Market_and_Exchange_Names" not in [str(h).strip() for h in (reader.fieldnames or [])]:
+            reader = csv.DictReader(lines, delimiter='|')
 
-        # 4. Loop through the thousands of rows and crunch the math
+        # CRITICAL FIX: Strip all hidden spaces/characters from the government headers
+        clean_fieldnames = [str(h).strip().replace('\ufeff', '').replace('"', '') for h in (reader.fieldnames or [])]
+        reader.fieldnames = clean_fieldnames
+
+        # 4. Loop through the rows
         for row in reader:
-            market = row.get("Market_and_Exchange_Names", "").strip()
+            market = str(row.get("Market_and_Exchange_Names", "")).upper()
             
-            # Check if this row is one of our 5 target assets
+            # Check if this row CONTAINS our target asset name
             series_id = None
             for key, slug in contract_map.items():
-                if market.startswith(key):
+                if key in market:
                     series_id = slug
                     break
 
             if series_id:
                 date_str = row.get("Report_Date_as_YYYY-MM-DD")
-                # Grab Longs and Shorts (defaulting to 0 if missing)
-                longs = row.get("NonComm_Positions_Long_All") or "0"
-                shorts = row.get("NonComm_Positions_Short_All") or "0"
+                
+                # Check multiple column variations (Legacy vs Disaggregated format)
+                longs = row.get("NonComm_Positions_Long_All") or row.get("M_Money_Positions_Long_All") or row.get("Lev_Money_Positions_Long_All") or "0"
+                shorts = row.get("NonComm_Positions_Short_All") or row.get("M_Money_Positions_Short_All") or row.get("Lev_Money_Positions_Short_All") or "0"
 
                 try:
                     # Calculate: Net Position = Longs - Shorts
-                    net_position = float(longs.replace(',', '')) - float(shorts.replace(',', ''))
+                    net_position = float(str(longs).replace(',', '')) - float(str(shorts).replace(',', ''))
                     
                     records_to_insert.append({
                         "series_id": series_id,
                         "date": date_str,
                         "value": net_position
                     })
-                except ValueError:
+                except (ValueError, TypeError):
                     continue
 
-        # 5. Save everything to your Postgres database
+        # 5. Save everything to Postgres
         if records_to_insert:
             with engine.begin() as conn:
                 for rec in records_to_insert:
-                    # Insert the new data, or update it if it already exists
                     conn.execute(text("""
                         INSERT INTO macro_data (series_id, date, value)
                         VALUES (:series_id, :date, :value)
