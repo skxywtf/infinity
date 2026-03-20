@@ -13,8 +13,8 @@ const MacroLineChart = dynamic(
   { ssr: false, loading: () => <p style={{ color: '#888', padding: '20px' }}>Loading chart data...</p> }
 );
 
-// --- FIXED: Removed 'Positioning' from here so it renders normal charts! ---
-const SPECIAL_TABS = ['Vintage Data', 'Calendar', 'WTF Brief'];
+// --- FIXED: Added 'Positioning' back so it forces the tab to appear! ---
+const SPECIAL_TABS = ['Vintage Data', 'Calendar', 'WTF Brief', 'Positioning'];
 const HIDDEN_TABS = ['Recession Data'];
 
 export default function MacroPage() {
@@ -150,13 +150,13 @@ export default function MacroPage() {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
-            {/* --- SPECIAL CUSTOM TABS (Fixed: Added Calendar and WTF Brief back here!) --- */}
+            {/* --- SPECIAL CUSTOM TABS --- */}
             {activeTab === 'Vintage Data' && <VintageTracker onDataFetched={setVintageChatData} />}
             {activeTab === 'Calendar' && <EconCalendar />}
             {activeTab === 'WTF Brief' && <MacroBrief />}
             
-            {/* --- STANDARD DATABASE TABS --- */}
-            {!SPECIAL_TABS.includes(activeTab) && activeCharts.map((chart: any) => (
+            {/* --- STANDARD DATABASE TABS + POSITIONING --- */}
+            {(!SPECIAL_TABS.includes(activeTab) || activeTab === 'Positioning') && activeCharts.map((chart: any) => (
               <div key={chart.series_id} className="card chart-wrapper" style={{ background: '#0b0f0f', border: '1px solid #1b2226', borderRadius: '16px', padding: '20px', overflow: 'hidden' }}>
                 <div style={{ marginBottom: '10px' }}>
                   <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#fff' }}>{chart.title}</h3>
@@ -167,6 +167,7 @@ export default function MacroPage() {
                 </div>
               </div>
             ))}
+            
             {!SPECIAL_TABS.includes(activeTab) && activeCharts.length === 0 && activeTab !== '' && (
               <p style={{ color: '#888' }}>Loading charts...</p>
             )}
