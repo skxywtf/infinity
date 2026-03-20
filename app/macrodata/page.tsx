@@ -154,7 +154,7 @@ export default function MacroPage() {
             {activeTab === 'Vintage Data' && <VintageTracker onDataFetched={setVintageChatData} />}
             
             {/* Note: I kept your existing rendering logic exactly as you provided it! */}
-            {activeTab === 'Positioning' && activeCharts.map((chart: any) => (
+            {!SPECIAL_TABS.includes(activeTab) && activeCharts.map((chart: any) => (
               <div key={chart.series_id} className="card chart-wrapper" style={{ background: '#0b0f0f', border: '1px solid #1b2226', borderRadius: '16px', padding: '20px', overflow: 'hidden' }}>
                 <div style={{ marginBottom: '10px' }}>
                   <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#fff' }}>{chart.title}</h3>
