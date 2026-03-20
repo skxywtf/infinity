@@ -6,6 +6,7 @@ import RegimeWidget from '@/components/macrodata/RegimeWidget';
 import WTFNewsFeed from '@/components/macrodata/WTFNewsFeed';
 import EconCalendar from '@/components/macrodata/EconCalendar';
 import MacroBrief from '@/components/macrodata/MacroBrief';
+import VintageTracker from '@/components/macrodata/VintageTracker';
 
 const MacroLineChart = dynamic(
   () => import('@/components/macrodata/MacroLineChart'),
@@ -142,17 +143,7 @@ export default function MacroPage() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
             {/* --- NEW VINTAGE DATA CANVAS --- */}
-            {activeTab === 'Vintage Data' && (
-              <div style={{ background: '#0b0f0f', border: '1px solid #1b2226', borderRadius: '16px', padding: '40px', textAlign: 'center' }}>
-                <h2 style={{ color: '#d4af37', margin: '0 0 10px 0' }}>ALFRED Vintage Data Tracker</h2>
-                <p style={{ color: '#888', fontSize: '14px', marginBottom: '30px' }}>
-                  View unrevised, historical macroeconomic data prints exactly as they appeared to the market on a specific date.
-                </p>
-                <div style={{ padding: '40px', border: '1px dashed #333', borderRadius: '8px', color: '#555' }}>
-                  [ Date Selector & Vintage Chart Canvas Ready for Development ]
-                </div>
-              </div>
-            )}
+            {activeTab === 'Vintage Data' && <VintageTracker />}
 
             {activeTab === 'Calendar' && <EconCalendar />}
             {activeTab === 'WTF Brief' && <MacroBrief />}
