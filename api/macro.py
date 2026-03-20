@@ -5,6 +5,9 @@ import datetime
 from dotenv import load_dotenv
 from pydantic import BaseModel
 import requests  # <-- We use this built-in web library for EVERYTHING now! (No yfinance)
+import zipfile
+import io
+import csv
 
 load_dotenv()
 
@@ -212,3 +215,95 @@ async def chat_with_analyst(request: ChatRequest):
             
     except Exception as e:
         return {"answer": f"AI Connection Error: {str(e)}"}
+    
+
+# --- ADMIN TRIGGER: UPDATE CFTC COT POSITIONING DATA ---
+
+@router.get("/api/admin/update-cot")
+def update_cftc_cot():
+    """
+    Downloads the weekly CFTC COT ZIP file, calculates Net Non-Commercial positions,
+    and saves the data to the macro_data table.
+    """
+    current_year = datetime.datetime.now().year
+    url = f"https://www.cftc.gov/files/dea/history/fut_disagg_txt_{current_year}.zip"
+
+    try:
+        # 1. Download the ZIP file from the CFTC
+        res = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
+        res.raise_for_status()
+
+        # 2. Unzip it directly in memory (No saving to hard drive needed!)
+        with zipfile.ZipFile(io.BytesIO(res.content)) as z:
+            # The data file is usually called f_year.txt
+            txt_files = [f for f in z.namelist() if f.endswith('.txt')]
+            if not txt_files:
+                return {"error": "No data file found in the CFTC zip."}
+            
+            filename = txt_files[0]
+            with z.open(filename) as f:
+                content = f.read().decode('utf-8')
+
+        # 3. Define the exact CFTC contract names we care about
+        contract_map = {
+            "E-MINI S&P 500 STOCK INDEX": "cot_sp500_net",
+            "10-YEAR U.S. TREASURY NOTES": "cot_treasury_net",
+            "EURO FX": "cot_eurusd_net",
+            "CRUDE OIL, LIGHT SWEET - NYMEX": "cot_oil_net",
+            "GOLD-COMMODITY EXCHANGE INC.": "cot_gold_net"
+        }
+
+        records_to_insert = []
+        
+        # Parse the CSV (The spec says pipe-delimited, but we check for commas just in case)
+        reader = csv.DictReader(content.splitlines(), delimiter=',')
+        if "Market_and_Exchange_Names" not in reader.fieldnames:
+            reader = csv.DictReader(content.splitlines(), delimiter='|')
+
+        # 4. Loop through the thousands of rows and crunch the math
+        for row in reader:
+            market = row.get("Market_and_Exchange_Names", "").strip()
+            
+            # Check if this row is one of our 5 target assets
+            series_id = None
+            for key, slug in contract_map.items():
+                if market.startswith(key):
+                    series_id = slug
+                    break
+
+            if series_id:
+                date_str = row.get("Report_Date_as_YYYY-MM-DD")
+                # Grab Longs and Shorts (defaulting to 0 if missing)
+                longs = row.get("NonComm_Positions_Long_All") or "0"
+                shorts = row.get("NonComm_Positions_Short_All") or "0"
+
+                try:
+                    # Calculate: Net Position = Longs - Shorts
+                    net_position = float(longs.replace(',', '')) - float(shorts.replace(',', ''))
+                    
+                    records_to_insert.append({
+                        "series_id": series_id,
+                        "date": date_str,
+                        "value": net_position
+                    })
+                except ValueError:
+                    continue
+
+        # 5. Save everything to your Postgres database
+        if records_to_insert:
+            with engine.begin() as conn:
+                for rec in records_to_insert:
+                    # Insert the new data, or update it if it already exists
+                    conn.execute(text("""
+                        INSERT INTO macro_data (series_id, date, value)
+                        VALUES (:series_id, :date, :value)
+                        ON CONFLICT (series_id, date) DO UPDATE SET value = EXCLUDED.value
+                    """), rec)
+
+        return {
+            "status": "Success! CFTC Data Parsed.", 
+            "records_updated": len(records_to_insert)
+        }
+
+    except Exception as e:
+        return {"error": f"Failed to update CFTC data: {str(e)}"}
