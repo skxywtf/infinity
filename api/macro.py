@@ -222,33 +222,26 @@ async def chat_with_analyst(request: ChatRequest):
 @router.get("/api/admin/update-cot")
 def update_cftc_cot():
     """
-    Downloads the weekly CFTC COT ZIP file, calculates Net Non-Commercial positions,
-    registers the metadata, and saves the data to the macro_data table.
+    Downloads BOTH Commodities and Financials CFTC ZIP files for the current and previous year.
+    Calculates Net Non-Commercial positions and saves to the database.
     """
     current_year = datetime.datetime.now().year
-    url = f"https://www.cftc.gov/files/dea/history/fut_disagg_txt_{current_year}.zip"
+    # We fetch 2025 and 2026 so your YoY% charts have historical data to calculate!
+    years_to_fetch = [current_year - 1, current_year] 
+    
+    file_templates = [
+        "https://www.cftc.gov/files/dea/history/fut_disagg_txt_{}.zip", # Commodities (Oil, Gold)
+        "https://www.cftc.gov/files/dea/history/fin_fut_txt_{}.zip"     # Financials (S&P, Treasuries, Euro)
+    ]
 
     try:
-        # 1. Download the ZIP file from the CFTC
-        res = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
-        res.raise_for_status()
-
-        # 2. Unzip it directly in memory
-        with zipfile.ZipFile(io.BytesIO(res.content)) as z:
-            txt_files = [f for f in z.namelist() if f.endswith('.txt')]
-            if not txt_files:
-                return {"error": "No data file found in the CFTC zip."}
-            
-            with z.open(txt_files[0]) as f:
-                content = f.read().decode('utf-8', errors='ignore')
-
-        # 3. Define our target assets and their Database "Directory" Details
+        # 1. Tightly defined asset names so we don't grab "Micro Gold" by mistake
         contract_map = {
-            "S&P 500": "cot_sp500_net",
+            "E-MINI S&P 500": "cot_sp500_net",
             "10-YEAR U.S. TREASURY": "cot_treasury_net",
             "EURO FX": "cot_eurusd_net",
-            "CRUDE OIL": "cot_oil_net",
-            "GOLD": "cot_gold_net"
+            "CRUDE OIL, LIGHT SWEET": "cot_oil_net",
+            "GOLD - COMMODITY": "cot_gold_net"
         }
 
         metadata_records = [
@@ -260,52 +253,73 @@ def update_cftc_cot():
         ]
 
         records_to_insert = []
-        lines = content.splitlines()
-        
-        # Parse the CSV
-        reader = csv.DictReader(lines, delimiter=',')
-        if "Market_and_Exchange_Names" not in [str(h).strip() for h in (reader.fieldnames or [])]:
-            reader = csv.DictReader(lines, delimiter='|')
 
-        clean_fieldnames = [str(h).strip().replace('\ufeff', '').replace('"', '') for h in (reader.fieldnames or [])]
-        reader.fieldnames = clean_fieldnames
-
-        # 4. Crunch the math for the data points
-        for row in reader:
-            market = str(row.get("Market_and_Exchange_Names", "")).upper()
-            
-            series_id = None
-            for key, slug in contract_map.items():
-                if key in market:
-                    series_id = slug
-                    break
-
-            if series_id:
-                date_str = row.get("Report_Date_as_YYYY-MM-DD")
-                longs = row.get("NonComm_Positions_Long_All") or row.get("M_Money_Positions_Long_All") or row.get("Lev_Money_Positions_Long_All") or "0"
-                shorts = row.get("NonComm_Positions_Short_All") or row.get("M_Money_Positions_Short_All") or row.get("Lev_Money_Positions_Short_All") or "0"
-
+        # 2. Loop through both files, for both years (4 files total)
+        for year in years_to_fetch:
+            for template in file_templates:
+                url = template.format(year)
+                
                 try:
-                    net_position = float(str(longs).replace(',', '')) - float(str(shorts).replace(',', ''))
-                    records_to_insert.append({
-                        "series_id": series_id,
-                        "date": date_str,
-                        "value": net_position
-                    })
-                except (ValueError, TypeError):
+                    res = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
+                    if res.status_code != 200:
+                        continue # If the file doesn't exist, just skip it safely
+                        
+                    with zipfile.ZipFile(io.BytesIO(res.content)) as z:
+                        txt_files = [f for f in z.namelist() if f.endswith('.txt')]
+                        if not txt_files:
+                            continue
+                        
+                        with z.open(txt_files[0]) as f:
+                            content = f.read().decode('utf-8', errors='ignore')
+
+                    lines = content.splitlines()
+                    reader = csv.DictReader(lines, delimiter=',')
+                    if "Market_and_Exchange_Names" not in [str(h).strip() for h in (reader.fieldnames or [])]:
+                        reader = csv.DictReader(lines, delimiter='|')
+
+                    clean_fieldnames = [str(h).strip().replace('\ufeff', '').replace('"', '') for h in (reader.fieldnames or [])]
+                    reader.fieldnames = clean_fieldnames
+
+                    # 3. Process the data
+                    for row in reader:
+                        market = str(row.get("Market_and_Exchange_Names", "")).upper()
+                        
+                        series_id = None
+                        for key, slug in contract_map.items():
+                            if key in market:
+                                series_id = slug
+                                break
+
+                        if series_id:
+                            date_str = row.get("Report_Date_as_YYYY-MM-DD")
+                            # Check standard columns AND financial columns
+                            longs = row.get("NonComm_Positions_Long_All") or row.get("M_Money_Positions_Long_All") or row.get("Lev_Money_Positions_Long_All") or "0"
+                            shorts = row.get("NonComm_Positions_Short_All") or row.get("M_Money_Positions_Short_All") or row.get("Lev_Money_Positions_Short_All") or "0"
+
+                            try:
+                                net_position = float(str(longs).replace(',', '')) - float(str(shorts).replace(',', ''))
+                                records_to_insert.append({
+                                    "series_id": series_id,
+                                    "date": date_str,
+                                    "value": net_position
+                                })
+                            except (ValueError, TypeError):
+                                continue
+                                
+                except Exception as e:
+                    print(f"Skipped {url}: {e}")
                     continue
 
-        # 5. FIRST: Save the Metadata (Creates the "Directory" entries)
+        # 4. Save Metadata
         with engine.begin() as conn:
             for meta in metadata_records:
-                # We use ON CONFLICT DO NOTHING so it only creates them the very first time
                 conn.execute(text("""
                     INSERT INTO series_metadata (series_id, title, source, tab_name)
                     VALUES (:series_id, :title, :source, :tab_name)
                     ON CONFLICT (series_id) DO NOTHING
                 """), meta)
 
-        # 6. SECOND: Save the actual data points!
+        # 5. Save all historical and new data!
         if records_to_insert:
             with engine.begin() as conn:
                 for rec in records_to_insert:
@@ -316,7 +330,7 @@ def update_cftc_cot():
                     """), rec)
 
         return {
-            "status": "Success! CFTC Metadata & Data Parsed.", 
+            "status": "Success! CFTC Commodities & Financials Parsed (Includes Historical Data).", 
             "records_updated": len(records_to_insert)
         }
 
