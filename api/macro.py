@@ -236,11 +236,13 @@ def update_cftc_cot():
 
     try:
         contract_map = {
-            "E-MINI S&P 500": "cot_sp500_net",
-            "10-YEAR U.S. TREASURY": "cot_treasury_net",
-            "EURO FX": "cot_eurusd_net",
-            "CRUDE OIL, LIGHT SWEET": "cot_oil_net",
-            "GOLD - COMMODITY": "cot_gold_net"
+        "E-MINI S&P 500": "cot_sp500_net",
+        "10-YEAR U.S. TREASURY": "cot_treasury_net", # Legacy CFTC format
+        "10 YEAR U.S. TREASURY": "cot_treasury_net", # Unhyphenated legacy format
+        "UST 10Y NOTE": "cot_treasury_net",          # Modern CFTC format
+        "EURO FX": "cot_eurusd_net",
+        "CRUDE OIL, LIGHT SWEET": "cot_oil_net",
+        "GOLD - COMMODITY": "cot_gold_net"
         }
 
         metadata_records = [
