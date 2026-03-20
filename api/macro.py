@@ -223,7 +223,7 @@ async def chat_with_analyst(request: ChatRequest):
 def update_cftc_cot():
     """
     Downloads the weekly CFTC COT ZIP file, calculates Net Non-Commercial positions,
-    and saves the data to the macro_data table.
+    registers the metadata, and saves the data to the macro_data table.
     """
     current_year = datetime.datetime.now().year
     url = f"https://www.cftc.gov/files/dea/history/fut_disagg_txt_{current_year}.zip"
@@ -242,7 +242,7 @@ def update_cftc_cot():
             with z.open(txt_files[0]) as f:
                 content = f.read().decode('utf-8', errors='ignore')
 
-        # 3. Use simpler keywords to catch messy government naming conventions
+        # 3. Define our target assets and their Database "Directory" Details
         contract_map = {
             "S&P 500": "cot_sp500_net",
             "10-YEAR U.S. TREASURY": "cot_treasury_net",
@@ -251,23 +251,29 @@ def update_cftc_cot():
             "GOLD": "cot_gold_net"
         }
 
+        metadata_records = [
+            {"series_id": "cot_sp500_net", "title": "S&P 500 Net Speculative Positioning", "source": "CFTC COT", "tab_name": "Positioning"},
+            {"series_id": "cot_treasury_net", "title": "10-Year Treasury Net Speculative Positioning", "source": "CFTC COT", "tab_name": "Positioning"},
+            {"series_id": "cot_eurusd_net", "title": "Euro FX Net Speculative Positioning", "source": "CFTC COT", "tab_name": "Positioning"},
+            {"series_id": "cot_oil_net", "title": "Crude Oil Net Speculative Positioning", "source": "CFTC COT", "tab_name": "Positioning"},
+            {"series_id": "cot_gold_net", "title": "Gold Net Speculative Positioning", "source": "CFTC COT", "tab_name": "Positioning"}
+        ]
+
         records_to_insert = []
         lines = content.splitlines()
         
-        # Parse the CSV and handle the delimiter
+        # Parse the CSV
         reader = csv.DictReader(lines, delimiter=',')
         if "Market_and_Exchange_Names" not in [str(h).strip() for h in (reader.fieldnames or [])]:
             reader = csv.DictReader(lines, delimiter='|')
 
-        # CRITICAL FIX: Strip all hidden spaces/characters from the government headers
         clean_fieldnames = [str(h).strip().replace('\ufeff', '').replace('"', '') for h in (reader.fieldnames or [])]
         reader.fieldnames = clean_fieldnames
 
-        # 4. Loop through the rows
+        # 4. Crunch the math for the data points
         for row in reader:
             market = str(row.get("Market_and_Exchange_Names", "")).upper()
             
-            # Check if this row CONTAINS our target asset name
             series_id = None
             for key, slug in contract_map.items():
                 if key in market:
@@ -276,15 +282,11 @@ def update_cftc_cot():
 
             if series_id:
                 date_str = row.get("Report_Date_as_YYYY-MM-DD")
-                
-                # Check multiple column variations (Legacy vs Disaggregated format)
                 longs = row.get("NonComm_Positions_Long_All") or row.get("M_Money_Positions_Long_All") or row.get("Lev_Money_Positions_Long_All") or "0"
                 shorts = row.get("NonComm_Positions_Short_All") or row.get("M_Money_Positions_Short_All") or row.get("Lev_Money_Positions_Short_All") or "0"
 
                 try:
-                    # Calculate: Net Position = Longs - Shorts
                     net_position = float(str(longs).replace(',', '')) - float(str(shorts).replace(',', ''))
-                    
                     records_to_insert.append({
                         "series_id": series_id,
                         "date": date_str,
@@ -293,7 +295,17 @@ def update_cftc_cot():
                 except (ValueError, TypeError):
                     continue
 
-        # 5. Save everything to Postgres
+        # 5. FIRST: Save the Metadata (Creates the "Directory" entries)
+        with engine.begin() as conn:
+            for meta in metadata_records:
+                # We use ON CONFLICT DO NOTHING so it only creates them the very first time
+                conn.execute(text("""
+                    INSERT INTO series_metadata (series_id, title, source, tab_name)
+                    VALUES (:series_id, :title, :source, :tab_name)
+                    ON CONFLICT (series_id) DO NOTHING
+                """), meta)
+
+        # 6. SECOND: Save the actual data points!
         if records_to_insert:
             with engine.begin() as conn:
                 for rec in records_to_insert:
@@ -304,7 +316,7 @@ def update_cftc_cot():
                     """), rec)
 
         return {
-            "status": "Success! CFTC Data Parsed.", 
+            "status": "Success! CFTC Metadata & Data Parsed.", 
             "records_updated": len(records_to_insert)
         }
 
