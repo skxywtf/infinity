@@ -222,20 +222,19 @@ async def chat_with_analyst(request: ChatRequest):
 @router.get("/api/admin/update-cot")
 def update_cftc_cot():
     """
-    Downloads BOTH Commodities and Financials CFTC ZIP files for the current and previous year.
+    Downloads BOTH Commodities and Financials CFTC ZIP files for 3 years.
     Calculates Net Non-Commercial positions and saves to the database.
     """
     current_year = datetime.datetime.now().year
-    # We fetch 2025 and 2026 so your YoY% charts have historical data to calculate!
-    years_to_fetch = [current_year - 1, current_year] 
+    # Fetch 3 full years so the YoY% math has plenty of historical data!
+    years_to_fetch = [current_year - 2, current_year - 1, current_year] 
     
     file_templates = [
         "https://www.cftc.gov/files/dea/history/fut_disagg_txt_{}.zip", # Commodities (Oil, Gold)
-        "https://www.cftc.gov/files/dea/history/fin_fut_txt_{}.zip"     # Financials (S&P, Treasuries, Euro)
+        "https://www.cftc.gov/files/dea/history/fut_fin_txt_{}.zip"     # Financials (FIXED URL)
     ]
 
     try:
-        # 1. Tightly defined asset names so we don't grab "Micro Gold" by mistake
         contract_map = {
             "E-MINI S&P 500": "cot_sp500_net",
             "10-YEAR U.S. TREASURY": "cot_treasury_net",
@@ -254,7 +253,7 @@ def update_cftc_cot():
 
         records_to_insert = []
 
-        # 2. Loop through both files, for both years (4 files total)
+        # Loop through all files for the past 3 years
         for year in years_to_fetch:
             for template in file_templates:
                 url = template.format(year)
@@ -262,7 +261,7 @@ def update_cftc_cot():
                 try:
                     res = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
                     if res.status_code != 200:
-                        continue # If the file doesn't exist, just skip it safely
+                        continue 
                         
                     with zipfile.ZipFile(io.BytesIO(res.content)) as z:
                         txt_files = [f for f in z.namelist() if f.endswith('.txt')]
@@ -280,7 +279,6 @@ def update_cftc_cot():
                     clean_fieldnames = [str(h).strip().replace('\ufeff', '').replace('"', '') for h in (reader.fieldnames or [])]
                     reader.fieldnames = clean_fieldnames
 
-                    # 3. Process the data
                     for row in reader:
                         market = str(row.get("Market_and_Exchange_Names", "")).upper()
                         
@@ -292,7 +290,6 @@ def update_cftc_cot():
 
                         if series_id:
                             date_str = row.get("Report_Date_as_YYYY-MM-DD")
-                            # Check standard columns AND financial columns
                             longs = row.get("NonComm_Positions_Long_All") or row.get("M_Money_Positions_Long_All") or row.get("Lev_Money_Positions_Long_All") or "0"
                             shorts = row.get("NonComm_Positions_Short_All") or row.get("M_Money_Positions_Short_All") or row.get("Lev_Money_Positions_Short_All") or "0"
 
@@ -310,7 +307,6 @@ def update_cftc_cot():
                     print(f"Skipped {url}: {e}")
                     continue
 
-        # 4. Save Metadata
         with engine.begin() as conn:
             for meta in metadata_records:
                 conn.execute(text("""
@@ -319,7 +315,6 @@ def update_cftc_cot():
                     ON CONFLICT (series_id) DO NOTHING
                 """), meta)
 
-        # 5. Save all historical and new data!
         if records_to_insert:
             with engine.begin() as conn:
                 for rec in records_to_insert:
@@ -330,7 +325,7 @@ def update_cftc_cot():
                     """), rec)
 
         return {
-            "status": "Success! CFTC Commodities & Financials Parsed (Includes Historical Data).", 
+            "status": "Success! CFTC 3-Year History Parsed.", 
             "records_updated": len(records_to_insert)
         }
 
