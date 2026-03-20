@@ -1,9 +1,14 @@
 "use client";
 import React, { useState } from 'react';
 
-export default function VintageTracker() {
+// --- NEW: We add a prop so we can send data up to the AI ---
+interface VintageTrackerProps {
+  onDataFetched?: (data: any) => void;
+}
+
+export default function VintageTracker({ onDataFetched }: VintageTrackerProps) {
   const [seriesId, setSeriesId] = useState('GDP');
-  const [vintageDate, setVintageDate] = useState('2020-04-29'); // Default to a famous date (COVID GDP print)
+  const [vintageDate, setVintageDate] = useState('2020-04-29');
   const [vintageData, setVintageData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -19,12 +24,25 @@ export default function VintageTracker() {
 
       if (data.error) {
         setError(data.error);
+        if (onDataFetched) onDataFetched(null); // Clear AI data on error
       } else {
-        // Reverse the data so the newest dates show up at the top of our list
-        setVintageData(data.reverse());
+        const revData = data.reverse();
+        setVintageData(revData);
+        
+        // --- NEW: Package the data and send it up to the AI ---
+        if (onDataFetched) {
+          onDataFetched({
+            title: `ALFRED Vintage Data Snapshot for ${seriesId}`,
+            source: `ALFRED (Snapshot taken on ${vintageDate})`,
+            series_id: seriesId,
+            description: `This is historical unrevised data exactly as it looked on ${vintageDate}.`,
+            data_values: revData.slice(0, 15) // We send the top 15 rows to the AI so it can read the numbers!
+          });
+        }
       }
     } catch (err) {
       setError("Failed to connect to the server.");
+      if (onDataFetched) onDataFetched(null); // Clear AI data on error
     }
     
     setIsLoading(false);
