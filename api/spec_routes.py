@@ -205,124 +205,93 @@ def get_series_registry(category: Optional[str] = Query(None), source: Optional[
 
 @spec_router.get("/api/migrate-spec")
 def run_migration():
-    """One-shot migration — creates all spec tables. Idempotent, safe to call multiple times."""
+    """One-shot migration — each table in its own transaction so failures don't cascade."""
     steps = []
     errors = []
-    with engine.begin() as conn:
-        # 1. Extend series_metadata
-        try:
-            for col, defn in [
-                ("country", "VARCHAR(4) DEFAULT 'USA'"),
-                ("category", "VARCHAR(64)"),
-                ("sub_category", "VARCHAR(64)"),
-                ("vintage_enabled", "BOOLEAN DEFAULT FALSE"),
-                ("bloomberg_equiv", "VARCHAR(32)"),
-                ("chart_type", "VARCHAR(16) DEFAULT 'line'"),
-            ]:
-                conn.execute(text(f"ALTER TABLE series_metadata ADD COLUMN IF NOT EXISTS {col} {defn};"))
-            steps.append("series_metadata extended")
-        except Exception as e:
-            errors.append(f"series_metadata: {e}")
 
-        # 2. Extend macro_data
+    def run_sql(label, sqls):
         try:
-            for col, defn in [("vintage_date", "DATE"), ("ingested_at", "TIMESTAMPTZ DEFAULT NOW()")]:
-                conn.execute(text(f"ALTER TABLE macro_data ADD COLUMN IF NOT EXISTS {col} {defn};"))
-            steps.append("macro_data extended")
+            with engine.begin() as c:
+                for sql in sqls:
+                    c.execute(text(sql))
+            steps.append(label)
         except Exception as e:
-            errors.append(f"macro_data: {e}")
+            errors.append(f"{label}: {str(e)[:120]}")
 
-        # 3. observations view
-        try:
-            conn.execute(text("CREATE OR REPLACE VIEW observations AS SELECT series_id AS series_slug, date, value, vintage_date, ingested_at FROM macro_data;"))
-            steps.append("observations view")
-        except Exception as e:
-            errors.append(f"observations: {e}")
+    run_sql("series_metadata extended", [
+        "ALTER TABLE series_metadata ADD COLUMN IF NOT EXISTS country VARCHAR(4) DEFAULT 'USA';",
+        "ALTER TABLE series_metadata ADD COLUMN IF NOT EXISTS category VARCHAR(64);",
+        "ALTER TABLE series_metadata ADD COLUMN IF NOT EXISTS sub_category VARCHAR(64);",
+        "ALTER TABLE series_metadata ADD COLUMN IF NOT EXISTS vintage_enabled BOOLEAN DEFAULT FALSE;",
+        "ALTER TABLE series_metadata ADD COLUMN IF NOT EXISTS bloomberg_equiv VARCHAR(32);",
+        "ALTER TABLE series_metadata ADD COLUMN IF NOT EXISTS chart_type VARCHAR(16) DEFAULT 'line';",
+    ])
 
-        # 4. events table — NOTE: no GENERATED ALWAYS AS (compute surprise in app layer)
-        try:
-            conn.execute(text("""
-                CREATE TABLE IF NOT EXISTS events (
-                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                    event_date TIMESTAMP WITH TIME ZONE NOT NULL,
-                    country VARCHAR(4) NOT NULL DEFAULT 'USA',
-                    indicator VARCHAR(128) NOT NULL,
-                    importance SMALLINT DEFAULT 2,
-                    prior NUMERIC,
-                    consensus NUMERIC,
-                    actual NUMERIC,
-                    surprise NUMERIC,
-                    source VARCHAR(32),
-                    created_at TIMESTAMPTZ DEFAULT NOW()
-                );
-            """))
-            conn.execute(text("CREATE INDEX IF NOT EXISTS idx_events_date ON events(event_date);"))
-            conn.execute(text("CREATE INDEX IF NOT EXISTS idx_events_country ON events(country);"))
-            steps.append("events table")
-        except Exception as e:
-            errors.append(f"events: {e}")
+    run_sql("macro_data extended", [
+        "ALTER TABLE macro_data ADD COLUMN IF NOT EXISTS vintage_date DATE;",
+        "ALTER TABLE macro_data ADD COLUMN IF NOT EXISTS ingested_at TIMESTAMPTZ DEFAULT NOW();",
+    ])
 
-        # 5. alert_rules
-        try:
-            conn.execute(text("""
-                CREATE TABLE IF NOT EXISTS alert_rules (
-                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                    user_id UUID,
-                    series_slug VARCHAR(64) NOT NULL,
-                    condition VARCHAR(8) NOT NULL,
-                    threshold NUMERIC NOT NULL,
-                    channel VARCHAR(16) DEFAULT 'email',
-                    is_active BOOLEAN DEFAULT TRUE,
-                    last_triggered TIMESTAMPTZ,
-                    created_at TIMESTAMPTZ DEFAULT NOW()
-                );
-            """))
-            conn.execute(text("CREATE INDEX IF NOT EXISTS idx_alerts_slug ON alert_rules(series_slug) WHERE is_active = TRUE;"))
-            steps.append("alert_rules table")
-        except Exception as e:
-            errors.append(f"alert_rules: {e}")
+    run_sql("events table", ["""
+        CREATE TABLE IF NOT EXISTS events (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            event_date TIMESTAMP WITH TIME ZONE NOT NULL,
+            country VARCHAR(4) NOT NULL DEFAULT 'USA',
+            indicator VARCHAR(128) NOT NULL,
+            importance SMALLINT DEFAULT 2,
+            prior NUMERIC,
+            consensus NUMERIC,
+            actual NUMERIC,
+            surprise NUMERIC,
+            source VARCHAR(32),
+            created_at TIMESTAMPTZ DEFAULT NOW()
+        );""",
+        "CREATE INDEX IF NOT EXISTS idx_events_date ON events(event_date);",
+        "CREATE INDEX IF NOT EXISTS idx_events_country ON events(country);",
+    ])
 
-        # 6. news_items
-        try:
-            conn.execute(text("""
-                CREATE TABLE IF NOT EXISTS news_items (
-                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                    published_at TIMESTAMPTZ NOT NULL,
-                    headline TEXT NOT NULL,
-                    summary TEXT,
-                    source VARCHAR(64),
-                    url TEXT,
-                    related_series TEXT[],
-                    sentiment_score NUMERIC,
-                    created_at TIMESTAMPTZ DEFAULT NOW()
-                );
-            """))
-            conn.execute(text("CREATE INDEX IF NOT EXISTS idx_news_published ON news_items(published_at DESC);"))
-            try:
-                conn.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS idx_news_url ON news_items(url) WHERE url IS NOT NULL;"))
-            except Exception:
-                pass
-            steps.append("news_items table")
-        except Exception as e:
-            errors.append(f"news_items: {e}")
+    run_sql("alert_rules table", ["""
+        CREATE TABLE IF NOT EXISTS alert_rules (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            user_id UUID,
+            series_slug VARCHAR(64) NOT NULL,
+            condition VARCHAR(8) NOT NULL,
+            threshold NUMERIC NOT NULL,
+            channel VARCHAR(16) DEFAULT 'email',
+            is_active BOOLEAN DEFAULT TRUE,
+            last_triggered TIMESTAMPTZ,
+            created_at TIMESTAMPTZ DEFAULT NOW()
+        );""",
+        "CREATE INDEX IF NOT EXISTS idx_alerts_slug ON alert_rules(series_slug) WHERE is_active = TRUE;",
+    ])
 
-        # 7. ai_briefs
-        try:
-            conn.execute(text("""
-                CREATE TABLE IF NOT EXISTS ai_briefs (
-                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                    generated_at TIMESTAMPTZ DEFAULT NOW(),
-                    brief_type VARCHAR(32),
-                    trigger_series VARCHAR(64),
-                    content_md TEXT,
-                    skore_json JSONB,
-                    regime_json JSONB
-                );
-            """))
-            conn.execute(text("CREATE INDEX IF NOT EXISTS idx_briefs_generated ON ai_briefs(generated_at DESC);"))
-            steps.append("ai_briefs table")
-        except Exception as e:
-            errors.append(f"ai_briefs: {e}")
+    run_sql("news_items table", ["""
+        CREATE TABLE IF NOT EXISTS news_items (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            published_at TIMESTAMPTZ NOT NULL,
+            headline TEXT NOT NULL,
+            summary TEXT,
+            source VARCHAR(64),
+            url TEXT,
+            related_series TEXT[],
+            sentiment_score NUMERIC,
+            created_at TIMESTAMPTZ DEFAULT NOW()
+        );""",
+        "CREATE INDEX IF NOT EXISTS idx_news_published ON news_items(published_at DESC);",
+    ])
+
+    run_sql("ai_briefs table", ["""
+        CREATE TABLE IF NOT EXISTS ai_briefs (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            generated_at TIMESTAMPTZ DEFAULT NOW(),
+            brief_type VARCHAR(32),
+            trigger_series VARCHAR(64),
+            content_md TEXT,
+            skore_json JSONB,
+            regime_json JSONB
+        );""",
+        "CREATE INDEX IF NOT EXISTS idx_briefs_generated ON ai_briefs(generated_at DESC);",
+    ])
 
     return {"status": "done", "steps": steps, "errors": errors}
 
