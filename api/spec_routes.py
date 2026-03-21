@@ -201,3 +201,47 @@ def get_series_registry(category: Optional[str] = Query(None), source: Optional[
     if source: q += " AND sm.source=:src"; p["src"] = source
     q += " GROUP BY sm.series_id ORDER BY sm.tab_order,sm.series_id;"
     with engine.connect() as conn: return [dict(r) for r in conn.execute(text(q), p).mappings().all()]
+
+
+@spec_router.get("/api/migrate-spec")
+def run_migration():
+    """One-shot migration endpoint — creates all spec tables. Call once then ignore."""
+    steps = []
+    with engine.begin() as conn:
+        # Extend series_metadata
+        for col, defn in [
+            ("country", "VARCHAR(4) DEFAULT 'USA'"),
+            ("category", "VARCHAR(64)"),
+            ("sub_category", "VARCHAR(64)"),
+            ("vintage_enabled", "BOOLEAN DEFAULT FALSE"),
+            ("bloomberg_equiv", "VARCHAR(32)"),
+            ("chart_type", "VARCHAR(16) DEFAULT 'line'"),
+        ]:
+            conn.execute(text(f"ALTER TABLE series_metadata ADD COLUMN IF NOT EXISTS {col} {defn};"))
+        steps.append("series_metadata extended")
+        # Extend macro_data
+        for col, defn in [("vintage_date", "DATE"), ("ingested_at", "TIMESTAMPTZ DEFAULT NOW()")]:
+            conn.execute(text(f"ALTER TABLE macro_data ADD COLUMN IF NOT EXISTS {col} {defn};"))
+        steps.append("macro_data extended")
+        # observations view
+        conn.execute(text("""CREATE OR REPLACE VIEW observations AS SELECT series_id AS series_slug, date, value, vintage_date, ingested_at FROM macro_data;"""))
+        steps.append("observations view")
+        # events table
+        conn.execute(text("""CREATE TABLE IF NOT EXISTS events (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), event_date TIMESTAMP WITH TIME ZONE NOT NULL, country VARCHAR(4) NOT NULL DEFAULT 'USA', indicator VARCHAR(128) NOT NULL, importance SMALLINT DEFAULT 2, prior NUMERIC, consensus NUMERIC, actual NUMERIC, surprise NUMERIC GENERATED ALWAYS AS (actual - consensus) STORED, source VARCHAR(32), created_at TIMESTAMPTZ DEFAULT NOW());"""))
+        conn.execute(text("CREATE INDEX IF NOT EXISTS idx_events_date ON events(event_date);"))
+        conn.execute(text("CREATE INDEX IF NOT EXISTS idx_events_country ON events(country);"))
+        steps.append("events table")
+        # alert_rules
+        conn.execute(text("""CREATE TABLE IF NOT EXISTS alert_rules (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), user_id UUID, series_slug VARCHAR(64) NOT NULL, condition VARCHAR(8) NOT NULL, threshold NUMERIC NOT NULL, channel VARCHAR(16) DEFAULT 'email', is_active BOOLEAN DEFAULT TRUE, last_triggered TIMESTAMPTZ, created_at TIMESTAMPTZ DEFAULT NOW());"""))
+        conn.execute(text("CREATE INDEX IF NOT EXISTS idx_alerts_slug ON alert_rules(series_slug) WHERE is_active = TRUE;"))
+        steps.append("alert_rules table")
+        # news_items
+        conn.execute(text("""CREATE TABLE IF NOT EXISTS news_items (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), published_at TIMESTAMPTZ NOT NULL, headline TEXT NOT NULL, summary TEXT, source VARCHAR(64), url TEXT, related_series TEXT[], sentiment_score NUMERIC, created_at TIMESTAMPTZ DEFAULT NOW());"""))
+        conn.execute(text("CREATE INDEX IF NOT EXISTS idx_news_published ON news_items(published_at DESC);"))
+        conn.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS idx_news_url ON news_items(url) WHERE url IS NOT NULL;"))
+        steps.append("news_items table")
+        # ai_briefs
+        conn.execute(text("""CREATE TABLE IF NOT EXISTS ai_briefs (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), generated_at TIMESTAMPTZ DEFAULT NOW(), brief_type VARCHAR(32), trigger_series VARCHAR(64), content_md TEXT, skore_json JSONB, regime_json JSONB);"""))
+        conn.execute(text("CREATE INDEX IF NOT EXISTS idx_briefs_generated ON ai_briefs(generated_at DESC);"))
+        steps.append("ai_briefs table")
+    return {"status": "migration complete", "steps": steps}
