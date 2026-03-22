@@ -8,6 +8,8 @@ import requests  # <-- We use this built-in web library for EVERYTHING now! (No 
 import zipfile
 import io
 import csv
+import xml.etree.ElementTree as ET
+import email.utils
 
 load_dotenv()
 
@@ -337,3 +339,59 @@ def update_cftc_cot():
 
     except Exception as e:
         return {"error": f"Failed to update CFTC data: {str(e)}"}
+
+
+# --- OFFICIAL GOVERNMENT RSS FEEDS (FED / BLS / BEA) ---
+
+@router.get("/api/gov-news")
+def get_gov_news():
+    """
+    Fetches the official XML RSS feeds from US Government sources,
+    parses them, and returns a unified JSON news feed.
+    """
+    # Standard official RSS feeds for macro events
+    feeds = [
+        {"source": "Federal Reserve", "url": "https://www.federalreserve.gov/feeds/press_all.xml"},
+        {"source": "US Treasury", "url": "https://home.treasury.gov/rss/press_releases"},
+        # Note: BLS/BEA often change their RSS structures, so we start with the most stable ones (Fed/Treasury)
+    ]
+    
+    news_items = []
+    
+    for feed in feeds:
+        try:
+            # Fetch the XML data
+            res = requests.get(feed["url"], headers={'User-Agent': 'Mozilla/5.0'}, timeout=5)
+            if res.status_code == 200:
+                root = ET.fromstring(res.content)
+                
+                # RSS feeds store news inside <item> tags
+                for item in root.findall('.//item')[:8]:  # Grab the 8 most recent from each
+                    title = item.findtext('title')
+                    link = item.findtext('link')
+                    pub_date_str = item.findtext('pubDate')
+                    
+                    # Convert the messy RSS date string into a clean Unix Timestamp
+                    timestamp = 0
+                    if pub_date_str:
+                        try:
+                            parsed_tuple = email.utils.parsedate_tz(pub_date_str)
+                            if parsed_tuple:
+                                timestamp = email.utils.mktime_tz(parsed_tuple)
+                        except Exception:
+                            pass
+                            
+                    news_items.append({
+                        "title": title or "Official Press Release",
+                        "publisher": feed["source"],
+                        "link": link or "#",
+                        "time": timestamp
+                    })
+        except Exception as e:
+            print(f"Skipped {feed['source']} RSS due to error: {e}")
+            continue
+
+    # Sort the combined news items by timestamp (Newest first)
+    news_items.sort(key=lambda x: x["time"], reverse=True)
+
+    return {"data": news_items[:15]} # Return the top 15 most recent government updates
