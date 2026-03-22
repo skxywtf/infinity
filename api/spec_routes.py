@@ -201,3 +201,155 @@ def get_series_registry(category: Optional[str] = Query(None), source: Optional[
     if source: q += " AND sm.source=:src"; p["src"] = source
     q += " GROUP BY sm.series_id ORDER BY sm.tab_order,sm.series_id;"
     with engine.connect() as conn: return [dict(r) for r in conn.execute(text(q), p).mappings().all()]
+
+
+@spec_router.get("/api/migrate-spec")
+def run_migration():
+    """One-shot migration â each table in its own transaction so failures don't cascade."""
+    steps = []
+    errors = []
+
+    def run_sql(label, sqls):
+        try:
+            with engine.begin() as c:
+                for sql in sqls:
+                    c.execute(text(sql))
+            steps.append(label)
+        except Exception as e:
+            errors.append(f"{label}: {str(e)[:120]}")
+
+    run_sql("series_metadata extended", [
+        "ALTER TABLE series_metadata ADD COLUMN IF NOT EXISTS country VARCHAR(4) DEFAULT 'USA';",
+        "ALTER TABLE series_metadata ADD COLUMN IF NOT EXISTS category VARCHAR(64);",
+        "ALTER TABLE series_metadata ADD COLUMN IF NOT EXISTS sub_category VARCHAR(64);",
+        "ALTER TABLE series_metadata ADD COLUMN IF NOT EXISTS vintage_enabled BOOLEAN DEFAULT FALSE;",
+        "ALTER TABLE series_metadata ADD COLUMN IF NOT EXISTS bloomberg_equiv VARCHAR(32);",
+        "ALTER TABLE series_metadata ADD COLUMN IF NOT EXISTS chart_type VARCHAR(16) DEFAULT 'line';",
+    ])
+
+    run_sql("macro_data extended", [
+        "ALTER TABLE macro_data ADD COLUMN IF NOT EXISTS vintage_date DATE;",
+        "ALTER TABLE macro_data ADD COLUMN IF NOT EXISTS ingested_at TIMESTAMPTZ DEFAULT NOW();",
+    ])
+
+    run_sql("events table", ["""
+        CREATE TABLE IF NOT EXISTS events (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            event_date TIMESTAMP WITH TIME ZONE NOT NULL,
+            country VARCHAR(4) NOT NULL DEFAULT 'USA',
+            indicator VARCHAR(128) NOT NULL,
+            importance SMALLINT DEFAULT 2,
+            prior NUMERIC,
+            consensus NUMERIC,
+            actual NUMERIC,
+            surprise NUMERIC,
+            source VARCHAR(32),
+            created_at TIMESTAMPTZ DEFAULT NOW()
+        );""",
+        "CREATE INDEX IF NOT EXISTS idx_events_date ON events(event_date);",
+        "CREATE INDEX IF NOT EXISTS idx_events_country ON events(country);",
+    ])
+
+    run_sql("alert_rules table", ["""
+        CREATE TABLE IF NOT EXISTS alert_rules (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            user_id UUID,
+            series_slug VARCHAR(64) NOT NULL,
+            condition VARCHAR(8) NOT NULL,
+            threshold NUMERIC NOT NULL,
+            channel VARCHAR(16) DEFAULT 'email',
+            is_active BOOLEAN DEFAULT TRUE,
+            last_triggered TIMESTAMPTZ,
+            created_at TIMESTAMPTZ DEFAULT NOW()
+        );""",
+        "CREATE INDEX IF NOT EXISTS idx_alerts_slug ON alert_rules(series_slug) WHERE is_active = TRUE;",
+    ])
+
+    run_sql("news_items table", ["""
+        CREATE TABLE IF NOT EXISTS news_items (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            published_at TIMESTAMPTZ NOT NULL,
+            headline TEXT NOT NULL,
+            summary TEXT,
+            source VARCHAR(64),
+            url TEXT,
+            related_series TEXT[],
+            sentiment_score NUMERIC,
+            created_at TIMESTAMPTZ DEFAULT NOW()
+        );""",
+        "CREATE INDEX IF NOT EXISTS idx_news_published ON news_items(published_at DESC);",
+    ])
+
+    run_sql("ai_briefs table", ["""
+        CREATE TABLE IF NOT EXISTS ai_briefs (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            generated_at TIMESTAMPTZ DEFAULT NOW(),
+            brief_type VARCHAR(32),
+            trigger_series VARCHAR(64),
+            content_md TEXT,
+            skore_json JSONB,
+            regime_json JSONB
+        );""",
+        "CREATE INDEX IF NOT EXISTS idx_briefs_generated ON ai_briefs(generated_at DESC);",
+    ])
+
+    return {"status": "done", "steps": steps, "errors": errors}
+
+
+
+
+@spec_router.post("/api/internal/ingest-rss")
+@spec_router.get("/api/ingest-rss")
+def ingest_rss():
+    """Pull RSS feeds from BLS, Fed, Treasury and store in news_items."""
+    import feedparser, requests as req, hashlib
+    from datetime import datetime, timezone
+
+    FEEDS = [
+        {"url": "https://www.bls.gov/feed/bls_latest.rss",   "source": "BLS"},
+        {"url": "https://www.federalreserve.gov/feeds/press_all.xml", "source": "FED_SPEECHES"},
+        {"url": "https://home.treasury.gov/system/files/276/TreasuryNotes.xml", "source": "TREASURY"},
+    ]
+    KEYWORD_MAP = {
+        "CPI": ["CPIAUCSL"], "INFLATION": ["CPIAUCSL"], "GDP": ["GDPC1"],
+        "PAYROLL": ["PAYEMS"], "UNEMPLOYMENT": ["UNRATE"], "FOMC": ["FEDFUNDS"],
+        "YIELD": ["DGS10"], "RATE": ["FEDFUNDS"], "JOBS": ["PAYEMS", "UNRATE"],
+    }
+
+    def match_series(headline):
+        upper = headline.upper()
+        matched = set()
+        for kw, slugs in KEYWORD_MAP.items():
+            if kw in upper:
+                matched.update(slugs)
+        return list(matched)
+
+    inserted = 0
+    errors = []
+    with engine.begin() as conn:
+        for feed in FEEDS:
+            try:
+                d = feedparser.parse(feed["url"])
+                for entry in d.entries[:20]:
+                    headline = entry.get("title", "")[:500]
+                    url = entry.get("link", f"_no_url_{hashlib.md5(headline.encode()).hexdigest()[:8]}")
+                    pub = entry.get("published_parsed") or entry.get("updated_parsed")
+                    if pub:
+                        pub_dt = datetime(*pub[:6], tzinfo=timezone.utc)
+                    else:
+                        pub_dt = datetime.now(timezone.utc)
+                    related = match_series(headline)
+                    try:
+                        conn.execute(text("""
+                            INSERT INTO news_items (published_at, headline, source, url, related_series)
+                            VALUES (:pub, :headline, :source, :url, :related)
+                            ON CONFLICT (url) DO NOTHING
+                        """), {"pub": pub_dt, "headline": headline, "source": feed["source"],
+                               "url": url, "related": related})
+                        inserted += 1
+                    except Exception:
+                        pass
+            except Exception as e:
+                errors.append(f"{feed['source']}: {str(e)[:80]}")
+    return {"status": "ok", "inserted": inserted, "errors": errors}
+
