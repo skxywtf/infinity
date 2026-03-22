@@ -205,7 +205,7 @@ def get_series_registry(category: Optional[str] = Query(None), source: Optional[
 
 @spec_router.get("/api/migrate-spec")
 def run_migration():
-    """One-shot migration — each table in its own transaction so failures don't cascade."""
+    """One-shot migration â each table in its own transaction so failures don't cascade."""
     steps = []
     errors = []
 
@@ -294,4 +294,62 @@ def run_migration():
     ])
 
     return {"status": "done", "steps": steps, "errors": errors}
+
+
+
+
+@spec_router.post("/api/internal/ingest-rss")
+@spec_router.get("/api/ingest-rss")
+def ingest_rss():
+    """Pull RSS feeds from BLS, Fed, Treasury and store in news_items."""
+    import feedparser, requests as req, hashlib
+    from datetime import datetime, timezone
+
+    FEEDS = [
+        {"url": "https://www.bls.gov/feed/bls_latest.rss",   "source": "BLS"},
+        {"url": "https://www.federalreserve.gov/feeds/press_all.xml", "source": "FED_SPEECHES"},
+        {"url": "https://home.treasury.gov/system/files/276/TreasuryNotes.xml", "source": "TREASURY"},
+    ]
+    KEYWORD_MAP = {
+        "CPI": ["CPIAUCSL"], "INFLATION": ["CPIAUCSL"], "GDP": ["GDPC1"],
+        "PAYROLL": ["PAYEMS"], "UNEMPLOYMENT": ["UNRATE"], "FOMC": ["FEDFUNDS"],
+        "YIELD": ["DGS10"], "RATE": ["FEDFUNDS"], "JOBS": ["PAYEMS", "UNRATE"],
+    }
+
+    def match_series(headline):
+        upper = headline.upper()
+        matched = set()
+        for kw, slugs in KEYWORD_MAP.items():
+            if kw in upper:
+                matched.update(slugs)
+        return list(matched)
+
+    inserted = 0
+    errors = []
+    with engine.begin() as conn:
+        for feed in FEEDS:
+            try:
+                d = feedparser.parse(feed["url"])
+                for entry in d.entries[:20]:
+                    headline = entry.get("title", "")[:500]
+                    url = entry.get("link", f"_no_url_{hashlib.md5(headline.encode()).hexdigest()[:8]}")
+                    pub = entry.get("published_parsed") or entry.get("updated_parsed")
+                    if pub:
+                        pub_dt = datetime(*pub[:6], tzinfo=timezone.utc)
+                    else:
+                        pub_dt = datetime.now(timezone.utc)
+                    related = match_series(headline)
+                    try:
+                        conn.execute(text("""
+                            INSERT INTO news_items (published_at, headline, source, url, related_series)
+                            VALUES (:pub, :headline, :source, :url, :related)
+                            ON CONFLICT (url) DO NOTHING
+                        """), {"pub": pub_dt, "headline": headline, "source": feed["source"],
+                               "url": url, "related": related})
+                        inserted += 1
+                    except Exception:
+                        pass
+            except Exception as e:
+                errors.append(f"{feed['source']}: {str(e)[:80]}")
+    return {"status": "ok", "inserted": inserted, "errors": errors}
 
