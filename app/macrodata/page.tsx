@@ -30,7 +30,10 @@ export default function MacroPage() {
     btc:  { price: '---', change: '0.00%', pos: true },
     gold: { price: '---', change: '0.00%', pos: true },
   });
+  
   const [news, setNews] = useState<any[]>([]);
+  // --- NEW: Added state to store our official Government News! ---
+  const [govNews, setGovNews] = useState<any[]>([]);
   
   // --- NEW: Added state to catch the Vintage Data for the AI ---
   const [vintageChatData, setVintageChatData] = useState<any>(null);
@@ -66,6 +69,15 @@ export default function MacroPage() {
       } catch { setNews([]); }
     };
 
+    // --- NEW: Fetch the Phase 1 Government RSS Feed! ---
+    const fetchGovNews = async () => {
+      try {
+        const r = await fetch('/api/gov-news');
+        const j = await r.json();
+        setGovNews(j.data || []);
+      } catch { setGovNews([]); }
+    };
+
     (async () => {
       const [spy, ief, uup, btc, gold] = await Promise.all([
         fetchMarket('SPY'), fetchMarket('IEF'), fetchMarket('UUP'),
@@ -73,6 +85,7 @@ export default function MacroPage() {
       ]);
       setMarket({ spy, ief, uup, btc, gold });
       fetchYahooNews();
+      fetchGovNews(); // Trigger the Gov fetch!
     })();
   }, []);
 
@@ -84,7 +97,6 @@ export default function MacroPage() {
     ...SPECIAL_TABS.filter(t => !dbTabs.includes(t)),
   ];
 
-  // --- NEW: We changed this to a 'let' variable so we can override it with Vintage Data ---
   let activeCharts = metadata.filter((m: any) => m.tab_name === activeTab);
   
   if (activeTab === 'Vintage Data' && vintageChatData) {
@@ -121,7 +133,27 @@ export default function MacroPage() {
           </aside>
 
           <RegimeWidget />
+          
+          {/* --- YAHOO NEWS BAR --- */}
           <WTFNewsFeed maxItems={15} />
+
+          {/* --- NEW: OFFICIAL GOVERNMENT WIRE --- */}
+          <aside className="card" style={{ background: '#0b0f0f', border: '1px solid #1b2226', borderRadius: '16px', padding: '20px' }}>
+            <div style={{ fontSize: '12px', fontWeight: 700, color: '#3b82f6', marginBottom: '15px', letterSpacing: '1px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span>GOV WIRE</span>
+              <span style={{ background: '#1e3a8a', color: '#bfdbfe', padding: '2px 6px', borderRadius: '4px', fontSize: '9px' }}>OFFICIAL</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {govNews.length > 0 ? govNews.slice(0, 5).map((item, idx) => (
+                <a key={idx} href={item.link} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', display: 'block' }}>
+                  <div style={{ fontSize: '10px', color: '#60a5fa', fontWeight: 'bold', marginBottom: '3px' }}>{item.publisher.toUpperCase()}</div>
+                  <div style={{ fontSize: '13px', color: '#e2e8f0', lineHeight: '1.4', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = '#60a5fa'} onMouseOut={(e) => e.currentTarget.style.color = '#e2e8f0'}>{item.title}</div>
+                </a>
+              )) : (
+                <div style={{ fontSize: '12px', color: '#888' }}>Loading official releases...</div>
+              )}
+            </div>
+          </aside>
 
           <aside className="card" style={{ background: '#0b0f0f', border: '1px solid #1b2226', borderRadius: '16px', padding: '20px', textAlign: 'center', marginTop: 'auto' }}>
             <div style={{ fontSize: '10px', fontWeight: 700, opacity: 0.5, marginBottom: '10px', letterSpacing: '1px', color: '#888' }}>SPONSORED</div>
@@ -175,7 +207,6 @@ export default function MacroPage() {
         </section>
       </div>
 
-      {/* The AI Chatbot Panel that will now read the Vintage Data! */}
       <ChatPanel activeTab={activeTab} activeCharts={activeCharts} market={market} news={news} dynamicTabs={allTabs} />
 
       <style jsx>{`
