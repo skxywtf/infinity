@@ -70,7 +70,16 @@ export default function WTFNewsFeed({ seriesSlug, maxItems = 15 }: WTFNewsFeedPr
               <span style={{ fontSize: '10px', color: SOURCE_COLORS[item.source] ?? '#888', fontWeight: 700 }}>{item.source}</span>
               <span style={{ fontSize: '10px', color: '#333' }}>{timeAgo(item.published_at)}</span>
             </div>
-            <div style={{ fontSize: '13px', lineHeight: '1.45', fontWeight: 500, color: '#dde8e8' }}>{item.headline}</div>
+            
+            {/* THE FIX: Added hover transition exactly like the Gov Wire */}
+            <div 
+              style={{ fontSize: '13px', lineHeight: '1.45', fontWeight: 500, color: '#dde8e8', transition: 'color 0.2s' }}
+              onMouseOver={(e) => e.currentTarget.style.color = '#60a5fa'} 
+              onMouseOut={(e) => e.currentTarget.style.color = '#dde8e8'}
+            >
+              {item.headline}
+            </div>
+            
           </a>
         ))}
       </div>

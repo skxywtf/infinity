@@ -146,7 +146,10 @@ export default function MacroPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {govNews.length > 0 ? govNews.slice(0, 5).map((item, idx) => (
                 <a key={idx} href={item.link} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', display: 'block' }}>
-                  <div style={{ fontSize: '10px', color: '#60a5fa', fontWeight: 'bold', marginBottom: '3px' }}>{item.publisher.toUpperCase()}</div>
+                  <div style={{ fontSize: '10px', color: '#60a5fa', fontWeight: 'bold', marginBottom: '3px', display: 'flex', justifyContent: 'space-between' }}>
+                    <span>{item.publisher.toUpperCase()}</span>
+                    <span style={{ color: '#888', fontWeight: 'normal' }}>{getTimeAgo(item.time)}</span>
+                  </div>
                   <div style={{ fontSize: '13px', color: '#e2e8f0', lineHeight: '1.4', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = '#60a5fa'} onMouseOut={(e) => e.currentTarget.style.color = '#e2e8f0'}>{item.title}</div>
                 </a>
               )) : (
@@ -236,4 +239,19 @@ function WatchlistItem({ label, value, change, isPositive }: any) {
       </div>
     </div>
   );
+}
+
+// THE FIX: Parses the Unix Timestamp into a clean '2h ago' format
+function getTimeAgo(timeNum: number) {
+  if (!timeNum) return '';
+  // Convert Unix timestamp (seconds) to milliseconds
+  const diff = new Date().getTime() - new Date(timeNum * 1000).getTime();
+  const mins = Math.floor(diff / (1000 * 60));
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const days = Math.floor(hours / 24);
+  
+  if (days > 0) return `${days}d ago`;
+  if (hours > 0) return `${hours}h ago`;
+  if (mins > 0) return `${mins}m ago`;
+  return 'Just now';
 }
