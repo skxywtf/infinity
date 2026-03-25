@@ -173,12 +173,20 @@ export default function MacroPage() {
             {allTabs.map(tab => (
               <button key={tab} onClick={() => setActiveTab(tab)} style={{
                 background: activeTab === tab ? '#1b2226' : 'transparent',
-                color: activeTab === tab ? '#fff' : '#888',
-                border: SPECIAL_TABS.includes(tab) ? '1px solid #1b222666' : 'none',
-                padding: '10px 20px', borderRadius: '8px',
-                cursor: 'pointer', fontWeight: 600, transition: '0.2s', whiteSpace: 'nowrap',
-                ...(SPECIAL_TABS.includes(tab) && activeTab !== tab ? { color: '#d4af3799' } : {}),
-                ...(SPECIAL_TABS.includes(tab) && activeTab === tab ? { borderColor: '#d4af3733', color: '#d4af37' } : {}),
+                // FIXED: Explicitly set the color based on whether it is a special tab and active
+                color: SPECIAL_TABS.includes(tab) 
+                  ? (activeTab === tab ? '#d4af37' : '#d4af3799') 
+                  : (activeTab === tab ? '#fff' : '#888'),
+                // FIXED: Explicitly set the border shorthand to perfectly avoid the mixed property error
+                border: SPECIAL_TABS.includes(tab)
+                  ? (activeTab === tab ? '1px solid #d4af3733' : '1px solid #1b222666')
+                  : 'none',
+                padding: '10px 20px', 
+                borderRadius: '8px',
+                cursor: 'pointer', 
+                fontWeight: 600, 
+                transition: '0.2s', 
+                whiteSpace: 'nowrap',
               }}>
                 {tab}
               </button>
@@ -259,4 +267,3 @@ function getTimeAgo(timeNum: number) {
   if (mins > 0) return `${mins}m ago`;
   return 'Just now';
 }
-
