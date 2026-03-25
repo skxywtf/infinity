@@ -205,7 +205,7 @@ def get_series_registry(category: Optional[str] = Query(None), source: Optional[
 
 @spec_router.get("/api/migrate-spec")
 def run_migration():
-    """One-shot migration â each table in its own transaction so failures don't cascade."""
+    """One-shot migration Ã¢ÂÂ each table in its own transaction so failures don't cascade."""
     steps = []
     errors = []
 
@@ -352,4 +352,45 @@ def ingest_rss():
             except Exception as e:
                 errors.append(f"{feed['source']}: {str(e)[:80]}")
     return {"status": "ok", "inserted": inserted, "errors": errors}
+
+
+
+
+@spec_router.get("/api/seed-news")
+def seed_news_from_yahoo():
+    """Seed news_items table from the existing Yahoo /api/news endpoint."""
+    import requests as req
+    from datetime import datetime, timezone
+
+    # Call the Yahoo news endpoint on the same host
+    try:
+        resp = req.get("https://infinity-woad.vercel.app/api/news", timeout=15)
+        resp.raise_for_status()
+        data = resp.json()
+    except Exception as e:
+        return {"status": "error", "message": f"Failed to fetch news: {e}"}
+
+    items = data.get("data", [])
+    inserted = 0
+    errors = []
+
+    with engine.begin() as conn:
+        for item in items[:30]:
+            try:
+                title = item.get("title", "")[:500]
+                url = item.get("link", f"_no_url_{inserted}")
+                # Yahoo uses 'time' field (unix seconds)
+                t = item.get("time") or item.get("providerPublishTime")
+                pub_dt = datetime.fromtimestamp(t, tz=timezone.utc) if t else datetime.now(timezone.utc)
+                source = "YAHOO"
+                conn.execute(text("""
+                    INSERT INTO news_items (published_at, headline, source, url, related_series)
+                    VALUES (:pub, :headline, :source, :url, :related)
+                    ON CONFLICT DO NOTHING
+                """), {"pub": pub_dt, "headline": title, "source": source, "url": url, "related": []})
+                inserted += 1
+            except Exception as e:
+                errors.append(str(e)[:80])
+
+    return {"status": "ok", "inserted": inserted, "total": len(items), "errors": errors[:5]}
 
