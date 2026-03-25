@@ -7,14 +7,15 @@ import WTFNewsFeed from '@/components/macrodata/WTFNewsFeed';
 import EconCalendar from '@/components/macrodata/EconCalendar';
 import MacroBrief from '@/components/macrodata/MacroBrief';
 import VintageTracker from '@/components/macrodata/VintageTracker';
+import OecdWidget from '@/components/macrodata/OecdWidget'; // <-- Your new import!
 
 const MacroLineChart = dynamic(
   () => import('@/components/macrodata/MacroLineChart'),
   { ssr: false, loading: () => <p style={{ color: '#888', padding: '20px' }}>Loading chart data...</p> }
 );
 
-// --- FIXED: Added 'Positioning' back so it forces the tab to appear! ---
-const SPECIAL_TABS = ['Vintage Data', 'Calendar', 'WTF Brief', 'Positioning'];
+// --- FIXED: Added 'Global Macro' to the special tabs list so it appears in the menu! ---
+const SPECIAL_TABS = ['Vintage Data', 'Calendar', 'WTF Brief', 'Positioning', 'Global Macro'];
 const HIDDEN_TABS = ['Recession Data'];
 
 export default function MacroPage() {
@@ -189,6 +190,9 @@ export default function MacroPage() {
             {activeTab === 'Vintage Data' && <VintageTracker onDataFetched={setVintageChatData} />}
             {activeTab === 'Calendar' && <EconCalendar />}
             {activeTab === 'WTF Brief' && <MacroBrief />}
+            
+            {/* --- NEW: Our OECD Widget only shows when the 'Global Macro' tab is clicked! --- */}
+            {activeTab === 'Global Macro' && <OecdWidget />}
             
             {/* --- STANDARD DATABASE TABS + POSITIONING --- */}
             {(!SPECIAL_TABS.includes(activeTab) || activeTab === 'Positioning') && activeCharts.map((chart: any) => (
