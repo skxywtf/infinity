@@ -1,5 +1,5 @@
 """
-WTF EDGAR Integration — Python port of Edgar 2 Java pipeline
+WTF EDGAR Integration â Python port of Edgar 2 Java pipeline
 Ported from: com.wtf.edgar.{client,parser,model,server}
 """
 import time, requests
