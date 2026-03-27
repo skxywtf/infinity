@@ -43,6 +43,9 @@ export default function MacroPage() {
   // YOURS: State to catch the Vintage Data for the AI
   const [vintageChatData, setVintageChatData] = useState<any>(null);
 
+  // --- NEW: State to catch the Macro Regime Data for the AI ---
+  const [macroRegimeChatData, setMacroRegimeChatData] = useState<any>({});
+
   useEffect(() => {
     fetch('/api/tabs').then(r => r.json()).then(data => {
       setMetadata(data);
@@ -138,7 +141,15 @@ export default function MacroPage() {
             </div>
           </aside>
 
-          <RegimeWidget />
+          {/* --- NEW: Pass the callback to RegimeWidget --- */}
+          <RegimeWidget onDataFetched={(data) => {
+            setMacroRegimeChatData({
+              status: data.quadrant,
+              growth3m: `${data.growth_mom_annualized > 0 ? '+' : ''}${data.growth_mom_annualized}%`,
+              cpiYoy: `${data.cpi_yoy}%`,
+              cpi12mAvg: `${data.cpi_yoy_avg_12m}%`
+            });
+          }} />
           
           {/* --- YAHOO NEWS BAR --- */}
           <WTFNewsFeed maxItems={15} />
@@ -230,7 +241,15 @@ export default function MacroPage() {
         </section>
       </div>
 
-      <ChatPanel activeTab={activeTab} activeCharts={activeCharts} market={market} news={news} govNews={govNews} dynamicTabs={allTabs} />
+      <ChatPanel 
+        activeTab={activeTab} 
+        activeCharts={activeCharts} 
+        market={market} 
+        news={news} 
+        govNews={govNews} 
+        macroRegime={macroRegimeChatData} /* <-- NEW: Real dynamic data injected here! */
+        dynamicTabs={allTabs} 
+      />
 
       <style jsx>{`
         .terminal-grid { display: grid; grid-template-columns: 1fr; gap: 30px; }

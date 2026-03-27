@@ -2,20 +2,22 @@
 
 import React, { useState } from 'react';
 
-// UPGRADED: Added govNews to the incoming data props!
+// UPGRADED: Added macroRegime to the incoming data props!
 export default function ChatPanel({ 
   activeTab = '', 
   activeCharts = [],
   market = {},
   news = [],
-  govNews = [], // <-- NEW
+  govNews = [], 
+  macroRegime = {}, // <-- NEW
   dynamicTabs = []
 }: { 
   activeTab?: string, 
   activeCharts?: any[],
   market?: any,
   news?: any[],
-  govNews?: any[], // <-- NEW
+  govNews?: any[], 
+  macroRegime?: any, // <-- NEW
   dynamicTabs?: string[]
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -46,6 +48,17 @@ export default function ChatPanel({
       liveContext += `- Bitcoin (BTC): ${market?.btc?.price || 'Loading...'}\n`;
       liveContext += `- Gold (GC=F): ${market?.gold?.price || 'Loading...'}\n\n`;
 
+      // --- NEW DYNAMIC MACRO REGIME CONTEXT ---
+      liveContext += `[MACRO REGIME (Sidebar)]\n`;
+      if (macroRegime && Object.keys(macroRegime).length > 0) {
+        liveContext += `The user's dashboard currently shows the Active Macro Regime is '${macroRegime.status || 'Unknown'}'.\n`;
+        liveContext += `Current Stats shown: Growth (3m): ${macroRegime.growth3m || 'N/A'}, CPI YoY: ${macroRegime.cpiYoy || 'N/A'}, CPI 12m Avg: ${macroRegime.cpi12mAvg || 'N/A'}.\n`;
+        liveContext += `If the user asks about the regime, explain what '${macroRegime.status || 'this state'}' means for growth, inflation, and risk assets based on these numbers.\n\n`;
+      } else {
+        liveContext += `- Macro Regime data is currently loading or unavailable.\n\n`;
+      }
+      // ----------------------------------------
+
       // Tell it about the Live Wire (Top 3 news stories)
       liveContext += `[YAHOO LIVE WIRE NEWS]\n`;
       if (news && news.length > 0) {
@@ -73,7 +86,7 @@ export default function ChatPanel({
       liveContext += `The user is currently looking at the '${activeTab}' tab.\n`;
       liveContext += `If they ask about a chart not listed below, tell them: "Please click on the [Tab Name] tab so I can see that data!" (Available tabs: ${dynamicTabs.join(', ')}).\n\n`;
       
-      // --- NEW: SPECIAL TABS CONTEXT INJECTOR ---
+      // --- SPECIAL TABS CONTEXT INJECTOR ---
       if (activeTab === 'Global Macro') {
         liveContext += `The user is looking at the OECD G20 Real GDP Growth (Annualized %) Bar Chart. Current simulated data: India 7.8%, China 5.2%, USA 3.1%, Brazil 2.9%, Japan 1.9%, Australia 1.5%, Canada 1.1%, France 0.9%, UK 0.5%, Germany -0.3%.\n`;
       } else if (activeTab === 'Fundamentals') {

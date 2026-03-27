@@ -26,7 +26,13 @@ const QUADRANT_DESC: Record<string, string> = {
   Deflation:   'Growth ↓ · Inflation ↓',
 };
 
-export default function RegimeWidget() {
+// NEW: Add an interface for the incoming props
+interface RegimeWidgetProps {
+  onDataFetched?: (data: any) => void;
+}
+
+// NEW: Accept the onDataFetched prop
+export default function RegimeWidget({ onDataFetched }: RegimeWidgetProps) {
   const [regime, setRegime] = useState<RegimeData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -34,9 +40,16 @@ export default function RegimeWidget() {
   useEffect(() => {
     fetch('/api/regime')
       .then(r => r.json())
-      .then(data => { setRegime(data); setLoading(false); })
+      .then(data => { 
+        setRegime(data); 
+        setLoading(false); 
+        // NEW: Shout the data up to page.tsx!
+        if (onDataFetched) {
+          onDataFetched(data);
+        }
+      })
       .catch(() => { setError(true); setLoading(false); });
-  }, []);
+  }, [onDataFetched]);
 
   const borderColor = regime?.color ?? '#444';
 
