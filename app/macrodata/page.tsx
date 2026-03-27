@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import ChatPanel from '@/components/macrodata/ChatPanel';
@@ -6,16 +7,17 @@ import RegimeWidget from '@/components/macrodata/RegimeWidget';
 import WTFNewsFeed from '@/components/macrodata/WTFNewsFeed';
 import EconCalendar from '@/components/macrodata/EconCalendar';
 import MacroBrief from '@/components/macrodata/MacroBrief';
-import VintageTracker from '@/components/macrodata/VintageTracker';
-import OecdWidget from '@/components/macrodata/OecdWidget'; // <-- Your new import!
+import Fundamentals from '@/components/macrodata/Fundamentals'; // <-- Sage's new import
+import VintageTracker from '@/components/macrodata/VintageTracker'; // <-- Your import
+import OecdWidget from '@/components/macrodata/OecdWidget'; // <-- Your import
 
 const MacroLineChart = dynamic(
   () => import('@/components/macrodata/MacroLineChart'),
   { ssr: false, loading: () => <p style={{ color: '#888', padding: '20px' }}>Loading chart data...</p> }
 );
 
-// --- FIXED: Added 'Global Macro' to the special tabs list so it appears in the menu! ---
-const SPECIAL_TABS = ['Vintage Data', 'Calendar', 'WTF Brief', 'Positioning', 'Global Macro'];
+// COMBINED: Includes Sage's 'Fundamentals' AND your 'Vintage Data' & 'Global Macro'
+const SPECIAL_TABS = ['Vintage Data', 'Calendar', 'WTF Brief', 'Fundamentals', 'Positioning', 'Global Macro'];
 const HIDDEN_TABS = ['Recession Data'];
 
 export default function MacroPage() {
@@ -24,6 +26,7 @@ export default function MacroPage() {
   const [recessionData, setRecession] = useState<any[]>([]);
   const [latestGDP, setLatestGDP]     = useState<number | null>(null);
   const [isSidebarOpen, setSidebar]   = useState(false);
+  
   const [market, setMarket] = useState<any>({
     spy:  { price: '---', change: '0.00%', pos: true },
     ief:  { price: '---', change: '0.00%', pos: true },
@@ -33,10 +36,11 @@ export default function MacroPage() {
   });
   
   const [news, setNews] = useState<any[]>([]);
-  // --- NEW: Added state to store our official Government News! ---
+  
+  // YOURS: State to store official Government News
   const [govNews, setGovNews] = useState<any[]>([]);
   
-  // --- NEW: Added state to catch the Vintage Data for the AI ---
+  // YOURS: State to catch the Vintage Data for the AI
   const [vintageChatData, setVintageChatData] = useState<any>(null);
 
   useEffect(() => {
@@ -70,7 +74,7 @@ export default function MacroPage() {
       } catch { setNews([]); }
     };
 
-    // --- NEW: Fetch the Phase 1 Government RSS Feed! ---
+    // YOURS: Fetch the Government RSS Feed
     const fetchGovNews = async () => {
       try {
         const r = await fetch('/api/gov-news');
@@ -100,6 +104,7 @@ export default function MacroPage() {
 
   let activeCharts = metadata.filter((m: any) => m.tab_name === activeTab);
   
+  // YOURS: Vintage Data AI override
   if (activeTab === 'Vintage Data' && vintageChatData) {
     activeCharts = [vintageChatData];
   }
@@ -123,11 +128,11 @@ export default function MacroPage() {
           <aside className="card" style={{ background: '#0b0f0f', border: '1px solid #1b2226', borderRadius: '16px', padding: '20px' }}>
             <div style={{ fontSize: '12px', fontWeight: 700, opacity: 0.5, marginBottom: '20px', letterSpacing: '1px' }}>WATCHLIST</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <WatchlistItem label="S&P 500 (SPY)"    value={market.spy.price}  change={market.spy.change}  isPositive={market.spy.pos} />
-              <WatchlistItem label="US 10Y Yield (IEF)" value={market.ief.price} change={market.ief.change} isPositive={market.ief.pos} />
-              <WatchlistItem label="DXY Index (UUP)"  value={market.uup.price}  change={market.uup.change}  isPositive={market.uup.pos} />
-              <WatchlistItem label="Bitcoin (BTC)"    value={market.btc.price}  change={market.btc.change}  isPositive={market.btc.pos} />
-              <WatchlistItem label="Gold (GC=F)"      value={market.gold.price} change={market.gold.change} isPositive={market.gold.pos} />
+              <WatchlistItem label="S&P 500 (SPY)"      value={market.spy.price}  change={market.spy.change}  isPositive={market.spy.pos} />
+              <WatchlistItem label="US 10Y Yield (IEF)" value={market.ief.price}  change={market.ief.change}  isPositive={market.ief.pos} />
+              <WatchlistItem label="DXY Index (UUP)"    value={market.uup.price}  change={market.uup.change}  isPositive={market.uup.pos} />
+              <WatchlistItem label="Bitcoin (BTC)"      value={market.btc.price}  change={market.btc.change}  isPositive={market.btc.pos} />
+              <WatchlistItem label="Gold (GC=F)"        value={market.gold.price} change={market.gold.change} isPositive={market.gold.pos} />
               <div style={{ height: '1px', background: '#1b2226', margin: '5px 0' }} />
               <WatchlistItem label="Real GDP (BEA)" value={latestGDP !== null ? `${(latestGDP / 1000).toFixed(2)}T` : '---'} change="Quarterly" isPositive />
             </div>
@@ -138,7 +143,7 @@ export default function MacroPage() {
           {/* --- YAHOO NEWS BAR --- */}
           <WTFNewsFeed maxItems={15} />
 
-          {/* --- NEW: OFFICIAL GOVERNMENT WIRE --- */}
+          {/* --- YOURS: OFFICIAL GOVERNMENT WIRE --- */}
           <aside className="card" style={{ background: '#0b0f0f', border: '1px solid #1b2226', borderRadius: '16px', padding: '20px' }}>
             <div style={{ fontSize: '12px', fontWeight: 700, color: '#3b82f6', marginBottom: '15px', letterSpacing: '1px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span>GOV WIRE</span>
@@ -173,11 +178,9 @@ export default function MacroPage() {
             {allTabs.map(tab => (
               <button key={tab} onClick={() => setActiveTab(tab)} style={{
                 background: activeTab === tab ? '#1b2226' : 'transparent',
-                // FIXED: Explicitly set the color based on whether it is a special tab and active
                 color: SPECIAL_TABS.includes(tab) 
                   ? (activeTab === tab ? '#d4af37' : '#d4af3799') 
                   : (activeTab === tab ? '#fff' : '#888'),
-                // FIXED: Explicitly set the border shorthand to perfectly avoid the mixed property error
                 border: SPECIAL_TABS.includes(tab)
                   ? (activeTab === tab ? '1px solid #d4af3733' : '1px solid #1b222666')
                   : 'none',
@@ -194,14 +197,19 @@ export default function MacroPage() {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
-            {/* --- SPECIAL CUSTOM TABS --- */}
+            {/* --- COMBINED SPECIAL CUSTOM TABS --- */}
             {activeTab === 'Vintage Data' && <VintageTracker onDataFetched={setVintageChatData} />}
-            {activeTab === 'Calendar' && <EconCalendar />}
-            {activeTab === 'WTF Brief' && <MacroBrief />}
-            
-            {/* --- NEW: Our OECD Widget only shows when the 'Global Macro' tab is clicked! --- */}
+            {activeTab === 'Calendar'     && <EconCalendar />}
+            {activeTab === 'WTF Brief'    && <MacroBrief />}
+            {activeTab === 'Fundamentals' && <Fundamentals />}
             {activeTab === 'Global Macro' && <OecdWidget />}
             
+            {activeTab === 'Positioning' && activeCharts.length === 0 && (
+              <div style={{ background: '#0b0f0f', border: '1px solid #1b2226', borderRadius: '16px', padding: '40px', textAlign: 'center', color: '#444', fontSize: '13px' }}>
+                No positioning data yet.
+              </div>
+            )}
+
             {/* --- STANDARD DATABASE TABS + POSITIONING --- */}
             {(!SPECIAL_TABS.includes(activeTab) || activeTab === 'Positioning') && activeCharts.map((chart: any) => (
               <div key={chart.series_id} className="card chart-wrapper" style={{ background: '#0b0f0f', border: '1px solid #1b2226', borderRadius: '16px', padding: '20px', overflow: 'hidden' }}>
@@ -253,10 +261,9 @@ function WatchlistItem({ label, value, change, isPositive }: any) {
   );
 }
 
-// THE FIX: Parses the Unix Timestamp into a clean '2h ago' format
+// YOURS: Helper to parse GovWire time
 function getTimeAgo(timeNum: number) {
   if (!timeNum) return '';
-  // Convert Unix timestamp (seconds) to milliseconds
   const diff = new Date().getTime() - new Date(timeNum * 1000).getTime();
   const mins = Math.floor(diff / (1000 * 60));
   const hours = Math.floor(diff / (1000 * 60 * 60));
