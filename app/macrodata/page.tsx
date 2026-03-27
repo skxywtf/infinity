@@ -230,7 +230,7 @@ export default function MacroPage() {
         </section>
       </div>
 
-      <ChatPanel activeTab={activeTab} activeCharts={activeCharts} market={market} news={news} dynamicTabs={allTabs} />
+      <ChatPanel activeTab={activeTab} activeCharts={activeCharts} market={market} news={news} govNews={govNews} dynamicTabs={allTabs} />
 
       <style jsx>{`
         .terminal-grid { display: grid; grid-template-columns: 1fr; gap: 30px; }
