@@ -31,3 +31,7 @@ python-dotenv
 
 # openbb  <-- REMOVED because it's too large for Vercel. We use Google Cloud Run now!
 # psycopg2-binary <-- REMOVED due to Vercel wheel errors. Replaced with pg8000.
+
+
+pandas==2.2.1
+openpyxl==3.1.2
