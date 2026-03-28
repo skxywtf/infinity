@@ -66,7 +66,7 @@ export default function OecdWidget() {
     <div className="p-6 bg-[#0b0f0f] border border-[#1b2226] rounded-2xl shadow-lg w-full">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-xl font-bold text-white mb-1">G20 Macro Coverage (OECD)</h2>
+          <h2 className="text-xl font-bold text-white mb-1">G20 Macro Coverage (World Bank)</h2>
           <p className="text-xs text-[#888]">Real GDP Growth (Annualized %)</p>
         </div>
         <div className="px-3 py-1 bg-[#1e3a8a33] border border-[#1e3a8a] rounded text-[#60a5fa] text-xs font-bold">
