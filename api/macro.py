@@ -10,6 +10,8 @@ import io
 import csv
 import xml.etree.ElementTree as ET
 import email.utils
+import pandas as pd
+from io import BytesIO
 
 load_dotenv()
 
@@ -515,4 +517,81 @@ def get_oecd_data():
         
     except Exception as e:
         print("Live Macro Data Error:", e)
+        return {"error": str(e)}
+
+
+# --- ADMIN TRIGGER: UPDATE PHILLY FED SPF (CONSENSUS FORECASTS) ---
+
+@router.get("/api/admin/update-spf")
+def update_philly_fed_spf():
+    """
+    Downloads the quarterly Survey of Professional Forecasters (SPF) Excel files.
+    Parses Median GDP, CPI, and Unemployment forecasts and saves them to the events table.
+    """
+    # The direct URLs from your developer specification
+    spf_sources = {
+        "GDP YoY": "https://www.philadelphiafed.org/-/media/frbp/assets/surveys-and-data/survey-of-professional-forecasters/data-files/files/median_rgdp_level.xlsx",
+        "CPI Headline YoY": "https://www.philadelphiafed.org/-/media/frbp/assets/surveys-and-data/survey-of-professional-forecasters/data-files/files/median_cpi.xlsx",
+        "Unemployment Rate": "https://www.philadelphiafed.org/-/media/frbp/assets/surveys-and-data/survey-of-professional-forecasters/data-files/files/median_unemp.xlsx"
+    }
+    
+    headers = {'User-Agent': 'Mozilla/5.0'}
+    records_to_insert = []
+    
+    try:
+        for indicator_name, url in spf_sources.items():
+            res = requests.get(url, headers=headers, timeout=10)
+            if res.status_code != 200:
+                print(f"Failed to fetch {indicator_name} from Philly Fed")
+                continue
+                
+            # Read the Excel file directly from memory
+            df = pd.read_excel(BytesIO(res.content), engine='openpyxl')
+            
+            # Keep only the last 4 quarters (1 year) of forecasts to keep DB clean
+            recent_data = df.tail(4).to_dict('records')
+            
+            for row in recent_data:
+                year = int(row.get("YEAR", 0))
+                quarter = int(row.get("QUARTER", 0))
+                
+                if year == 0 or quarter == 0:
+                    continue
+                    
+                # Map Quarter to a rough release date (e.g., Q1 = March 31)
+                month_map = {1: "03-31", 2: "06-30", 3: "09-30", 4: "12-31"}
+                event_date = f"{year}-{month_map[quarter]}"
+                
+                # The forecast value is usually stored in the column that matches the series name 
+                # (e.g., 'EMP' for unemployment, 'CPI' for CPI). 
+                # We'll grab the last column which typically holds the current quarter's forecast.
+                forecast_key = list(row.keys())[-1] 
+                consensus_val = row.get(forecast_key)
+                
+                if pd.notna(consensus_val):
+                    records_to_insert.append({
+                        "event_date": event_date,
+                        "indicator": indicator_name,
+                        "country": "USA",
+                        "consensus": round(float(consensus_val), 2),
+                        "source": "philly_fed_spf"
+                    })
+
+        # Insert into the 'events' table
+        if records_to_insert:
+            with engine.begin() as conn:
+                for rec in records_to_insert:
+                    conn.execute(text("""
+                        INSERT INTO events (event_date, indicator, country, consensus, source)
+                        VALUES (:event_date, :indicator, :country, :consensus, :source)
+                        ON CONFLICT DO NOTHING
+                    """), rec)
+                    
+        return {
+            "status": "Success! Philly Fed SPF Consensus Data Updated.",
+            "records_added": len(records_to_insert)
+        }
+
+    except Exception as e:
+        print("SPF Data Error:", e)
         return {"error": str(e)}
