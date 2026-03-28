@@ -395,3 +395,71 @@ def get_gov_news():
     news_items.sort(key=lambda x: x["time"], reverse=True)
 
     return {"data": news_items[:15]} # Return the top 15 most recent government updates
+
+
+# --- LIVE ECB & FRED DATA PORTAL ROUTE ---
+
+@router.get("/api/ecb")
+def get_ecb_data():
+    """
+    Fetches 100% LIVE inflation data:
+    1. Eurozone HICP from the European Central Bank (Year-over-Year %)
+    2. US CPI from FRED (Year-over-Year %)
+    """
+    try:
+        # 1. FETCH LIVE EUROZONE INFLATION FROM ECB
+        # We request 'csvdata' because ECB's JSON format is notoriously difficult to parse
+        ecb_url = "https://data-api.ecb.europa.eu/service/data/ICP/M.U2.N.000000.4.ANR?lastNObservations=12&format=csvdata"
+        ecb_res = requests.get(ecb_url, timeout=5)
+        
+        # Read the CSV data line by line
+        ecb_lines = ecb_res.text.splitlines()
+        ecb_reader = csv.DictReader(ecb_lines)
+        
+        ez_dict = {}
+        for row in ecb_reader:
+            # TIME_PERIOD is '2023-03', OBS_VALUE is '6.9'
+            period = row.get("TIME_PERIOD")
+            val = row.get("OBS_VALUE")
+            if period and val:
+                ez_dict[period] = float(val)
+
+        # 2. FETCH LIVE US INFLATION FROM FRED
+        fred_api_key = os.getenv("FRED_API_KEY")
+        if not fred_api_key:
+            return {"error": "Missing FRED_API_KEY"}
+            
+        # Notice 'units=pc1' - this tells FRED to automatically calculate the Year-Over-Year % change!
+        fred_url = f"https://api.stlouisfed.org/fred/series/observations?series_id=CPIAUCSL&api_key={fred_api_key}&file_type=json&units=pc1&sort_order=desc&limit=12"
+        fred_res = requests.get(fred_url, timeout=5).json()
+        
+        us_dict = {}
+        for obs in fred_res.get("observations", []):
+            # FRED dates look like '2023-03-01'. We slice the first 7 chars ('2023-03') to match the ECB format
+            period = obs["date"][:7] 
+            val = obs["value"]
+            if val != ".":
+                us_dict[period] = round(float(val), 1)
+
+        # 3. COMBINE BOTH LIVE DATASETS FOR THE CHART
+        combined_data = []
+        
+        # Sort the dates chronologically (oldest to newest)
+        sorted_periods = sorted(ez_dict.keys()) 
+        
+        for period in sorted_periods:
+            # Convert '2023-03' into 'Mar 2023' so it looks beautiful on your X-Axis
+            date_obj = datetime.datetime.strptime(period, "%Y-%m")
+            formatted_month = date_obj.strftime("%b %Y")
+            
+            combined_data.append({
+                "month": formatted_month,
+                "ez": ez_dict[period],
+                "us": us_dict.get(period, 0.0) # Grab the matching US data for that same month
+            })
+            
+        return {"data": combined_data}
+        
+    except Exception as e:
+        print("Live Data Error:", e)
+        return {"error": str(e)}
