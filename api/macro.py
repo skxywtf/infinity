@@ -526,18 +526,18 @@ def get_oecd_data():
 def update_philly_fed_spf():
     """
     Downloads the quarterly Survey of Professional Forecasters (SPF) Excel files.
-    Upgraded with corrected URLs and graceful error skipping.
+    Updated with the definitive exact paths and detailed failure logging.
     """
-    # CORRECTED URLs: Philly Fed moved these to the /historical-data/ directory
+    # DEFINITIVE URLs: Removed the extra /files/ subdirectory
     spf_sources = {
-        "GDP YoY": "https://www.philadelphiafed.org/-/media/frbp/assets/surveys-and-data/survey-of-professional-forecasters/historical-data/median_rgdp_level.xlsx",
-        "CPI Headline YoY": "https://www.philadelphiafed.org/-/media/frbp/assets/surveys-and-data/survey-of-professional-forecasters/historical-data/median_cpi.xlsx",
-        "Unemployment Rate": "https://www.philadelphiafed.org/-/media/frbp/assets/surveys-and-data/survey-of-professional-forecasters/historical-data/median_unemp.xlsx"
+        "GDP YoY": "https://www.philadelphiafed.org/-/media/frbp/assets/surveys-and-data/survey-of-professional-forecasters/data-files/median_rgdp_level.xlsx",
+        "CPI Headline YoY": "https://www.philadelphiafed.org/-/media/frbp/assets/surveys-and-data/survey-of-professional-forecasters/data-files/median_cpi.xlsx",
+        "Unemployment Rate": "https://www.philadelphiafed.org/-/media/frbp/assets/surveys-and-data/survey-of-professional-forecasters/data-files/median_unemp.xlsx"
     }
     
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel, text/html, */*'
+        'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel'
     }
     
     records_to_insert = []
@@ -547,9 +547,14 @@ def update_philly_fed_spf():
         for indicator_name, url in spf_sources.items():
             res = requests.get(url, headers=headers, timeout=15)
             
-            # If the URL is dead, record it and move to the next one
-            if res.status_code != 200 or not res.content.startswith(b'PK'):
-                failed_downloads.append(indicator_name)
+            # Detailed error logging so we know exactly what is failing
+            if res.status_code != 200:
+                failed_downloads.append(f"{indicator_name} (Failed: HTTP {res.status_code})")
+                continue
+                
+            if not res.content.startswith(b'PK'):
+                snippet = res.content[:50].decode('utf-8', errors='ignore').replace('\n', ' ')
+                failed_downloads.append(f"{indicator_name} (Failed: Not a ZIP/Excel. Returned: {snippet})")
                 continue
                 
             df = pd.read_excel(BytesIO(res.content), engine='openpyxl')
@@ -565,7 +570,6 @@ def update_philly_fed_spf():
                 month_map = {1: "03-31", 2: "06-30", 3: "09-30", 4: "12-31"}
                 event_date = f"{year}-{month_map[quarter]}"
                 
-                # Grab the actual forecast value
                 forecast_key = list(row.keys())[-1] 
                 consensus_val = row.get(forecast_key)
                 
@@ -578,7 +582,6 @@ def update_philly_fed_spf():
                         "source": "philly_fed_spf"
                     })
 
-        # Insert into the database
         if records_to_insert:
             with engine.begin() as conn:
                 for rec in records_to_insert:
