@@ -463,3 +463,65 @@ def get_ecb_data():
     except Exception as e:
         print("Live Data Error:", e)
         return {"error": str(e)}
+    
+
+
+# --- LIVE OECD G20 GDP ROUTE ---
+
+@router.get("/api/oecd")
+def get_oecd_data():
+    """
+    Fetches LIVE Real GDP Growth (Annualized) for G20 nations.
+    Uses the official OECD SDMX JSON API.
+    """
+    try:
+        # OECD SDMX-JSON API for Quarterly National Accounts (QNA)
+        # B1_GE = Gross domestic product
+        # CQRSA = Percentage change from previous quarter, seasonally adjusted, annualized
+        # We fetch a basket of major G20 countries
+        countries = "IND+CHN+USA+BRA+JPN+AUS+CAN+FRA+GBR+DEU"
+        oecd_url = f"https://stats.oecd.org/SDMX-JSON/data/QNA/{countries}.B1_GE.CQRSA.Q/all?lastNObservations=1"
+        
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        res = requests.get(oecd_url, headers=headers, timeout=10)
+        
+        if res.status_code != 200:
+            return {"error": "OECD API is currently down or rate limited."}
+            
+        json_data = res.json()
+        
+        # Parse the complex SDMX-JSON format
+        observations = json_data.get("dataSets", [])[0].get("observations", {})
+        country_metadata = json_data.get("structure", {}).get("dimensions", {}).get("observation", [])[0].get("values", [])
+        
+        live_g20_data = []
+        
+        # Loop through the parsed data and map the country codes to the GDP values
+        for key, obs in observations.items():
+            # The key looks like "0:0:0:0" where the first number is the country index
+            country_idx = int(key.split(":")[0])
+            country_info = country_metadata[country_idx]
+            
+            # Map OECD country codes to nice names
+            code_to_name = {
+                "IND": "India", "CHN": "China", "USA": "USA", "BRA": "Brazil",
+                "JPN": "Japan", "AUS": "Australia", "CAN": "Canada", 
+                "FRA": "France", "GBR": "UK", "DEU": "Germany"
+            }
+            
+            country_name = code_to_name.get(country_info["id"], country_info["name"])
+            gdp_value = round(float(obs[0]), 1)
+            
+            live_g20_data.append({
+                "country": country_name,
+                "gdp": gdp_value
+            })
+            
+        # Sort from highest GDP growth to lowest GDP growth so the bar chart looks clean
+        live_g20_data.sort(key=lambda x: x["gdp"], reverse=True)
+        
+        return {"data": live_g20_data}
+        
+    except Exception as e:
+        print("Live OECD Data Error:", e)
+        return {"error": str(e)}
