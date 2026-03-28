@@ -629,3 +629,26 @@ def update_philly_fed_spf():
     except Exception as e:
         import traceback
         return {"error": str(e), "trace": traceback.format_exc()}
+    
+
+@router.get("/api/consensus")
+def get_consensus_data():
+    """
+    Fetches the Philly Fed SPF consensus forecasts from the database for the frontend.
+    """
+    try:
+        # Query the events table for our new SPF data
+        with engine.connect() as conn:
+            result = conn.execute(text("""
+                SELECT indicator, event_date, consensus 
+                FROM events 
+                WHERE source = 'philly_fed_spf'
+                ORDER BY indicator ASC, event_date ASC
+            """))
+            
+            data = [dict(row) for row in result.mappings()]
+            
+            return {"data": data}
+    except Exception as e:
+        print("Consensus Fetch Error:", e)
+        return {"error": str(e)}
