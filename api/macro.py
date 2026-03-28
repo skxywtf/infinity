@@ -466,60 +466,87 @@ def get_ecb_data():
     
 
 
-# --- LIVE OECD G20 GDP ROUTE ---
+
+# --- LIVE OECD G20 GDP ROUTE (UPDATED FOR NEW SDMX API) ---
 
 @router.get("/api/oecd")
 def get_oecd_data():
     """
-    Fetches LIVE Real GDP Growth (Annualized) for G20 nations.
-    Uses the official OECD SDMX JSON API.
+    Fetches LIVE Real GDP Growth for G20 nations.
+    Updated to use the new OECD SDMX v2 Data Explorer API.
     """
     try:
-        # OECD SDMX-JSON API for Quarterly National Accounts (QNA)
-        # B1_GE = Gross domestic product
-        # CQRSA = Percentage change from previous quarter, seasonally adjusted, annualized
-        # We fetch a basket of major G20 countries
-        countries = "IND+CHN+USA+BRA+JPN+AUS+CAN+FRA+GBR+DEU"
-        oecd_url = f"https://stats.oecd.org/SDMX-JSON/data/QNA/{countries}.B1_GE.CQRSA.Q/all?lastNObservations=1"
+        import requests
         
-        headers = {'User-Agent': 'Mozilla/5.0'}
-        res = requests.get(oecd_url, headers=headers, timeout=10)
+        # The new OECD Data Explorer SDMX REST API
+        # DSD_NAMAIN1@DF_QNA_EXPENDITURE_GROWTH_OECD is the new dataset ID for QNA Growth
+        # We filter for Quarterly (Q) and our specific basket of G20 countries
+        countries = "AUS+BRA+CAN+CHN+FRA+DEU+IND+JPN+GBR+USA"
+        
+        # Constructing the new SDMX v2 URL
+        oecd_url = f"https://sdmx.oecd.org/public/rest/data/OECD.SDD.NAD,DSD_NAMAIN1@DF_QNA_EXPENDITURE_GROWTH_OECD/Q..{countries}.........?lastNObservations=1"
+        
+        # We must explicitly ask for JSON format in the headers for the new API
+        headers = {
+            'Accept': 'application/vnd.sdmx.data+json; charset=utf-8; version=2.0',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+        }
+        
+        res = requests.get(oecd_url, headers=headers, timeout=15)
         
         if res.status_code != 200:
-            return {"error": "OECD API is currently down or rate limited."}
+            return {"error": f"OECD API Error: {res.status_code}"}
             
         json_data = res.json()
         
-        # Parse the complex SDMX-JSON format
-        observations = json_data.get("dataSets", [])[0].get("observations", {})
-        country_metadata = json_data.get("structure", {}).get("dimensions", {}).get("observation", [])[0].get("values", [])
+        # The new SDMX-JSON v2.0 structure is nested differently than the old one
+        observations = json_data.get("data", {}).get("dataSets", [])[0].get("observations", {})
         
+        # Extract the country metadata to map the dimensions back to country codes
+        dimensions = json_data.get("data", {}).get("structure", {}).get("dimensions", {}).get("observation", [])
+        
+        # Find the index of the "REF_AREA" (Country) dimension
+        ref_area_idx = 0
+        country_values = []
+        for i, dim in enumerate(dimensions):
+            if dim.get("id") == "REF_AREA":
+                ref_area_idx = i
+                country_values = dim.get("values", [])
+                break
+                
         live_g20_data = []
         
-        # Loop through the parsed data and map the country codes to the GDP values
-        for key, obs in observations.items():
-            # The key looks like "0:0:0:0" where the first number is the country index
-            country_idx = int(key.split(":")[0])
-            country_info = country_metadata[country_idx]
-            
-            # Map OECD country codes to nice names
-            code_to_name = {
-                "IND": "India", "CHN": "China", "USA": "USA", "BRA": "Brazil",
-                "JPN": "Japan", "AUS": "Australia", "CAN": "Canada", 
-                "FRA": "France", "GBR": "UK", "DEU": "Germany"
-            }
-            
-            country_name = code_to_name.get(country_info["id"], country_info["name"])
-            gdp_value = round(float(obs[0]), 1)
-            
-            live_g20_data.append({
-                "country": country_name,
-                "gdp": gdp_value
-            })
-            
-        # Sort from highest GDP growth to lowest GDP growth so the bar chart looks clean
-        live_g20_data.sort(key=lambda x: x["gdp"], reverse=True)
+        # Map official OECD codes to clean UI names
+        code_to_name = {
+            "IND": "India", "CHN": "China", "USA": "USA", "BRA": "Brazil",
+            "JPN": "Japan", "AUS": "Australia", "CAN": "Canada", 
+            "FRA": "France", "GBR": "UK", "DEU": "Germany"
+        }
         
+        # Parse the new observation keys (e.g., "0:0:3:0:0:0:0:0:0:0")
+        for key, obs in observations.items():
+            key_parts = key.split(":")
+            # The country code is located at the ref_area_idx in the key
+            country_val_idx = int(key_parts[ref_area_idx])
+            country_code = country_values[country_val_idx].get("id")
+            
+            if country_code in code_to_name:
+                country_name = code_to_name[country_code]
+                # In SDMX v2 JSON, the value is an array where the first item is the data point
+                gdp_value = round(float(obs[0]), 1)
+                
+                live_g20_data.append({
+                    "country": country_name,
+                    "gdpGrowth": gdp_value
+                })
+            
+        # Sort from highest to lowest so the bar chart looks clean
+        live_g20_data.sort(key=lambda x: x["gdpGrowth"], reverse=True)
+        
+        # If the API succeeds but returns empty data, throw an error to trigger the frontend fallback
+        if not live_g20_data:
+            return {"error": "API connected but returned empty dimensions."}
+            
         return {"data": live_g20_data}
         
     except Exception as e:
