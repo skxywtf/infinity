@@ -219,6 +219,8 @@ export default function MacroPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <OecdWidget />
                 <EcbWidget />
+                {/* ADD THIS LINE BELOW */}
+                <ConsensusWidget /> 
               </div>
             )}
             
