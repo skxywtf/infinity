@@ -526,43 +526,33 @@ def get_oecd_data():
 def update_philly_fed_spf():
     """
     Downloads the quarterly Survey of Professional Forecasters (SPF) Excel files.
-    Upgraded with anti-bot headers and file-type validation.
+    Upgraded with corrected URLs and graceful error skipping.
     """
-    # The direct URLs for the SPF data
+    # CORRECTED URLs: Philly Fed moved these to the /historical-data/ directory
     spf_sources = {
-        "GDP YoY": "https://www.philadelphiafed.org/-/media/frbp/assets/surveys-and-data/survey-of-professional-forecasters/data-files/files/median_rgdp_level.xlsx",
-        "CPI Headline YoY": "https://www.philadelphiafed.org/-/media/frbp/assets/surveys-and-data/survey-of-professional-forecasters/data-files/files/median_cpi.xlsx",
-        "Unemployment Rate": "https://www.philadelphiafed.org/-/media/frbp/assets/surveys-and-data/survey-of-professional-forecasters/data-files/files/median_unemp.xlsx"
+        "GDP YoY": "https://www.philadelphiafed.org/-/media/frbp/assets/surveys-and-data/survey-of-professional-forecasters/historical-data/median_rgdp_level.xlsx",
+        "CPI Headline YoY": "https://www.philadelphiafed.org/-/media/frbp/assets/surveys-and-data/survey-of-professional-forecasters/historical-data/median_cpi.xlsx",
+        "Unemployment Rate": "https://www.philadelphiafed.org/-/media/frbp/assets/surveys-and-data/survey-of-professional-forecasters/historical-data/median_unemp.xlsx"
     }
     
-    # Advanced headers to perfectly mimic a Google Chrome browser
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel, text/html, */*',
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Connection': 'keep-alive'
+        'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel, text/html, */*'
     }
     
     records_to_insert = []
+    failed_downloads = []
     
     try:
         for indicator_name, url in spf_sources.items():
             res = requests.get(url, headers=headers, timeout=15)
             
-            if res.status_code != 200:
-                print(f"Failed to fetch {indicator_name}. Status: {res.status_code}")
+            # If the URL is dead, record it and move to the next one
+            if res.status_code != 200 or not res.content.startswith(b'PK'):
+                failed_downloads.append(indicator_name)
                 continue
                 
-            # SAFETY CHECK: A valid .xlsx file is a ZIP archive, which always starts with the bytes "PK"
-            if not res.content.startswith(b'PK'):
-                # It's an HTML page or an old .xls file. Let's return the text so we can see what the Fed is doing.
-                snippet = res.content[:250].decode('utf-8', errors='ignore')
-                return {"error": f"Philly Fed blocked the download for {indicator_name}. Server returned: {snippet}"}
-                
-            # If it passes the check, read the Excel file directly from memory
             df = pd.read_excel(BytesIO(res.content), engine='openpyxl')
-            
-            # Keep only the last 4 quarters (1 year) of forecasts
             recent_data = df.tail(4).to_dict('records')
             
             for row in recent_data:
@@ -572,11 +562,10 @@ def update_philly_fed_spf():
                 if year == 0 or quarter == 0:
                     continue
                     
-                # Map Quarter to a rough release date (e.g., Q1 = March 31)
                 month_map = {1: "03-31", 2: "06-30", 3: "09-30", 4: "12-31"}
                 event_date = f"{year}-{month_map[quarter]}"
                 
-                # The forecast value is usually stored in the column that matches the series name
+                # Grab the actual forecast value
                 forecast_key = list(row.keys())[-1] 
                 consensus_val = row.get(forecast_key)
                 
@@ -589,7 +578,7 @@ def update_philly_fed_spf():
                         "source": "philly_fed_spf"
                     })
 
-        # Insert into the 'events' table
+        # Insert into the database
         if records_to_insert:
             with engine.begin() as conn:
                 for rec in records_to_insert:
@@ -600,8 +589,9 @@ def update_philly_fed_spf():
                     """), rec)
                     
         return {
-            "status": "Success! Philly Fed SPF Consensus Data Updated.",
-            "records_added": len(records_to_insert)
+            "status": "Philly Fed SPF Update Complete",
+            "records_added": len(records_to_insert),
+            "failed_indicators": failed_downloads
         }
 
     except Exception as e:
