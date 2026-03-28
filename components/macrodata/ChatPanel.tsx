@@ -87,8 +87,11 @@ export default function ChatPanel({
       liveContext += `If they ask about a chart not listed below, tell them: "Please click on the [Tab Name] tab so I can see that data!" (Available tabs: ${dynamicTabs.join(', ')}).\n\n`;
       
       // --- SPECIAL TABS CONTEXT INJECTOR ---
+      // --- SPECIAL TABS CONTEXT INJECTOR ---
       if (activeTab === 'Global Macro') {
-        liveContext += `The user is looking at the OECD G20 Real GDP Growth (Annualized %) Bar Chart. Current simulated data: India 7.8%, China 5.2%, USA 3.1%, Brazil 2.9%, Japan 1.9%, Australia 1.5%, Canada 1.1%, France 0.9%, UK 0.5%, Germany -0.3%.\n`;
+        liveContext += `The user is looking at two charts in the Global Macro tab.\n`;
+        liveContext += `1. OECD G20 Real GDP Growth (Annualized %): India 7.8%, China 5.2%, USA 3.1%, Brazil 2.9%, Japan 1.9%, Australia 1.5%, Canada 1.1%, France 0.9%, UK 0.5%, Germany -0.3%.\n`;
+        liveContext += `2. Inflation Divergence (YoY %): Comparing US CPI vs Eurozone HICP. The latest data point shows US CPI at 3.2% and Eurozone HICP at 2.6%. Eurozone inflation is currently cooling faster than the US.\n`;
       } else if (activeTab === 'Fundamentals') {
         liveContext += `The user is looking at the Fundamentals tab which tracks core economic and market fundamentals.\n`;
       } else if (activeTab === 'Calendar') {

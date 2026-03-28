@@ -10,6 +10,7 @@ import MacroBrief from '@/components/macrodata/MacroBrief';
 import Fundamentals from '@/components/macrodata/Fundamentals'; // <-- Sage's new import
 import VintageTracker from '@/components/macrodata/VintageTracker'; // <-- Your import
 import OecdWidget from '@/components/macrodata/OecdWidget'; // <-- Your import
+import EcbWidget from '@/components/macrodata/EcbWidget';
 
 const MacroLineChart = dynamic(
   () => import('@/components/macrodata/MacroLineChart'),
@@ -213,7 +214,12 @@ export default function MacroPage() {
             {activeTab === 'Calendar'     && <EconCalendar />}
             {activeTab === 'WTF Brief'    && <MacroBrief />}
             {activeTab === 'Fundamentals' && <Fundamentals />}
-            {activeTab === 'Global Macro' && <OecdWidget />}
+            {activeTab === 'Global Macro' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <OecdWidget />
+                <EcbWidget />
+              </div>
+            )}
             
             {activeTab === 'Positioning' && activeCharts.length === 0 && (
               <div style={{ background: '#0b0f0f', border: '1px solid #1b2226', borderRadius: '16px', padding: '40px', textAlign: 'center', color: '#444', fontSize: '13px' }}>
