@@ -526,62 +526,91 @@ def get_oecd_data():
 def update_philly_fed_spf():
     """
     Downloads the quarterly Survey of Professional Forecasters (SPF) Excel files.
-    Updated with the definitive exact paths and detailed failure logging.
+    Uses an Auto-Scraper to dynamically find the Master Workbook to prevent 404 errors.
     """
-    # DEFINITIVE URLs: Removed the extra /files/ subdirectory
-    spf_sources = {
-        "GDP YoY": "https://www.philadelphiafed.org/-/media/frbp/assets/surveys-and-data/survey-of-professional-forecasters/data-files/median_rgdp_level.xlsx",
-        "CPI Headline YoY": "https://www.philadelphiafed.org/-/media/frbp/assets/surveys-and-data/survey-of-professional-forecasters/data-files/median_cpi.xlsx",
-        "Unemployment Rate": "https://www.philadelphiafed.org/-/media/frbp/assets/surveys-and-data/survey-of-professional-forecasters/data-files/median_unemp.xlsx"
-    }
-    
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel'
-    }
-    
-    records_to_insert = []
-    failed_downloads = []
-    
     try:
-        for indicator_name, url in spf_sources.items():
-            res = requests.get(url, headers=headers, timeout=15)
+        import requests
+        import re
+        import pandas as pd
+        from io import BytesIO
+        
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml'
+        }
+        
+        # 1. Scrape the Fed's website to find the exact current URL for the Master Excel file
+        page_url = "https://www.philadelphiafed.org/surveys-and-data/real-time-data-research/median-forecasts"
+        page_res = requests.get(page_url, headers=headers, timeout=15)
+        
+        # Use Regex to hunt down the dynamic link for the MedianLevel workbook
+        match = re.search(r'href="([^"]*?medianlevel\.xlsx[^"]*)"', page_res.text, re.IGNORECASE)
+        
+        if not match:
+            return {"error": "Auto-scraper failed: Could not locate the MedianLevel.xlsx link on the Fed's webpage."}
             
-            # Detailed error logging so we know exactly what is failing
-            if res.status_code != 200:
-                failed_downloads.append(f"{indicator_name} (Failed: HTTP {res.status_code})")
-                continue
-                
-            if not res.content.startswith(b'PK'):
-                snippet = res.content[:50].decode('utf-8', errors='ignore').replace('\n', ' ')
-                failed_downloads.append(f"{indicator_name} (Failed: Not a ZIP/Excel. Returned: {snippet})")
-                continue
-                
-            df = pd.read_excel(BytesIO(res.content), engine='openpyxl')
-            recent_data = df.tail(4).to_dict('records')
+        excel_path = match.group(1)
+        
+        # If the Fed used a relative link (starts with /), append the main domain
+        if excel_path.startswith("/"):
+            excel_path = "https://www.philadelphiafed.org" + excel_path
             
-            for row in recent_data:
-                year = int(row.get("YEAR", 0))
-                quarter = int(row.get("QUARTER", 0))
+        # 2. Download the actual Master Excel File
+        excel_res = requests.get(excel_path, headers=headers, timeout=15)
+        
+        if not excel_res.content.startswith(b'PK'):
+            return {"error": "Downloaded file is still not a valid ZIP/Excel archive."}
+            
+        # 3. Read the specific indicator worksheets from the Master File
+        # Dictionary mapping our database name to the exact Fed Sheet Name
+        indicators_to_sheets = {
+            "GDP YoY": "RGDP",
+            "CPI Headline YoY": "CPI",
+            "Unemployment Rate": "UNEMP"
+        }
+        
+        records_to_insert = []
+        
+        for indicator_name, sheet_name in indicators_to_sheets.items():
+            try:
+                # Read strictly the specific worksheet we need
+                df = pd.read_excel(BytesIO(excel_res.content), sheet_name=sheet_name, engine='openpyxl')
                 
-                if year == 0 or quarter == 0:
-                    continue
+                # The data is organized chronologically. Grab the last 4 quarters.
+                recent_data = df.tail(4).to_dict('records')
+                
+                for row in recent_data:
+                    year = int(row.get("YEAR", 0))
+                    quarter = int(row.get("QUARTER", 0))
                     
-                month_map = {1: "03-31", 2: "06-30", 3: "09-30", 4: "12-31"}
-                event_date = f"{year}-{month_map[quarter]}"
+                    if year == 0 or quarter == 0:
+                        continue
+                        
+                    month_map = {1: "03-31", 2: "06-30", 3: "09-30", 4: "12-31"}
+                    event_date = f"{year}-{month_map[quarter]}"
+                    
+                    # According to Fed docs, the current quarter's forecast is stored in the column 
+                    # named [SheetName]2 (e.g. RGDP2, CPI2, UNEMP2)
+                    col_name = f"{sheet_name}2"
+                    
+                    if col_name in row:
+                        consensus_val = row[col_name]
+                    else:
+                        # Fallback: grab the 4th column which is typically the current quarter
+                        consensus_val = list(row.values())[3]
+                        
+                    if pd.notna(consensus_val):
+                        records_to_insert.append({
+                            "event_date": event_date,
+                            "indicator": indicator_name,
+                            "country": "USA",
+                            "consensus": round(float(consensus_val), 2),
+                            "source": "philly_fed_spf"
+                        })
+            except Exception as e:
+                print(f"Failed parsing sheet {sheet_name}:", e)
                 
-                forecast_key = list(row.keys())[-1] 
-                consensus_val = row.get(forecast_key)
-                
-                if pd.notna(consensus_val):
-                    records_to_insert.append({
-                        "event_date": event_date,
-                        "indicator": indicator_name,
-                        "country": "USA",
-                        "consensus": round(float(consensus_val), 2),
-                        "source": "philly_fed_spf"
-                    })
-
+        # 4. Insert into your Neon database
         if records_to_insert:
             with engine.begin() as conn:
                 for rec in records_to_insert:
@@ -592,11 +621,11 @@ def update_philly_fed_spf():
                     """), rec)
                     
         return {
-            "status": "Philly Fed SPF Update Complete",
+            "status": "Success! Philly Fed SPF Auto-Scrape Complete",
             "records_added": len(records_to_insert),
-            "failed_indicators": failed_downloads
+            "source_url_used": excel_path
         }
 
     except Exception as e:
-        print("SPF Data Error:", e)
-        return {"error": str(e)}
+        import traceback
+        return {"error": str(e), "trace": traceback.format_exc()}
