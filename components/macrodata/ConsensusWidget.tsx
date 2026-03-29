@@ -61,34 +61,44 @@ export default function ConsensusWidget() {
             </thead>
             <tbody>
               {Object.keys(groupedData).map((indicator, idx) => (
-                // Map through each indicator's forecasts
-                groupedData[indicator].map((item: any, itemIdx: number) => {
-                  
-                  // 1. Clean up the date string (e.g., "2025-06-30")
-                  const cleanDate = item.event_date ? item.event_date.split('T')[0] : '---';
-                  
-                  // 2. Format the value properly based on the indicator
-                  let displayValue = `${item.consensus.toFixed(1)}%`; // Default to %
-                  
-                  // If the indicator is GDP, it's actually in Billions. Let's convert to Trillions ($T)
-                  if (indicator.toLowerCase().includes('gdp')) {
-                     displayValue = `$${(item.consensus / 1000).toFixed(2)}T`;
-                  }
+                <React.Fragment key={indicator}>
+                  {/* --- NEW: VISUAL SEPARATOR HEADER --- */}
+                  <tr className="bg-[#141b1f] border-t-2 border-[#1b2226]">
+                    <td colSpan={3} className="py-2 px-4 text-white font-bold text-sm tracking-wide">
+                      {indicator}
+                    </td>
+                  </tr>
 
-                  return (
-                    <tr key={`${idx}-${itemIdx}`} className="border-b border-[#1b2226]/50 hover:bg-[#111] transition-colors">
-                      <td className="py-3 px-4 text-white font-medium text-sm">
-                        {itemIdx === 0 ? indicator : ""}
-                      </td>
-                      <td className="py-3 px-4 text-[#aaa] text-sm">
-                        {cleanDate}
-                      </td>
-                      <td className="py-3 px-4 text-right text-blue-400 font-bold text-sm">
-                        {displayValue}
-                      </td>
-                    </tr>
-                  );
-                })
+                  {/* --- DATA ROWS --- */}
+                  {groupedData[indicator].map((item: any, itemIdx: number) => {
+                    // Clean up the date string
+                    const cleanDate = item.event_date ? item.event_date.split('T')[0] : '---';
+                    
+                    // Default to percentage
+                    let displayValue = `${item.consensus.toFixed(1)}%`; 
+                    
+                    // SMART FALLBACK: If the number is huge (>100), we know Python hasn't been fixed yet. 
+                    // Render it as $T. If it's small (e.g., 2.5), we know Python is fixed, render as %.
+                    if (indicator.toLowerCase().includes('gdp') && item.consensus > 100) {
+                       displayValue = `$${(item.consensus / 1000).toFixed(2)}T`;
+                    }
+
+                    return (
+                      <tr key={`${idx}-${itemIdx}`} className="border-b border-[#1b2226]/50 hover:bg-[#111] transition-colors">
+                        {/* Indent the first column slightly for a grouped look */}
+                        <td className="py-3 px-4 pl-8 text-[#555] text-xs">
+                          ↳ Target
+                        </td>
+                        <td className="py-3 px-4 text-[#aaa] text-sm">
+                          {cleanDate}
+                        </td>
+                        <td className="py-3 px-4 text-right text-blue-400 font-bold text-sm">
+                          {displayValue}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </React.Fragment>
               ))}
             </tbody>
           </table>
