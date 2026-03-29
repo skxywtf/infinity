@@ -629,12 +629,13 @@ def update_philly_fed_spf():
 def get_consensus_data():
     """
     Fetches the Philly Fed SPF consensus forecasts from the database for the frontend.
+    Uses DISTINCT to prevent duplicate rows if the scraper was run multiple times.
     """
     try:
-        # Query the events table for our new SPF data
+        # Query the events table for our new SPF data, filtering out duplicates
         with engine.connect() as conn:
             result = conn.execute(text("""
-                SELECT indicator, event_date, consensus 
+                SELECT DISTINCT indicator, event_date, consensus 
                 FROM events 
                 WHERE source = 'philly_fed_spf'
                 ORDER BY indicator ASC, event_date ASC
