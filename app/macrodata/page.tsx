@@ -11,7 +11,7 @@ import Fundamentals from '@/components/macrodata/Fundamentals'; // <-- Sage's ne
 import VintageTracker from '@/components/macrodata/VintageTracker'; // <-- Your import
 import OecdWidget from '@/components/macrodata/OecdWidget'; // <-- Your import
 import EcbWidget from '@/components/macrodata/EcbWidget';
-import ConsensusWidget from '@/components/macrodata/ConsensusWidget';
+import ConsensusWidget from '../../components/macrodata/ConsensusWidget';
 
 const MacroLineChart = dynamic(
   () => import('@/components/macrodata/MacroLineChart'),
