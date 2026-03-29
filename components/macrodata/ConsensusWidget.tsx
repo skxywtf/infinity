@@ -62,19 +62,33 @@ export default function ConsensusWidget() {
             <tbody>
               {Object.keys(groupedData).map((indicator, idx) => (
                 // Map through each indicator's forecasts
-                groupedData[indicator].map((item: any, itemIdx: number) => (
-                  <tr key={`${idx}-${itemIdx}`} className="border-b border-[#1b2226]/50 hover:bg-[#111] transition-colors">
-                    <td className="py-3 px-4 text-white font-medium text-sm">
-                      {itemIdx === 0 ? indicator : ""}
-                    </td>
-                    <td className="py-3 px-4 text-[#aaa] text-sm">
-                      {item.event_date}
-                    </td>
-                    <td className="py-3 px-4 text-right text-blue-400 font-bold text-sm">
-                      {item.consensus.toFixed(1)}%
-                    </td>
-                  </tr>
-                ))
+                groupedData[indicator].map((item: any, itemIdx: number) => {
+                  
+                  // 1. Clean up the date string (e.g., "2025-06-30")
+                  const cleanDate = item.event_date ? item.event_date.split('T')[0] : '---';
+                  
+                  // 2. Format the value properly based on the indicator
+                  let displayValue = `${item.consensus.toFixed(1)}%`; // Default to %
+                  
+                  // If the indicator is GDP, it's actually in Billions. Let's convert to Trillions ($T)
+                  if (indicator.toLowerCase().includes('gdp')) {
+                     displayValue = `$${(item.consensus / 1000).toFixed(2)}T`;
+                  }
+
+                  return (
+                    <tr key={`${idx}-${itemIdx}`} className="border-b border-[#1b2226]/50 hover:bg-[#111] transition-colors">
+                      <td className="py-3 px-4 text-white font-medium text-sm">
+                        {itemIdx === 0 ? indicator : ""}
+                      </td>
+                      <td className="py-3 px-4 text-[#aaa] text-sm">
+                        {cleanDate}
+                      </td>
+                      <td className="py-3 px-4 text-right text-blue-400 font-bold text-sm">
+                        {displayValue}
+                      </td>
+                    </tr>
+                  );
+                })
               ))}
             </tbody>
           </table>
