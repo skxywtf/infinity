@@ -62,7 +62,7 @@ export default function ConsensusWidget() {
             <tbody>
               {Object.keys(groupedData).map((indicator, idx) => (
                 <React.Fragment key={indicator}>
-                  {/* --- NEW: VISUAL SEPARATOR HEADER --- */}
+                  {/* --- VISUAL SEPARATOR HEADER --- */}
                   <tr className="bg-[#141b1f] border-t-2 border-[#1b2226]">
                     <td colSpan={3} className="py-2 px-4 text-white font-bold text-sm tracking-wide">
                       {indicator}
@@ -71,14 +71,13 @@ export default function ConsensusWidget() {
 
                   {/* --- DATA ROWS --- */}
                   {groupedData[indicator].map((item: any, itemIdx: number) => {
-                    // Clean up the date string
                     const cleanDate = item.event_date ? item.event_date.split('T')[0] : '---';
                     
                     // Default to percentage
                     let displayValue = `${item.consensus.toFixed(1)}%`; 
                     
-                    // SMART FALLBACK: If the number is huge (>100), we know Python hasn't been fixed yet. 
-                    // Render it as $T. If it's small (e.g., 2.5), we know Python is fixed, render as %.
+                    // Smart Fallback: Just in case the database hasn't updated yet, 
+                    // if the GDP number is > 100, we know it's a level, not a percentage.
                     if (indicator.toLowerCase().includes('gdp') && item.consensus > 100) {
                        displayValue = `$${(item.consensus / 1000).toFixed(2)}T`;
                     }
