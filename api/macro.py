@@ -1,17 +1,19 @@
 import os
-from fastapi import APIRouter, HTTPException, Response
-from sqlalchemy import create_engine, text
+import re
 import datetime
-from dotenv import load_dotenv
-from pydantic import BaseModel
-import requests  # <-- We use this built-in web library for EVERYTHING now! (No yfinance)
 import zipfile
 import io
 import csv
-import xml.etree.ElementTree as ET
 import email.utils
-import pandas as pd
+import xml.etree.ElementTree as ET
 from io import BytesIO
+
+from fastapi import APIRouter, HTTPException, Response
+from sqlalchemy import create_engine, text
+from dotenv import load_dotenv
+from pydantic import BaseModel
+import requests  # <-- We use this built-in web library for EVERYTHING now! (No yfinance)
+import pandas as pd
 
 load_dotenv()
 
@@ -467,8 +469,6 @@ def get_ecb_data():
         return {"error": str(e)}
     
 
-
-
 # --- LIVE OECD G20 GDP ROUTE (UPDATED FOR NEW SDMX API) ---
 
 @router.get("/api/oecd")
@@ -478,8 +478,6 @@ def get_oecd_data():
     Routed through the World Bank API for 100% stable uptime (Bypassing OECD 422 errors).
     """
     try:
-        import requests
-        
         # Indicator NY.GDP.MKTP.KD.ZG is Annual GDP Growth (%)
         # mrnev=1 tells the World Bank to automatically grab the "Most Recent Non-Empty Value"
         countries = "USA;IND;CHN;JPN;GBR;DEU;FRA;CAN;BRA;AUS"
@@ -529,11 +527,6 @@ def update_philly_fed_spf():
     Uses an Auto-Scraper to dynamically find the Master Workbook to prevent 404 errors.
     """
     try:
-        import requests
-        import re
-        import pandas as pd
-        from io import BytesIO
-        
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             'Accept': 'text/html,application/xhtml+xml'
@@ -614,6 +607,7 @@ def update_philly_fed_spf():
         if records_to_insert:
             with engine.begin() as conn:
                 for rec in records_to_insert:
+                    # Using DO NOTHING prevents duplicate inserts but respects existing schema.
                     conn.execute(text("""
                         INSERT INTO events (event_date, indicator, country, consensus, source)
                         VALUES (:event_date, :indicator, :country, :consensus, :source)
@@ -646,9 +640,16 @@ def get_consensus_data():
                 ORDER BY indicator ASC, event_date ASC
             """))
             
-            data = [dict(row) for row in result.mappings()]
-            
+            # Stringify dates properly to ensure JSON serialization doesn't fail
+            data = []
+            for row in result.mappings():
+                row_dict = dict(row)
+                if "event_date" in row_dict and hasattr(row_dict["event_date"], "strftime"):
+                    row_dict["event_date"] = row_dict["event_date"].strftime("%Y-%m-%d")
+                data.append(row_dict)
+                
             return {"data": data}
+            
     except Exception as e:
         print("Consensus Fetch Error:", e)
         return {"error": str(e)}
