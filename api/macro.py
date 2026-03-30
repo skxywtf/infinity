@@ -148,9 +148,11 @@ def get_news():
     api_key = os.getenv("NEWSAPI_KEY")
     if api_key:
         try:
-            # Query from the Developer Spec: federal reserve OR inflation OR GDP OR interest rates
             url = f"https://newsapi.org/v2/everything?q=federal+reserve+OR+inflation+OR+GDP+OR+interest+rates&language=en&sortBy=publishedAt&pageSize=15&apiKey={api_key}"
-            res = requests.get(url, timeout=5)
+            
+            # THE FIX: NewsAPI strictly requires a User-Agent header or it will block the request!
+            headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+            res = requests.get(url, headers=headers, timeout=5)
             
             if res.status_code == 200:
                 data = res.json()
@@ -158,11 +160,11 @@ def get_news():
                 clean_news = []
                 
                 for item in articles:
-                    # Convert ISO-8601 string (2024-03-29T10:00:00Z) to Unix Timestamp for the React UI
                     pub_date_str = item.get("publishedAt")
                     timestamp = 0
                     if pub_date_str:
                         try:
+                            import datetime
                             dt = datetime.datetime.strptime(pub_date_str, "%Y-%m-%dT%H:%M:%SZ")
                             timestamp = int(dt.replace(tzinfo=datetime.timezone.utc).timestamp())
                         except Exception:
@@ -174,7 +176,11 @@ def get_news():
                         "link": item.get("url", "#"),
                         "time": timestamp
                     })
-                return {"data": clean_news}
+                
+                # If NewsAPI returned valid articles, return them!
+                if len(clean_news) > 0:
+                    return {"data": clean_news[:15]}
+                    
             else:
                 print(f"NewsAPI limit reached or error: {res.status_code}. Falling back to Yahoo.")
         except Exception as e:
