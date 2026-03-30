@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import ChatPanel from '@/components/macrodata/ChatPanel';
 import RegimeWidget from '@/components/macrodata/RegimeWidget';
@@ -47,6 +47,16 @@ export default function MacroPage() {
 
   // --- NEW: State to catch the Macro Regime Data for the AI ---
   const [macroRegimeChatData, setMacroRegimeChatData] = useState<any>({});
+
+  // --- NEW: Frozen Callback to prevent infinite loops ---
+  const handleRegimeData = useCallback((data: any) => {
+    setMacroRegimeChatData({
+      status: data.quadrant,
+      growth3m: `${data.growth_mom_annualized > 0 ? '+' : ''}${data.growth_mom_annualized}%`,
+      cpiYoy: `${data.cpi_yoy}%`,
+      cpi12mAvg: `${data.cpi_yoy_avg_12m}%`
+    });
+  }, []); // <-- Empty array means this function NEVER changes identity
 
   useEffect(() => {
     fetch('/api/tabs').then(r => r.json()).then(data => {
@@ -143,15 +153,8 @@ export default function MacroPage() {
             </div>
           </aside>
 
-          {/* --- NEW: Pass the callback to RegimeWidget --- */}
-          <RegimeWidget onDataFetched={(data) => {
-            setMacroRegimeChatData({
-              status: data.quadrant,
-              growth3m: `${data.growth_mom_annualized > 0 ? '+' : ''}${data.growth_mom_annualized}%`,
-              cpiYoy: `${data.cpi_yoy}%`,
-              cpi12mAvg: `${data.cpi_yoy_avg_12m}%`
-            });
-          }} />
+          {/* --- FIX: Pass the frozen callback to RegimeWidget --- */}
+          <RegimeWidget onDataFetched={handleRegimeData} />
           
           {/* --- YAHOO NEWS BAR --- */}
           <WTFNewsFeed maxItems={15} />
