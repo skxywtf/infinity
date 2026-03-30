@@ -140,8 +140,49 @@ def get_market_data(symbol: str):
 
 @router.get("/api/news")
 def get_news():
+    """
+    Fetches global macro news using NewsAPI.org (Phase 2).
+    Includes a Smart Fallback to Yahoo Finance if NEWSAPI_KEY is missing or limit is reached.
+    """
+    # 1. TRY NEWSAPI FIRST (Premium Feed)
+    api_key = os.getenv("NEWSAPI_KEY")
+    if api_key:
+        try:
+            # Query from the Developer Spec: federal reserve OR inflation OR GDP OR interest rates
+            url = f"https://newsapi.org/v2/everything?q=federal+reserve+OR+inflation+OR+GDP+OR+interest+rates&language=en&sortBy=publishedAt&pageSize=15&apiKey={api_key}"
+            res = requests.get(url, timeout=5)
+            
+            if res.status_code == 200:
+                data = res.json()
+                articles = data.get("articles", [])
+                clean_news = []
+                
+                for item in articles:
+                    # Convert ISO-8601 string (2024-03-29T10:00:00Z) to Unix Timestamp for the React UI
+                    pub_date_str = item.get("publishedAt")
+                    timestamp = 0
+                    if pub_date_str:
+                        try:
+                            dt = datetime.datetime.strptime(pub_date_str, "%Y-%m-%dT%H:%M:%SZ")
+                            timestamp = int(dt.replace(tzinfo=datetime.timezone.utc).timestamp())
+                        except Exception:
+                            pass
+                    
+                    clean_news.append({
+                        "title": item.get("title", ""),
+                        "publisher": item.get("source", {}).get("name", "Macro News"),
+                        "link": item.get("url", "#"),
+                        "time": timestamp
+                    })
+                return {"data": clean_news}
+            else:
+                print(f"NewsAPI limit reached or error: {res.status_code}. Falling back to Yahoo.")
+        except Exception as e:
+            print(f"NewsAPI Error: {e}. Falling back to Yahoo.")
+
+    # 2. FALLBACK TO YAHOO FINANCE (Free unlimited backup)
     headers = {'User-Agent': 'Mozilla/5.0'}
-    url = "https://query2.finance.yahoo.com/v1/finance/search?q=SPY&newsCount=10"
+    url = "https://query2.finance.yahoo.com/v1/finance/search?q=SPY&newsCount=15"
     try:
         res = requests.get(url, headers=headers, timeout=5)
         data = res.json()
@@ -154,13 +195,9 @@ def get_news():
                 "link": item.get("link", "#"),
                 "time": item.get("providerPublishTime", 0)
             })
-        return {"data": clean_news[:10]}
+        return {"data": clean_news[:15]}
     except Exception:
         return {"data": []}
-
-@router.get("/")
-def read_root():
-    return {"message": "SKXY Macro Terminal API is running!"}
 
 
 # --- AI CHATBOT ENDPOINT (GROQ / LLAMA 3 METHOD) ---
