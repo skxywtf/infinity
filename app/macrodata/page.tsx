@@ -81,9 +81,11 @@ export default function MacroPage() {
       } catch { return { price: '---', change: '0.00%', pos: true }; }
     };
 
+    // Updated to fetch Finnhub and bust the Vercel cache!
     const fetchYahooNews = async () => {
       try {
-        const r = await fetch('/api/news');
+        // Adding the timestamp forces Vercel to run your Python code instead of using the cache
+        const r = await fetch(`/api/news?bustcache=${Date.now()}`);
         const j = await r.json();
         setNews(j.data || []);
       } catch { setNews([]); }
