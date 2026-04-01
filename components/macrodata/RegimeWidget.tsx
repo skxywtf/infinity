@@ -26,12 +26,10 @@ const QUADRANT_DESC: Record<string, string> = {
   Deflation:   'Growth ↓ · Inflation ↓',
 };
 
-// NEW: Add an interface for the incoming props
 interface RegimeWidgetProps {
   onDataFetched?: (data: any) => void;
 }
 
-// NEW: Accept the onDataFetched prop
 export default function RegimeWidget({ onDataFetched }: RegimeWidgetProps) {
   const [regime, setRegime] = useState<RegimeData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -43,13 +41,15 @@ export default function RegimeWidget({ onDataFetched }: RegimeWidgetProps) {
       .then(data => { 
         setRegime(data); 
         setLoading(false); 
-        // NEW: Shout the data up to page.tsx!
         if (onDataFetched) {
           onDataFetched(data);
         }
       })
       .catch(() => { setError(true); setLoading(false); });
-  }, [onDataFetched]);
+      
+    // THE FIX: Empty array guarantees this runs EXACTLY ONCE on mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); 
 
   const borderColor = regime?.color ?? '#444';
 
