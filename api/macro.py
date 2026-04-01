@@ -141,50 +141,59 @@ def get_market_data(symbol: str):
 @router.get("/api/news")
 def get_news():
     """
-    Fetches global macro news using NewsAPI.org (Phase 2).
-    Includes a Smart Fallback to Yahoo Finance if NEWSAPI_KEY is missing or limit is reached.
+    Fetches global macro news using Finnhub.io (Phase 2 - Updated API).
+    Includes a Smart Fallback to Yahoo Finance just in case Finnhub is ever down.
     """
-    # 1. TRY NEWSAPI FIRST (Premium Feed)
-    api_key = os.getenv("NEWSAPI_KEY")
+    # 1. TRY FINNHUB FIRST (Premium Feed - Allowed on Vercel!)
+    api_key = os.getenv("FINNHUB_KEY")
+    
     if api_key:
         try:
-            url = f"https://newsapi.org/v2/everything?q=federal+reserve+OR+inflation+OR+GDP+OR+interest+rates&language=en&sortBy=publishedAt&pageSize=15&apiKey={api_key}"
-            
-            # THE FIX: NewsAPI strictly requires a User-Agent header or it will block the request!
-            headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
-            res = requests.get(url, headers=headers, timeout=5)
+            # Finnhub 'general' category fetches top market, macro, and business news
+            url = f"https://finnhub.io/api/v1/news?category=general&token={api_key}"
+            res = requests.get(url, timeout=5)
             
             if res.status_code == 200:
                 data = res.json()
-                articles = data.get("articles", [])
                 clean_news = []
                 
-                for item in articles:
-                    pub_date_str = item.get("publishedAt")
-                    timestamp = 0
-                    if pub_date_str:
-                        try:
-                            import datetime
-                            dt = datetime.datetime.strptime(pub_date_str, "%Y-%m-%dT%H:%M:%SZ")
-                            timestamp = int(dt.replace(tzinfo=datetime.timezone.utc).timestamp())
-                        except Exception:
-                            pass
-                    
+                # Finnhub returns a list of dictionaries directly
+                for item in data:
                     clean_news.append({
-                        "title": item.get("title", ""),
-                        "publisher": item.get("source", {}).get("name", "Macro News"),
+                        "title": item.get("headline", ""),
+                        "publisher": item.get("source", "Market News"),
                         "link": item.get("url", "#"),
-                        "time": timestamp
+                        # Finnhub is great because it already provides the exact Unix timestamp React needs!
+                        "time": item.get("datetime", 0) 
                     })
                 
-                # If NewsAPI returned valid articles, return them!
+                # Return the top 15 articles to match your frontend widget
                 if len(clean_news) > 0:
                     return {"data": clean_news[:15]}
                     
             else:
-                print(f"NewsAPI limit reached or error: {res.status_code}. Falling back to Yahoo.")
+                print(f"Finnhub API error: {res.status_code}. Falling back to Yahoo.")
         except Exception as e:
-            print(f"NewsAPI Error: {e}. Falling back to Yahoo.")
+            print(f"Finnhub request failed: {e}. Falling back to Yahoo.")
+
+    # 2. FALLBACK TO YAHOO FINANCE (Unbreakable backup)
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+    url = "https://query2.finance.yahoo.com/v1/finance/search?q=SPY&newsCount=15"
+    try:
+        res = requests.get(url, headers=headers, timeout=5)
+        data = res.json()
+        news_items = data.get('news', [])
+        clean_news = []
+        for item in news_items:
+            clean_news.append({
+                "title": item.get("title", ""),
+                "publisher": item.get("publisher", "Market News"),
+                "link": item.get("link", "#"),
+                "time": item.get("providerPublishTime", 0)
+            })
+        return {"data": clean_news[:15]}
+    except Exception:
+        return {"data": []}
 
     # 2. FALLBACK TO YAHOO FINANCE (Free unlimited backup)
     headers = {'User-Agent': 'Mozilla/5.0'}
