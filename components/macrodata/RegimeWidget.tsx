@@ -36,7 +36,8 @@ export default function RegimeWidget({ onDataFetched }: RegimeWidgetProps) {
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    fetch('/api/regime')
+    // Change this line to fetch from the new v2 endpoint:
+    fetch('/api/regime-v2')
       .then(r => r.json())
       .then(data => { 
         setRegime(data); 
@@ -47,9 +48,8 @@ export default function RegimeWidget({ onDataFetched }: RegimeWidgetProps) {
       })
       .catch(() => { setError(true); setLoading(false); });
       
-    // THE FIX: Empty array guarantees this runs EXACTLY ONCE on mount.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); 
+  }, []);
 
   const borderColor = regime?.color ?? '#444';
 

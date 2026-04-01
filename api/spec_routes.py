@@ -59,7 +59,7 @@ def get_calendar_history(series_id: Optional[str] = Query(None), limit: int = Qu
     with engine.connect() as conn: return [dict(r) for r in conn.execute(text(q), p).mappings().all()]
 
 
-@spec_router.get("/api/regime")
+@spec_router.get("/api/regime-v2")
 def get_regime():
     with engine.connect() as conn:
         ir = get_series_window(conn, "INDPRO", 6)
