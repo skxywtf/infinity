@@ -12,6 +12,7 @@ import VintageTracker from '@/components/macrodata/VintageTracker'; // <-- Your 
 import OecdWidget from '@/components/macrodata/OecdWidget'; // <-- Your import
 import EcbWidget from '@/components/macrodata/EcbWidget';
 import ConsensusWidget from '../../components/macrodata/ConsensusWidget';
+import TickerCard from '@/components/macrodata/TickerCard'; // <-- NEW: Finnhub Ticker Import (adjust path if needed)
 
 const MacroLineChart = dynamic(
   () => import('@/components/macrodata/MacroLineChart'),
@@ -192,6 +193,15 @@ export default function MacroPage() {
         </div>
 
         <section style={{ display: 'flex', flexDirection: 'column', gap: '20px', minWidth: 0 }}>
+          
+          {/* --- NEW: FINNHUB LIVE TICKERS ROW --- */}
+          <div className="hide-scrollbar" style={{ display: 'flex', gap: '15px', overflowX: 'auto', paddingBottom: '10px', WebkitOverflowScrolling: 'touch' }}>
+            <TickerCard symbol="AAPL" />
+            <TickerCard symbol="TSLA" />
+            <TickerCard symbol="NVDA" />
+            <TickerCard symbol="META" />
+          </div>
+
           <div style={{ display: 'flex', gap: '10px', borderBottom: '1px solid #1b2226', paddingBottom: '10px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
             {allTabs.map(tab => (
               <button key={tab} onClick={() => setActiveTab(tab)} style={{
@@ -271,6 +281,11 @@ export default function MacroPage() {
         .sidebar-container.open { display: flex; }
         .mobile-toggle { display: block; width: 100%; padding: 12px; background: #1b2226; color: white; border: 1px solid #333; border-radius: 8px; margin-bottom: 20px; font-weight: bold; cursor: pointer; text-align: center; }
         .chart-wrapper { height: 400px; width: 100%; }
+        
+        /* Utility class to hide the scrollbar for the ticker row but keep it scrollable */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
         @media (min-width: 1024px) {
           .terminal-grid { grid-template-columns: 320px 1fr; }
           .sidebar-container { display: flex; }
