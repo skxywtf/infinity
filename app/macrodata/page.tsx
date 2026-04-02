@@ -196,10 +196,10 @@ export default function MacroPage() {
           
           {/* --- NEW: FINNHUB LIVE TICKERS ROW --- */}
           <div className="hide-scrollbar" style={{ display: 'flex', gap: '15px', overflowX: 'auto', paddingBottom: '10px', WebkitOverflowScrolling: 'touch' }}>
-            <TickerCard symbol="AAPL" />
-            <TickerCard symbol="TSLA" />
-            <TickerCard symbol="NVDA" />
-            <TickerCard symbol="META" />
+            <TickerCard symbol="AAPL" name="Apple" />
+            <TickerCard symbol="TSLA" name="Tesla" />
+            <TickerCard symbol="NVDA" name="NVIDIA" />
+            <TickerCard symbol="META" name="Meta" />
           </div>
 
           <div style={{ display: 'flex', gap: '10px', borderBottom: '1px solid #1b2226', paddingBottom: '10px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
