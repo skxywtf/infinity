@@ -5,7 +5,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const ticker = searchParams.get("ticker");
 
-    const apiKey = process.env.ALPHA_VANTAGE_API_KEY;
+    const apiKey = process.env.SKXY_ALPHA_VANTAGE_KEY;
 
     if (!apiKey) {
         return NextResponse.json({ error: "Alpha Vantage API key missing" }, { status: 500 });
