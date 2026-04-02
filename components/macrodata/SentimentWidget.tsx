@@ -16,12 +16,16 @@ export default function SentimentWidget({ onDataFetched }: { onDataFetched?: (da
         if (data.feed) {
           setNews(data.feed.slice(0, 5)); // Grab top 5 articles
 
-          // --- NEW: Send simplified data to parent page for AI ---
+          // --- NEW: Send simplified, labeled data to parent page for AI ---
           if (onDataFetched) {
-            const aiPayload = data.feed.slice(0, 5).map((item: any) => ({
-              headline: item.title,
-              sentiment: item.overall_sentiment_label
-            }));
+            const aiPayload = {
+              section_title: "AI SENTIMENT",
+              provider: "ALPHA VANTAGE",
+              news_items: data.feed.slice(0, 5).map((item: any) => ({
+                headline: item.title,
+                sentiment: item.overall_sentiment_label
+              }))
+            };
             onDataFetched(aiPayload);
           }
         }
