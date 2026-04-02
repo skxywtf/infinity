@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from 'recharts';
 
 export default function OecdWidget() {
   const [data, setData] = useState<any[]>([]);
@@ -11,34 +11,28 @@ export default function OecdWidget() {
     const fetchOecdData = async () => {
       try {
         setLoading(true);
-        
         const response = await fetch('/api/oecd');
         const json = await response.json();
-        
         if (json.data && json.data.length > 0) {
           setData(json.data);
         } else {
           throw new Error("No data returned from API");
         }
-        
         setLoading(false);
       } catch (error) {
         console.error("Failed to fetch LIVE OECD data, using fallback:", error);
-        
-        // Safety net: Fallback realistic G20 GDP Growth data so the UI never blanks out
         const g20Data = [
-          { country: 'USA', gdpGrowth: 3.1 },
           { country: 'IND', gdpGrowth: 7.8 },
           { country: 'CHN', gdpGrowth: 5.2 },
-          { country: 'JPN', gdpGrowth: 1.9 },
-          { country: 'GBR', gdpGrowth: 0.5 },
-          { country: 'DEU', gdpGrowth: -0.3 },
-          { country: 'FRA', gdpGrowth: 0.9 },
-          { country: 'CAN', gdpGrowth: 1.1 },
           { country: 'BRA', gdpGrowth: 2.9 },
+          { country: 'USA', gdpGrowth: 3.1 },
           { country: 'AUS', gdpGrowth: 1.5 },
+          { country: 'CAN', gdpGrowth: 1.1 },
+          { country: 'FRA', gdpGrowth: 0.9 },
+          { country: 'GBR', gdpGrowth: 0.5 },
+          { country: 'JPN', gdpGrowth: 1.9 },
+          { country: 'DEU', gdpGrowth: -0.3 },
         ].sort((a, b) => b.gdpGrowth - a.gdpGrowth);
-        
         setData(g20Data);
         setLoading(false);
       }
@@ -47,14 +41,35 @@ export default function OecdWidget() {
     fetchOecdData();
   }, []);
 
-  // Custom tooltip for the dark theme
+  // ── Custom glass tooltip ──
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
+      const val = payload[0]?.value;
+      const isPos = val >= 0;
       return (
-        <div className="bg-slate-900 border border-slate-700 p-3 rounded shadow-lg">
-          <p className="text-white font-bold">{label}</p>
-          <p className="text-blue-400">
-            GDP Growth: {payload[0]?.value}%
+        <div style={{
+          background: 'rgba(8,14,20,0.88)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          border: '1px solid rgba(255,255,255,0.08)',
+          borderRadius: '10px',
+          padding: '10px 14px',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.55)',
+          minWidth: '130px',
+        }}>
+          <p style={{ margin: '0 0 4px 0', color: '#fff', fontWeight: 700, fontSize: '13px' }}>
+            {label}
+          </p>
+          <p style={{
+            margin: 0,
+            color: isPos ? '#4caf50' : '#ff5252',
+            fontWeight: 600,
+            fontSize: '13px',
+            textShadow: isPos
+              ? '0 0 8px rgba(76,175,80,0.50)'
+              : '0 0 8px rgba(255,82,82,0.50)',
+          }}>
+            GDP Growth: {val}%
           </p>
         </div>
       );
@@ -63,46 +78,124 @@ export default function OecdWidget() {
   };
 
   return (
-    <div className="p-6 bg-[#0b0f0f] border border-[#1b2226] rounded-2xl shadow-lg w-full">
-      <div className="flex justify-between items-center mb-6">
+    <div style={{
+      // ── Glass card ──
+      background: 'rgba(10, 16, 20, 0.60)',
+      backdropFilter: 'blur(18px)',
+      WebkitBackdropFilter: 'blur(18px)',
+      border: '1px solid rgba(255,255,255,0.06)',
+      borderRadius: '16px',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05)',
+      padding: '24px',
+      width: '100%',
+    }}>
+
+      {/* ── Header ── */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: '24px',
+      }}>
         <div>
-          <h2 className="text-xl font-bold text-white mb-1">G20 Macro Coverage (World Bank)</h2>
-          <p className="text-xs text-[#888]">Real GDP Growth (Annualized %)</p>
+          <h2 style={{
+            margin: '0 0 4px 0',
+            fontSize: '18px',
+            fontWeight: 700,
+            color: '#fff',
+            letterSpacing: '-0.3px',
+          }}>
+            G20 Macro Coverage (World Bank)
+          </h2>
+          <p style={{
+            margin: 0,
+            fontSize: '12px',
+            color: 'rgba(255,255,255,0.35)',
+          }}>
+            Real GDP Growth (Annualized %)
+          </p>
         </div>
-        <div className="px-3 py-1 bg-[#1e3a8a33] border border-[#1e3a8a] rounded text-[#60a5fa] text-xs font-bold">
+
+        {/* Live badge */}
+        <div style={{
+          padding: '4px 10px',
+          background: 'rgba(30,58,138,0.25)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+          border: '1px solid rgba(30,58,138,0.50)',
+          borderRadius: '6px',
+          color: '#60a5fa',
+          fontSize: '11px',
+          fontWeight: 700,
+          letterSpacing: '1px',
+          boxShadow: '0 0 12px rgba(59,130,246,0.10)',
+        }}>
           LIVE NO-AUTH
         </div>
       </div>
-      
-      <div className="h-[350px] w-full">
+
+      {/* ── Chart area ── */}
+      <div style={{ height: '350px', width: '100%' }}>
         {loading ? (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-[#111] rounded-xl border border-[#1b2226] animate-pulse">
-            <div className="w-8 h-8 border-4 border-[#3b82f6] border-t-transparent rounded-full animate-spin mb-4"></div>
-            <span className="text-[#888] font-semibold text-sm tracking-widest">QUERYING OECD DATABASE...</span>
+          <div style={{
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(255,255,255,0.02)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            border: '1px solid rgba(255,255,255,0.04)',
+            borderRadius: '12px',
+            gap: '16px',
+          }}>
+            <div style={{
+              width: '32px', height: '32px',
+              border: '3px solid rgba(59,130,246,0.70)',
+              borderTopColor: 'transparent',
+              borderRadius: '50%',
+              animation: 'oecd-spin 0.8s linear infinite',
+            }} />
+            <span style={{
+              color: 'rgba(255,255,255,0.30)',
+              fontWeight: 600,
+              fontSize: '11px',
+              letterSpacing: '2.5px',
+            }}>
+              QUERYING OECD DATABASE...
+            </span>
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
-              <XAxis 
-                dataKey="country" 
-                stroke="#888" 
-                fontSize={12} 
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="rgba(255,255,255,0.04)"
+                vertical={false}
+              />
+              <XAxis
+                dataKey="country"
+                stroke="rgba(255,255,255,0.25)"
+                fontSize={12}
                 tickLine={false}
                 axisLine={false}
               />
-              <YAxis 
-                stroke="#888" 
-                fontSize={12} 
+              <YAxis
+                stroke="rgba(255,255,255,0.25)"
+                fontSize={12}
                 tickLine={false}
                 axisLine={false}
                 tickFormatter={(val) => `${val}%`}
               />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: '#1b2226' }} />
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
               <Bar dataKey="gdpGrowth" radius={[4, 4, 0, 0]}>
                 {data.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={entry.gdpGrowth >= 0 ? '#4caf50' : '#ff5252'} 
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={entry.gdpGrowth >= 0 ? '#4caf50' : '#ff5252'}
+                    opacity={0.85}
                   />
                 ))}
               </Bar>
@@ -110,6 +203,10 @@ export default function OecdWidget() {
           </ResponsiveContainer>
         )}
       </div>
+
+      <style>{`
+        @keyframes oecd-spin { to { transform: rotate(360deg); } }
+      `}</style>
     </div>
   );
 }

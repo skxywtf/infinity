@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 
-// UPGRADED: Added finnhub, sentiment, and consensus to the incoming data props!
 export default function ChatPanel({ 
   activeTab = '', 
   activeCharts = [],
@@ -11,9 +10,9 @@ export default function ChatPanel({
   govNews = [], 
   macroRegime = {}, 
   dynamicTabs = [],
-  finnhub = {},       // <-- NEW
-  sentiment = [],     // <-- NEW
-  consensus = null    // <-- NEW
+  finnhub = {},
+  sentiment = [],
+  consensus = null
 }: { 
   activeTab?: string, 
   activeCharts?: any[],
@@ -22,9 +21,9 @@ export default function ChatPanel({
   govNews?: any[], 
   macroRegime?: any,
   dynamicTabs?: string[],
-  finnhub?: Record<string, any>, // <-- NEW
-  sentiment?: any[],             // <-- NEW
-  consensus?: any                // <-- NEW
+  finnhub?: Record<string, any>,
+  sentiment?: any[],
+  consensus?: any
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<{ role: 'user' | 'ai'; text: string }[]>([
@@ -36,17 +35,14 @@ export default function ChatPanel({
   const sendMessage = async () => {
     if (!inputText.trim()) return;
 
-    // Add user message to screen
     const newMessages = [...messages, { role: 'user' as const, text: inputText }];
     setMessages(newMessages);
     setInputText('');
     setIsLoading(true);
 
     try {
-      // 1. Build a super-detailed "Secret Whisper" for the AI
       let liveContext = `You are a sharp, helpful financial AI assistant. Keep answers concise.\n\n`;
       
-      // Tell it about the Watchlist
       liveContext += `[WATCHLIST (Sidebar)]\n`;
       liveContext += `- S&P 500 (SPY): ${market?.spy?.price || 'Loading...'}\n`;
       liveContext += `- US 10Y Yield (IEF): ${market?.ief?.price || 'Loading...'}\n`;
@@ -54,7 +50,6 @@ export default function ChatPanel({
       liveContext += `- Bitcoin (BTC): ${market?.btc?.price || 'Loading...'}\n`;
       liveContext += `- Gold (GC=F): ${market?.gold?.price || 'Loading...'}\n\n`;
 
-      // --- NEW DYNAMIC MACRO REGIME CONTEXT ---
       liveContext += `[MACRO REGIME (Sidebar)]\n`;
       if (macroRegime && Object.keys(macroRegime).length > 0) {
         liveContext += `The user's dashboard currently shows the Active Macro Regime is '${macroRegime.status || 'Unknown'}'.\n`;
@@ -64,7 +59,6 @@ export default function ChatPanel({
         liveContext += `- Macro Regime data is currently loading or unavailable.\n\n`;
       }
 
-      // --- NEW: INJECT WIDGET DATA CONTEXT ---
       liveContext += `[LIVE EQUITIES DATA (Finnhub)]\n`;
       if (Object.keys(finnhub || {}).length > 0) {
         liveContext += `${JSON.stringify(finnhub)}\n\n`;
@@ -85,9 +79,7 @@ export default function ChatPanel({
       } else {
         liveContext += `- No consensus data loaded yet.\n\n`;
       }
-      // ----------------------------------------
 
-      // Tell it about the Live Wire (Top 3 news stories)
       liveContext += `[YAHOO LIVE WIRE NEWS]\n`;
       if (news && news.length > 0) {
         news.slice(0, 3).forEach((n: any) => {
@@ -98,7 +90,6 @@ export default function ChatPanel({
       }
       liveContext += `\n`;
 
-      // Tell it about the GOV Wire (Top 3 stories)
       liveContext += `[OFFICIAL GOV WIRE NEWS]\n`;
       if (govNews && govNews.length > 0) {
         govNews.slice(0, 3).forEach((n: any) => {
@@ -109,12 +100,10 @@ export default function ChatPanel({
       }
       liveContext += `\n`;
 
-      // Tell it about the Tabs
       liveContext += `[MAIN DASHBOARD CHARTS]\n`;
       liveContext += `The user is currently looking at the '${activeTab}' tab.\n`;
       liveContext += `If they ask about a chart not listed below, tell them: "Please click on the [Tab Name] tab so I can see that data!" (Available tabs: ${dynamicTabs.join(', ')}).\n\n`;
       
-      // --- SPECIAL TABS CONTEXT INJECTOR ---
       if (activeTab === 'Global Macro') {
         liveContext += `The user is looking at two charts in the Global Macro tab.\n`;
         liveContext += `1. OECD G20 Real GDP Growth (Annualized %): India 7.8%, China 5.2%, USA 3.1%, Brazil 2.9%, Japan 1.9%, Australia 1.5%, Canada 1.1%, France 0.9%, UK 0.5%, Germany -0.3%.\n`;
@@ -128,13 +117,11 @@ export default function ChatPanel({
       } else if (activeTab === 'Vintage Data') {
         liveContext += `The user is looking at the Vintage Tracker which shows historical data revisions.\n`;
       }
-      // ------------------------------------------
 
       liveContext += `Here are the latest values for the charts in the active '${activeTab}' tab (if any):\n`;
       
       for (const chart of activeCharts) {
         try {
-          // Quickly fetch the latest number for active charts
           const res = await fetch(`/api/latest/${chart.series_id}`);
           const valData = await res.json();
           liveContext += `- ${chart.title}: ${valData.value}\n`;
@@ -143,14 +130,10 @@ export default function ChatPanel({
         }
       }
 
-      // 2. Send the question AND the live context to Groq
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: inputText,
-          chart_data: liveContext
-        })
+        body: JSON.stringify({ message: inputText, chart_data: liveContext })
       });
 
       const data = await response.json();
@@ -171,43 +154,172 @@ export default function ChatPanel({
     <div style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 50 }}>
       {isOpen && (
         <div style={{ 
-          width: '350px', height: '450px', background: '#0b0f0f', 
-          border: '1px solid #1b2226', borderRadius: '12px', 
-          display: 'flex', flexDirection: 'column', overflow: 'hidden',
-          marginBottom: '10px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
+          width: '360px',
+          height: '480px',
+          // ── Glass panel ──
+          background: 'rgba(8, 14, 18, 0.80)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          borderRadius: '16px',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06)',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          marginBottom: '12px',
         }}>
-          <div style={{ background: '#1b2226', padding: '15px', color: '#fff', fontWeight: 'bold', display: 'flex', justifyContent: 'space-between' }}>
-            <span>Macro AI Analyst</span>
-            <button onClick={() => setIsOpen(false)} style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer' }}>✖</button>
+
+          {/* ── Header bar ── */}
+          <div style={{ 
+            background: 'rgba(252, 203, 11, 0.10)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            borderBottom: '1px solid rgba(252, 203, 11, 0.15)',
+            padding: '14px 16px',
+            color: '#fff',
+            fontWeight: 700,
+            fontSize: '13px',
+            letterSpacing: '0.5px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {/* Pulsing live dot */}
+              <span style={{
+                width: '7px', height: '7px', borderRadius: '50%',
+                background: '#4caf50',
+                boxShadow: '0 0 6px rgba(76,175,80,0.8)',
+                display: 'inline-block',
+                animation: 'pulse-dot 2s infinite',
+              }} />
+              <span>Macro AI Analyst</span>
+            </div>
+            <button
+              onClick={() => setIsOpen(false)}
+              style={{ 
+                background: 'rgba(255,255,255,0.06)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                color: 'rgba(255,255,255,0.5)',
+                cursor: 'pointer',
+                width: '26px', height: '26px',
+                borderRadius: '6px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '12px',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
+                e.currentTarget.style.color = '#fff';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                e.currentTarget.style.color = 'rgba(255,255,255,0.5)';
+              }}
+            >
+              ✖
+            </button>
           </div>
 
-          <div style={{ flex: 1, padding: '15px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {/* ── Message list ── */}
+          <div style={{ 
+            flex: 1,
+            padding: '14px',
+            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
+          }}>
             {messages.map((msg, idx) => (
               <div key={idx} style={{ 
                 alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
-                background: msg.role === 'user' ? '#fccb0b' : '#1b2226',
-                color: msg.role === 'user' ? '#000' : '#fff',
-                padding: '10px 14px', borderRadius: '8px', maxWidth: '80%', fontSize: '13px', lineHeight: '1.4'
+                background: msg.role === 'user'
+                  ? 'rgba(252, 203, 11, 0.90)'
+                  : 'rgba(255, 255, 255, 0.06)',
+                backdropFilter: msg.role === 'ai' ? 'blur(8px)' : 'none',
+                WebkitBackdropFilter: msg.role === 'ai' ? 'blur(8px)' : 'none',
+                border: msg.role === 'ai'
+                  ? '1px solid rgba(255,255,255,0.07)'
+                  : 'none',
+                color: msg.role === 'user' ? '#000' : '#e2e8f0',
+                padding: '10px 14px',
+                borderRadius: msg.role === 'user' ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
+                maxWidth: '82%',
+                fontSize: '13px',
+                lineHeight: '1.5',
+                boxShadow: msg.role === 'user'
+                  ? '0 2px 12px rgba(252,203,11,0.20)'
+                  : '0 2px 8px rgba(0,0,0,0.25)',
               }}>
                 {msg.text}
               </div>
             ))}
-            {isLoading && <div style={{ color: '#888', fontSize: '12px', fontStyle: 'italic' }}>Analyst is reading...</div>}
+            {isLoading && (
+              <div style={{
+                color: 'rgba(255,255,255,0.35)',
+                fontSize: '12px',
+                fontStyle: 'italic',
+                alignSelf: 'flex-start',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}>
+                <span style={{ animation: 'pulse-dot 1.2s infinite' }}>●</span>
+                <span style={{ animation: 'pulse-dot 1.2s 0.4s infinite' }}>●</span>
+                <span style={{ animation: 'pulse-dot 1.2s 0.8s infinite' }}>●</span>
+              </div>
+            )}
           </div>
 
-          <div style={{ padding: '10px', borderTop: '1px solid #1b2226', display: 'flex', gap: '8px' }}>
+          {/* ── Input bar ── */}
+          <div style={{ 
+            padding: '10px 12px',
+            borderTop: '1px solid rgba(255,255,255,0.06)',
+            display: 'flex',
+            gap: '8px',
+            background: 'rgba(0,0,0,0.20)',
+          }}>
             <input 
               type="text" 
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
               placeholder="Ask about the charts..."
-              style={{ flex: 1, background: '#111', border: '1px solid #333', color: '#fff', padding: '10px', borderRadius: '6px', outline: 'none' }}
+              style={{ 
+                flex: 1,
+                background: 'rgba(255,255,255,0.05)',
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                color: '#fff',
+                padding: '10px 14px',
+                borderRadius: '8px',
+                outline: 'none',
+                fontSize: '13px',
+                transition: 'border-color 0.2s',
+              }}
+              onFocus={e  => (e.currentTarget.style.borderColor = 'rgba(252,203,11,0.40)')}
+              onBlur={e   => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)')}
             />
             <button 
               onClick={sendMessage}
               disabled={isLoading}
-              style={{ background: '#fccb0b', border: 'none', color: '#000', padding: '0 15px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+              style={{ 
+                background: isLoading
+                  ? 'rgba(252,203,11,0.40)'
+                  : 'rgba(252,203,11,0.92)',
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)',
+                border: '1px solid rgba(252,203,11,0.30)',
+                color: '#000',
+                padding: '0 16px',
+                borderRadius: '8px',
+                cursor: isLoading ? 'not-allowed' : 'pointer',
+                fontWeight: 700,
+                fontSize: '13px',
+                transition: 'all 0.2s',
+                boxShadow: isLoading ? 'none' : '0 2px 12px rgba(252,203,11,0.25)',
+              }}
             >
               Send
             </button>
@@ -215,18 +327,45 @@ export default function ChatPanel({
         </div>
       )}
 
+      {/* ── Floating trigger button ── */}
       {!isOpen && (
         <button 
           onClick={() => setIsOpen(true)}
           style={{ 
-            background: '#fccb0b', color: '#000', border: 'none', 
-            borderRadius: '50px', padding: '15px 25px', fontSize: '14px', 
-            fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 12px rgba(252, 203, 11, 0.3)'
+            background: 'rgba(252, 203, 11, 0.88)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            color: '#000',
+            border: '1px solid rgba(252,203,11,0.40)',
+            borderRadius: '50px',
+            padding: '14px 24px',
+            fontSize: '14px', 
+            fontWeight: 700,
+            cursor: 'pointer',
+            boxShadow: '0 4px 20px rgba(252, 203, 11, 0.35), 0 0 0 1px rgba(252,203,11,0.15)',
+            transition: 'all 0.25s',
+            letterSpacing: '0.2px',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.boxShadow = '0 6px 28px rgba(252,203,11,0.50), 0 0 0 1px rgba(252,203,11,0.25)';
+            e.currentTarget.style.transform = 'translateY(-1px)';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.boxShadow = '0 4px 20px rgba(252,203,11,0.35), 0 0 0 1px rgba(252,203,11,0.15)';
+            e.currentTarget.style.transform = 'translateY(0)';
           }}
         >
           💬 Ask AI Analyst
         </button>
       )}
+
+      {/* ── Keyframe animations ── */}
+      <style>{`
+        @keyframes pulse-dot {
+          0%, 100% { opacity: 1; }
+          50%       { opacity: 0.25; }
+        }
+      `}</style>
     </div>
   );
 }

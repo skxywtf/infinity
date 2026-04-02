@@ -18,9 +18,6 @@ export default function ConsensusWidget({ onDataFetched }: ConsensusWidgetProps)
         
         if (json.data) {
           setForecasts(json.data);
-          
-          // ---> ADDED THIS BLOCK <---
-          // Pass the data up to the AI ChatPanel in page.tsx
           if (onDataFetched) {
             onDataFetched(json.data);
           }
@@ -33,9 +30,8 @@ export default function ConsensusWidget({ onDataFetched }: ConsensusWidgetProps)
     };
 
     fetchConsensus();
-  }, [onDataFetched]); // <-- Added onDataFetched to dependency array
+  }, [onDataFetched]);
 
-  // Group data by indicator so we can display it nicely in a table
   const groupedData = forecasts.reduce((acc: any, curr: any) => {
     if (!acc[curr.indicator]) acc[curr.indicator] = [];
     acc[curr.indicator].push(curr);
@@ -43,65 +39,182 @@ export default function ConsensusWidget({ onDataFetched }: ConsensusWidgetProps)
   }, {});
 
   return (
-    <div className="p-6 bg-[#0b0f0f] border border-[#1b2226] rounded-2xl shadow-lg w-full">
-      <div className="flex justify-between items-center mb-6">
+    <div style={{
+      // ── Glass surface ──
+      background: 'rgba(10, 16, 20, 0.60)',
+      backdropFilter: 'blur(18px)',
+      WebkitBackdropFilter: 'blur(18px)',
+      border: '1px solid rgba(255, 255, 255, 0.06)',
+      borderRadius: '16px',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05)',
+      padding: '24px',
+      width: '100%',
+    }}>
+
+      {/* ── Header ── */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: '24px',
+      }}>
         <div>
-          <h2 className="text-xl font-bold text-white mb-1">Consensus Estimates</h2>
-          <p className="text-xs text-[#888]">Philly Fed Survey of Professional Forecasters</p>
+          <h2 style={{
+            margin: '0 0 4px 0',
+            fontSize: '18px',
+            fontWeight: 700,
+            color: '#fff',
+            letterSpacing: '-0.3px',
+          }}>
+            Consensus Estimates
+          </h2>
+          <p style={{
+            margin: 0,
+            fontSize: '12px',
+            color: 'rgba(255,255,255,0.35)',
+            letterSpacing: '0.2px',
+          }}>
+            Philly Fed Survey of Professional Forecasters
+          </p>
         </div>
-        <div className="px-3 py-1 bg-[#1e3a8a33] border border-[#1e3a8a] rounded text-[#60a5fa] text-xs font-bold">
+
+        {/* Badge */}
+        <div style={{
+          padding: '4px 10px',
+          background: 'rgba(30, 58, 138, 0.25)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+          border: '1px solid rgba(30, 58, 138, 0.50)',
+          borderRadius: '6px',
+          color: '#60a5fa',
+          fontSize: '11px',
+          fontWeight: 700,
+          letterSpacing: '1px',
+          boxShadow: '0 0 12px rgba(59,130,246,0.10)',
+        }}>
           Q-FORECAST
         </div>
       </div>
-      
+
       {loading ? (
-        <div className="w-full h-40 flex flex-col items-center justify-center bg-[#111] rounded-xl border border-[#1b2226] animate-pulse">
-          <div className="w-6 h-6 border-2 border-[#3b82f6] border-t-transparent rounded-full animate-spin mb-2"></div>
-          <span className="text-[#888] text-xs">LOADING FORECASTS...</span>
+        /* ── Loading state ── */
+        <div style={{
+          width: '100%',
+          height: '160px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'rgba(255,255,255,0.03)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+          border: '1px solid rgba(255,255,255,0.05)',
+          borderRadius: '12px',
+          gap: '12px',
+        }}>
+          <div style={{
+            width: '24px',
+            height: '24px',
+            border: '2px solid rgba(59,130,246,0.80)',
+            borderTopColor: 'transparent',
+            borderRadius: '50%',
+            animation: 'spin 0.8s linear infinite',
+          }} />
+          <span style={{
+            color: 'rgba(255,255,255,0.30)',
+            fontSize: '11px',
+            letterSpacing: '2px',
+            fontWeight: 600,
+          }}>
+            LOADING FORECASTS...
+          </span>
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+        /* ── Table ── */
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{
+            width: '100%',
+            borderCollapse: 'collapse',
+            fontSize: '14px',
+          }}>
             <thead>
-              <tr className="border-b border-[#1b2226]">
-                <th className="py-3 px-4 text-[#888] font-semibold text-sm">Indicator</th>
-                <th className="py-3 px-4 text-[#888] font-semibold text-sm">Target Quarter</th>
-                <th className="py-3 px-4 text-[#888] font-semibold text-sm text-right">Consensus %</th>
+              <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                {['Indicator', 'Target Quarter', 'Consensus %'].map((h, i) => (
+                  <th key={h} style={{
+                    padding: '10px 16px',
+                    color: 'rgba(255,255,255,0.35)',
+                    fontWeight: 600,
+                    fontSize: '12px',
+                    letterSpacing: '0.5px',
+                    textAlign: i === 2 ? 'right' : 'left',
+                  }}>
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
+
             <tbody>
               {Object.keys(groupedData).map((indicator, idx) => (
                 <React.Fragment key={indicator}>
-                  {/* --- VISUAL SEPARATOR HEADER --- */}
-                  <tr className="bg-[#141b1f] border-t-2 border-[#1b2226]">
-                    <td colSpan={3} className="py-2 px-4 text-white font-bold text-sm tracking-wide">
+
+                  {/* ── Group header row ── */}
+                  <tr style={{
+                    background: 'rgba(255,255,255,0.03)',
+                    borderTop: '2px solid rgba(255,255,255,0.05)',
+                  }}>
+                    <td colSpan={3} style={{
+                      padding: '10px 16px',
+                      color: '#fff',
+                      fontWeight: 700,
+                      fontSize: '13px',
+                      letterSpacing: '0.3px',
+                    }}>
                       {indicator}
                     </td>
                   </tr>
 
-                  {/* --- DATA ROWS --- */}
+                  {/* ── Data rows ── */}
                   {groupedData[indicator].map((item: any, itemIdx: number) => {
                     const cleanDate = item.event_date ? item.event_date.split('T')[0] : '---';
-                    
-                    // Default to percentage
-                    let displayValue = `${item.consensus.toFixed(1)}%`; 
-                    
-                    // Smart Fallback: Just in case the database hasn't updated yet, 
-                    // if the GDP number is > 100, we know it's a level, not a percentage.
+                    let displayValue = `${item.consensus.toFixed(1)}%`;
                     if (indicator.toLowerCase().includes('gdp') && item.consensus > 100) {
-                       displayValue = `$${(item.consensus / 1000).toFixed(2)}T`;
+                      displayValue = `$${(item.consensus / 1000).toFixed(2)}T`;
                     }
 
                     return (
-                      <tr key={`${idx}-${itemIdx}`} className="border-b border-[#1b2226]/50 hover:bg-[#111] transition-colors">
-                        {/* Indent the first column slightly for a grouped look */}
-                        <td className="py-3 px-4 pl-8 text-[#555] text-xs">
+                      <tr
+                        key={`${idx}-${itemIdx}`}
+                        style={{
+                          borderBottom: '1px solid rgba(255,255,255,0.04)',
+                          transition: 'background 0.15s',
+                          cursor: 'default',
+                        }}
+                        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.03)')}
+                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                      >
+                        <td style={{
+                          padding: '12px 16px 12px 32px',
+                          color: 'rgba(255,255,255,0.25)',
+                          fontSize: '12px',
+                        }}>
                           ↳ Target
                         </td>
-                        <td className="py-3 px-4 text-[#aaa] text-sm">
+                        <td style={{
+                          padding: '12px 16px',
+                          color: 'rgba(255,255,255,0.55)',
+                          fontSize: '13px',
+                        }}>
                           {cleanDate}
                         </td>
-                        <td className="py-3 px-4 text-right text-blue-400 font-bold text-sm">
+                        <td style={{
+                          padding: '12px 16px',
+                          textAlign: 'right',
+                          color: '#60a5fa',
+                          fontWeight: 700,
+                          fontSize: '13px',
+                          textShadow: '0 0 10px rgba(96,165,250,0.30)',
+                        }}>
                           {displayValue}
                         </td>
                       </tr>
@@ -113,6 +226,12 @@ export default function ConsensusWidget({ onDataFetched }: ConsensusWidgetProps)
           </table>
         </div>
       )}
+
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }

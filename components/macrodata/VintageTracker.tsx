@@ -1,68 +1,114 @@
-"use client";
+'use client';
 import React, { useState } from 'react';
 
-// --- NEW: We add a prop so we can send data up to the AI ---
 interface VintageTrackerProps {
   onDataFetched?: (data: any) => void;
 }
 
 export default function VintageTracker({ onDataFetched }: VintageTrackerProps) {
-  const [seriesId, setSeriesId] = useState('GDP');
+  const [seriesId, setSeriesId]       = useState('GDP');
   const [vintageDate, setVintageDate] = useState('2020-04-29');
   const [vintageData, setVintageData] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [isLoading, setIsLoading]     = useState(false);
+  const [error, setError]             = useState('');
 
   const fetchVintage = async () => {
     setIsLoading(true);
     setError('');
     setVintageData([]);
-
     try {
       const response = await fetch(`/api/vintage/${seriesId}?date=${vintageDate}`);
-      const data = await response.json();
-
+      const data     = await response.json();
       if (data.error) {
         setError(data.error);
-        if (onDataFetched) onDataFetched(null); // Clear AI data on error
+        if (onDataFetched) onDataFetched(null);
       } else {
         const revData = data.reverse();
         setVintageData(revData);
-        
-        // --- NEW: Package the data and send it up to the AI ---
         if (onDataFetched) {
           onDataFetched({
             title: `ALFRED Vintage Data Snapshot for ${seriesId}`,
             source: `ALFRED (Snapshot taken on ${vintageDate})`,
             series_id: seriesId,
-            description: `This is historical unrevised data exactly as it looked on ${vintageDate}.`,
-            data_values: revData.slice(0, 15) // We send the top 15 rows to the AI so it can read the numbers!
+            description: `Historical unrevised data exactly as it looked on ${vintageDate}.`,
+            data_values: revData.slice(0, 15),
           });
         }
       }
-    } catch (err) {
-      setError("Failed to connect to the server.");
-      if (onDataFetched) onDataFetched(null); // Clear AI data on error
+    } catch {
+      setError('Failed to connect to the server.');
+      if (onDataFetched) onDataFetched(null);
     }
-    
     setIsLoading(false);
   };
 
+  // ── shared input style ──────────────────────────────────────────────────────
+  const inputBase: React.CSSProperties = {
+    padding: '10px 14px',
+    borderRadius: 8,
+    background: 'rgba(255,255,255,0.04)',
+    backdropFilter: 'blur(8px)',
+    WebkitBackdropFilter: 'blur(8px)',
+    color: '#fff',
+    border: '1px solid rgba(255,255,255,0.08)',
+    outline: 'none',
+    fontSize: 13,
+    transition: 'border-color 0.2s',
+  };
+
   return (
-    <div style={{ background: '#0b0f0f', border: '1px solid #1b2226', borderRadius: '16px', padding: '30px', textAlign: 'left' }}>
-      <h2 style={{ color: '#d4af37', margin: '0 0 10px 0' }}>ALFRED Vintage Data Tracker</h2>
-      <p style={{ color: '#888', fontSize: '14px', marginBottom: '30px' }}>
-        Select an economic indicator and a historical date to see exactly what the data looked like on that specific day, before any government revisions.
+    <div style={{
+      // ── Glass card ──
+      background: 'rgba(10, 16, 20, 0.60)',
+      backdropFilter: 'blur(18px)',
+      WebkitBackdropFilter: 'blur(18px)',
+      border: '1px solid rgba(255,255,255,0.06)',
+      borderRadius: 16,
+      boxShadow: '0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05)',
+      padding: 30,
+      textAlign: 'left',
+    }}>
+
+      {/* ── Header ── */}
+      <h2 style={{
+        color: '#d4af37',
+        margin: '0 0 10px 0',
+        fontSize: 20,
+        fontWeight: 800,
+        letterSpacing: '-0.3px',
+        textShadow: '0 0 16px rgba(212,175,55,0.30)',
+      }}>
+        ALFRED Vintage Data Tracker
+      </h2>
+      <p style={{
+        color: 'rgba(255,255,255,0.35)',
+        fontSize: 13,
+        marginBottom: 28,
+        lineHeight: 1.6,
+      }}>
+        Select an economic indicator and a historical date to see exactly what the
+        data looked like on that specific day, before any government revisions.
       </p>
 
-      {/* --- INPUT CONTROLS --- */}
-      <div style={{ display: 'flex', gap: '15px', marginBottom: '30px', flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-          <label style={{ fontSize: '12px', color: '#aaa', fontWeight: 'bold' }}>Economic Indicator</label>
-          <select 
-            value={seriesId} 
-            onChange={(e) => setSeriesId(e.target.value)}
-            style={{ padding: '10px', borderRadius: '8px', background: '#1b2226', color: '#fff', border: '1px solid #333', outline: 'none' }}
+      {/* ── Controls ── */}
+      <div style={{ display: 'flex', gap: 14, marginBottom: 28, flexWrap: 'wrap' }}>
+
+        {/* Series selector */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <label style={{
+            fontSize: 11,
+            color: 'rgba(255,255,255,0.40)',
+            fontWeight: 700,
+            letterSpacing: '0.5px',
+          }}>
+            ECONOMIC INDICATOR
+          </label>
+          <select
+            value={seriesId}
+            onChange={e => setSeriesId(e.target.value)}
+            style={{ ...inputBase, minWidth: 220 }}
+            onFocus={e  => (e.currentTarget.style.borderColor = 'rgba(212,175,55,0.45)')}
+            onBlur={e   => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)')}
           >
             <option value="GDP">Real GDP (Quarterly)</option>
             <option value="CPIAUCSL">CPI Inflation (Monthly)</option>
@@ -71,50 +117,150 @@ export default function VintageTracker({ onDataFetched }: VintageTrackerProps) {
           </select>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-          <label style={{ fontSize: '12px', color: '#aaa', fontWeight: 'bold' }}>Vintage Date (Snapshot)</label>
-          <input 
-            type="date" 
+        {/* Date picker */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <label style={{
+            fontSize: 11,
+            color: 'rgba(255,255,255,0.40)',
+            fontWeight: 700,
+            letterSpacing: '0.5px',
+          }}>
+            VINTAGE DATE (SNAPSHOT)
+          </label>
+          <input
+            type="date"
             value={vintageDate}
-            onChange={(e) => setVintageDate(e.target.value)}
-            style={{ padding: '10px', borderRadius: '8px', background: '#1b2226', color: '#fff', border: '1px solid #333', outline: 'none' }}
+            onChange={e => setVintageDate(e.target.value)}
+            style={{ ...inputBase }}
+            onFocus={e  => (e.currentTarget.style.borderColor = 'rgba(212,175,55,0.45)')}
+            onBlur={e   => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)')}
           />
         </div>
 
+        {/* Fetch button */}
         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
-          <button 
+          <button
             onClick={fetchVintage}
             disabled={isLoading}
-            style={{ padding: '10px 20px', borderRadius: '8px', background: '#d4af37', color: '#000', border: 'none', fontWeight: 'bold', cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.7 : 1 }}
+            style={{
+              padding: '10px 22px',
+              borderRadius: 8,
+              background: isLoading
+                ? 'rgba(212,175,55,0.25)'
+                : 'rgba(212,175,55,0.92)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              border: '1px solid rgba(212,175,55,0.30)',
+              color: isLoading ? 'rgba(0,0,0,0.40)' : '#000',
+              fontWeight: 700,
+              fontSize: 12,
+              letterSpacing: '1px',
+              cursor: isLoading ? 'not-allowed' : 'pointer',
+              boxShadow: isLoading ? 'none' : '0 2px 16px rgba(212,175,55,0.28)',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={e => { if (!isLoading) e.currentTarget.style.boxShadow = '0 4px 22px rgba(212,175,55,0.42)'; }}
+            onMouseLeave={e => { if (!isLoading) e.currentTarget.style.boxShadow = '0 2px 16px rgba(212,175,55,0.28)'; }}
           >
-            {isLoading ? 'Fetching Data...' : 'Get Vintage Print'}
+            {isLoading ? 'FETCHING DATA…' : 'GET VINTAGE PRINT'}
           </button>
         </div>
       </div>
 
-      {/* --- ERROR MESSAGE --- */}
+      {/* ── Error ── */}
       {error && (
-        <div style={{ padding: '15px', background: '#ff525222', color: '#ff5252', borderRadius: '8px', border: '1px solid #ff525255', marginBottom: '20px' }}>
+        <div style={{
+          padding: '12px 16px',
+          background: 'rgba(224,92,92,0.08)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+          color: '#e05c5c',
+          borderRadius: 8,
+          border: '1px solid rgba(224,92,92,0.20)',
+          marginBottom: 20,
+          fontSize: 13,
+        }}>
           {error}
         </div>
       )}
 
-      {/* --- DATA DISPLAY --- */}
+      {/* ── Data table ── */}
       {vintageData.length > 0 && (
-        <div style={{ background: '#111518', borderRadius: '8px', border: '1px solid #1b2226', overflow: 'hidden' }}>
-          <div style={{ padding: '15px', background: '#1b2226', borderBottom: '1px solid #333', display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: '#aaa', fontSize: '14px' }}>
-            <span>Observation Date</span>
-            <span>Reported Value</span>
+        <div style={{
+          background: 'rgba(255,255,255,0.025)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          borderRadius: 10,
+          border: '1px solid rgba(255,255,255,0.07)',
+          overflow: 'hidden',
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
+        }}>
+
+          {/* Table header */}
+          <div style={{
+            padding: '12px 16px',
+            background: 'rgba(255,255,255,0.04)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            borderBottom: '1px solid rgba(255,255,255,0.07)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            fontWeight: 700,
+            color: 'rgba(255,255,255,0.40)',
+            fontSize: 11,
+            letterSpacing: '1px',
+          }}>
+            <span>OBSERVATION DATE</span>
+            <span>REPORTED VALUE</span>
           </div>
-          <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-            {vintageData.slice(0, 50).map((row, index) => (
-              <div key={index} style={{ padding: '12px 15px', borderBottom: '1px solid #1b2226', display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: index === 0 ? '#d4af37' : '#fff', fontWeight: index === 0 ? 'bold' : 'normal' }}>
-                <span>{row.date}</span>
-                <span>{row.value.toLocaleString()}</span>
-              </div>
-            ))}
+
+          {/* Rows */}
+          <div style={{ maxHeight: 300, overflowY: 'auto' }}>
+            {vintageData.slice(0, 50).map((row, index) => {
+              const isLatest = index === 0;
+              return (
+                <div
+                  key={index}
+                  style={{
+                    padding: '11px 16px',
+                    borderBottom: '1px solid rgba(255,255,255,0.04)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    fontSize: 13,
+                    color: isLatest ? '#d4af37' : 'rgba(255,255,255,0.75)',
+                    fontWeight: isLatest ? 700 : 400,
+                    background: isLatest
+                      ? 'rgba(212,175,55,0.06)'
+                      : 'transparent',
+                    transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={e => {
+                    if (!isLatest) e.currentTarget.style.background = 'rgba(255,255,255,0.025)';
+                  }}
+                  onMouseLeave={e => {
+                    if (!isLatest) e.currentTarget.style.background = 'transparent';
+                  }}
+                >
+                  <span>{row.date}</span>
+                  <span style={{
+                    textShadow: isLatest ? '0 0 10px rgba(212,175,55,0.40)' : 'none',
+                  }}>
+                    {row.value.toLocaleString()}
+                  </span>
+                </div>
+              );
+            })}
           </div>
-          <div style={{ padding: '10px', textAlign: 'center', fontSize: '12px', color: '#666', borderTop: '1px solid #1b2226' }}>
+
+          {/* Footer */}
+          <div style={{
+            padding: '9px 16px',
+            textAlign: 'center',
+            fontSize: 11,
+            color: 'rgba(255,255,255,0.20)',
+            borderTop: '1px solid rgba(255,255,255,0.05)',
+            background: 'rgba(255,255,255,0.02)',
+          }}>
             Showing the 50 most recent observations prior to {vintageDate}
           </div>
         </div>

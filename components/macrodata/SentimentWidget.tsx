@@ -9,14 +9,12 @@ export default function SentimentWidget({ onDataFetched }: { onDataFetched?: (da
   useEffect(() => {
     const fetchSentiment = async () => {
       try {
-        // Fetching from the API route we designed in the previous step
         const res = await fetch('/api/alphavantage/sentiment');
         const data = await res.json();
         
         if (data.feed) {
-          setNews(data.feed.slice(0, 5)); // Grab top 5 articles
+          setNews(data.feed.slice(0, 5));
 
-          // --- NEW: Send simplified, labeled data to parent page for AI ---
           if (onDataFetched) {
             const aiPayload = {
               section_title: "AI SENTIMENT",
@@ -37,104 +35,197 @@ export default function SentimentWidget({ onDataFetched }: { onDataFetched?: (da
     };
 
     fetchSentiment();
-  }, [onDataFetched]); // Added to dependency array for safety
+  }, [onDataFetched]);
 
-  // Helper to colorize the sentiment label
   const getSentimentColor = (label: string) => {
-    if (label.includes('Bullish')) return '#4caf50'; // Green
-    if (label.includes('Bearish')) return '#ff5252'; // Red
-    return '#888888'; // Neutral Gray
+    if (label.includes('Bullish')) return '#4caf50';
+    if (label.includes('Bearish')) return '#ff5252';
+    return '#888888';
   };
 
-  // Helper to format the label text compactly
   const formatLabel = (label: string) => {
     if (label === 'Somewhat-Bullish') return 'SLIGHT BULL';
     if (label === 'Somewhat-Bearish') return 'SLIGHT BEAR';
     return label.toUpperCase();
   };
 
-  // Calculate an average "Macro Mood" score based on the recent 5 articles (-1 to 1)
-  // Alpha vantage scores usually range from -0.35 to 0.35 in their overall_sentiment_score
   const avgScore = news.length > 0 
     ? news.reduce((acc, item) => acc + parseFloat(item.overall_sentiment_score), 0) / news.length
     : 0;
   
-  // Normalize score to a 0-100% scale for the UI gauge (assuming -0.5 is max fear, +0.5 is max greed)
   const gaugePosition = Math.max(0, Math.min(100, ((avgScore + 0.5) * 100)));
 
   return (
-    <aside className="card" style={{ background: '#0b0f0f', border: '1px solid #1b2226', borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <aside style={{
+      // ── Glass surface ──
+      background: 'rgba(10, 16, 20, 0.60)',
+      backdropFilter: 'blur(18px)',
+      WebkitBackdropFilter: 'blur(18px)',
+      border: '1px solid rgba(255, 255, 255, 0.06)',
+      borderRadius: '16px',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.05)',
+      padding: '20px',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '18px',
+    }}>
       
-      {/* HEADER */}
-      <div style={{ fontSize: '12px', fontWeight: 700, color: '#d4af37', letterSpacing: '1px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span>AI SENTIMENT</span>
-        <span style={{ background: '#d4af3722', color: '#d4af37', padding: '2px 6px', borderRadius: '4px', fontSize: '9px' }}>ALPHA VANTAGE</span>
+      {/* ── Header ── */}
+      <div style={{
+        fontSize: '11px',
+        fontWeight: 700,
+        color: '#d4af37',
+        letterSpacing: '2px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        textTransform: 'uppercase',
+      }}>
+        <span style={{ textShadow: '0 0 10px rgba(212,175,55,0.40)' }}>AI Sentiment</span>
+        <span style={{ 
+          background: 'rgba(212, 175, 55, 0.10)',
+          border: '1px solid rgba(212,175,55,0.20)',
+          color: '#d4af37',
+          padding: '2px 8px',
+          borderRadius: '4px',
+          fontSize: '9px',
+          letterSpacing: '1px',
+          backdropFilter: 'blur(8px)',
+        }}>
+          ALPHA VANTAGE
+        </span>
       </div>
 
       {loading ? (
-        <div style={{ fontSize: '12px', color: '#888', textAlign: 'center', padding: '20px 0' }}>Analyzing market mood...</div>
+        <div style={{
+          fontSize: '12px',
+          color: 'rgba(255,255,255,0.30)',
+          textAlign: 'center',
+          padding: '20px 0',
+          fontStyle: 'italic',
+        }}>
+          Analyzing market mood...
+        </div>
       ) : (
         <>
-          {/* THE MOOD METER (10-second glance rule applied here) */}
+          {/* ── Mood meter ── */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#aaa', fontWeight: 600 }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              fontSize: '10px',
+              color: 'rgba(255,255,255,0.40)',
+              fontWeight: 600,
+              letterSpacing: '0.5px',
+            }}>
               <span>BEARISH</span>
               <span>NEUTRAL</span>
               <span>BULLISH</span>
             </div>
-            <div style={{ height: '8px', width: '100%', borderRadius: '4px', background: 'linear-gradient(90deg, #ff5252 0%, #333333 50%, #4caf50 100%)', position: 'relative' }}>
-              {/* The Indicator Triangle */}
+
+            {/* Gauge track — glass inset */}
+            <div style={{
+              height: '8px',
+              width: '100%',
+              borderRadius: '4px',
+              background: 'linear-gradient(90deg, rgba(255,82,82,0.70) 0%, rgba(40,40,50,0.60) 50%, rgba(76,175,80,0.70) 100%)',
+              border: '1px solid rgba(255,255,255,0.06)',
+              position: 'relative',
+              backdropFilter: 'blur(4px)',
+            }}>
+              {/* Indicator */}
               <div style={{
                 position: 'absolute',
-                top: '-4px',
+                top: '-5px',
                 left: `calc(${gaugePosition}% - 6px)`,
-                width: '0',
-                height: '0',
-                borderLeft: '6px solid transparent',
-                borderRight: '6px solid transparent',
-                borderTop: '8px solid #ffffff',
-                transition: 'left 1s ease-in-out'
+                width: '12px',
+                height: '18px',
+                background: 'rgba(255,255,255,0.90)',
+                backdropFilter: 'blur(4px)',
+                borderRadius: '3px',
+                boxShadow: '0 0 8px rgba(255,255,255,0.50)',
+                transition: 'left 1s ease-in-out',
               }} />
             </div>
           </div>
 
-          <div style={{ height: '1px', background: '#1b2226' }} />
+          {/* ── Divider ── */}
+          <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)' }} />
 
-          {/* THE IMPACT WIRE */}
+          {/* ── News impact wire ── */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {news.map((item, idx) => (
-              <a key={idx} href={item.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                
-                {/* Sentiment Badge & Source */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '9px', color: '#888', textTransform: 'uppercase' }}>{item.source}</span>
-                  <span style={{ 
-                    fontSize: '10px', 
-                    fontWeight: 'bold', 
-                    color: getSentimentColor(item.overall_sentiment_label),
-                    background: `${getSentimentColor(item.overall_sentiment_label)}22`,
-                    padding: '2px 6px',
-                    borderRadius: '4px'
-                  }}>
-                    {formatLabel(item.overall_sentiment_label)} ({item.overall_sentiment_score})
-                  </span>
-                </div>
-
-                {/* Headline */}
-                <div style={{ fontSize: '13px', color: '#e2e8f0', lineHeight: '1.4', fontWeight: 500 }}>
-                  {item.title.length > 70 ? item.title.substring(0, 70) + '...' : item.title}
-                </div>
-
-                {/* Ticker Impact Tags */}
-                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                  {item.ticker_sentiment?.slice(0, 3).map((tickerData: any, i: number) => (
-                    <span key={i} style={{ fontSize: '9px', color: getSentimentColor(tickerData.ticker_sentiment_label), border: `1px solid ${getSentimentColor(tickerData.ticker_sentiment_label)}55`, padding: '1px 4px', borderRadius: '3px' }}>
-                      {tickerData.ticker}
+            {news.map((item, idx) => {
+              const sentColor = getSentimentColor(item.overall_sentiment_label);
+              return (
+                <a
+                  key={idx}
+                  href={item.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: '6px' }}
+                >
+                  {/* Sentiment badge & source */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{
+                      fontSize: '9px',
+                      color: 'rgba(255,255,255,0.30)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                    }}>
+                      {item.source}
                     </span>
-                  ))}
-                </div>
-              </a>
-            ))}
+                    <span style={{ 
+                      fontSize: '10px', 
+                      fontWeight: 700,
+                      color: sentColor,
+                      background: `${sentColor}18`,
+                      border: `1px solid ${sentColor}30`,
+                      padding: '2px 7px',
+                      borderRadius: '4px',
+                      backdropFilter: 'blur(6px)',
+                      letterSpacing: '0.3px',
+                    }}>
+                      {formatLabel(item.overall_sentiment_label)} ({item.overall_sentiment_score})
+                    </span>
+                  </div>
+
+                  {/* Headline */}
+                  <div style={{
+                    fontSize: '13px',
+                    color: 'rgba(226,232,240,0.88)',
+                    lineHeight: '1.5',
+                    fontWeight: 500,
+                    transition: 'color 0.2s',
+                  }}
+                    onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
+                    onMouseLeave={e => (e.currentTarget.style.color = 'rgba(226,232,240,0.88)')}
+                  >
+                    {item.title.length > 70 ? item.title.substring(0, 70) + '...' : item.title}
+                  </div>
+
+                  {/* Ticker tags */}
+                  <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
+                    {item.ticker_sentiment?.slice(0, 3).map((tickerData: any, i: number) => {
+                      const tc = getSentimentColor(tickerData.ticker_sentiment_label);
+                      return (
+                        <span key={i} style={{
+                          fontSize: '9px',
+                          color: tc,
+                          background: `${tc}12`,
+                          border: `1px solid ${tc}35`,
+                          padding: '1px 5px',
+                          borderRadius: '3px',
+                          backdropFilter: 'blur(4px)',
+                          letterSpacing: '0.3px',
+                        }}>
+                          {tickerData.ticker}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </a>
+              );
+            })}
           </div>
         </>
       )}

@@ -18,7 +18,6 @@ const QUADRANT_ICONS: Record<string, string> = {
   Stagflation: '🔴',
   Deflation:   '🔵',
 };
-
 const QUADRANT_DESC: Record<string, string> = {
   Goldilocks:  'Growth ↑ · Inflation ↓',
   Reflation:   'Growth ↑ · Inflation ↑',
@@ -31,53 +30,184 @@ interface RegimeWidgetProps {
 }
 
 export default function RegimeWidget({ onDataFetched }: RegimeWidgetProps) {
-  const [regime, setRegime] = useState<RegimeData | null>(null);
+  const [regime, setRegime]   = useState<RegimeData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [error, setError]     = useState(false);
 
   useEffect(() => {
-    // Change this line to fetch from the new v2 endpoint:
     fetch('/api/regime-v2')
       .then(r => r.json())
-      .then(data => { 
-        setRegime(data); 
-        setLoading(false); 
-        if (onDataFetched) {
-          onDataFetched(data);
-        }
+      .then(data => {
+        setRegime(data);
+        setLoading(false);
+        if (onDataFetched) onDataFetched(data);
       })
       .catch(() => { setError(true); setLoading(false); });
-      
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const borderColor = regime?.color ?? '#444';
+  const accentColor = regime?.color ?? 'rgba(255,255,255,0.20)';
 
   return (
-    <aside style={{ background: '#0b0f0f', border: `1px solid ${borderColor}44`, borderRadius: '16px', padding: '20px' }}>
-      <div style={{ fontSize: '12px', fontWeight: 700, opacity: 0.5, marginBottom: '16px', letterSpacing: '1px' }}>MACROREGIME</div>
-      {loading && <div style={{ color: '#444' }}>Calculating...</div>}
-      {error && <div style={{ color: '#e05c5c' }}>Regime unavailable</div>}
+    <aside style={{
+      // ── Glass card — accent border driven by regime color ──
+      background: 'rgba(10, 16, 20, 0.60)',
+      backdropFilter: 'blur(18px)',
+      WebkitBackdropFilter: 'blur(18px)',
+      border: `1px solid ${accentColor}40`,
+      borderRadius: 16,
+      boxShadow: `0 8px 32px rgba(0,0,0,0.45), 0 0 0 1px ${accentColor}10, inset 0 1px 0 rgba(255,255,255,0.05)`,
+      padding: 20,
+      transition: 'border-color 0.5s, box-shadow 0.5s',
+    }}>
+
+      {/* ── Label ── */}
+      <div style={{
+        fontSize: 11,
+        fontWeight: 700,
+        color: 'rgba(255,255,255,0.28)',
+        marginBottom: 16,
+        letterSpacing: '2px',
+      }}>
+        MACROREGIME
+      </div>
+
+      {/* ── States ── */}
+      {loading && (
+        <div style={{ color: 'rgba(255,255,255,0.20)', fontSize: 12 }}>
+          Calculating...
+        </div>
+      )}
+      {error && (
+        <div style={{ color: '#e05c5c', fontSize: 12 }}>
+          Regime unavailable
+        </div>
+      )}
+
       {regime && !loading && (
         <>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', padding: '10px 14px', background: `${borderColor}18`, borderRadius: '10px', border: `1px solid ${borderColor}55` }}>
-            <span style={{ fontSize: '20px' }}>{QUADRANT_ICONS[regime.quadrant] ?? '⬜'}</span>
+          {/* ── Active quadrant pill ── */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            marginBottom: 16,
+            padding: '12px 14px',
+            background: `${accentColor}14`,
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+            borderRadius: 10,
+            border: `1px solid ${accentColor}45`,
+            boxShadow: `0 0 22px ${accentColor}10`,
+          }}>
+            <span style={{ fontSize: 20 }}>
+              {QUADRANT_ICONS[regime.quadrant] ?? '⬜'}
+            </span>
             <div>
-              <div style={{ fontSize: '16px', fontWeight: 900, color: borderColor, letterSpacing: '-0.5px' }}>{regime.quadrant.toUpperCase()}</div>
-              <div style={{ fontSize: '11px', color: '#666' }}>{QUADRANT_DESC[regime.quadrant]}</div>
+              <div style={{
+                fontSize: 16,
+                fontWeight: 900,
+                color: accentColor,
+                letterSpacing: '-0.5px',
+                textShadow: `0 0 14px ${accentColor}55`,
+              }}>
+                {regime.quadrant.toUpperCase()}
+              </div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.32)' }}>
+                {QUADRANT_DESC[regime.quadrant]}
+              </div>
             </div>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginBottom: '16px' }}>
-            {(['Goldilocks','Reflation','Deflation','Stagflation'] as const).map(q => (
-              <div key={q} style={{ padding: '8px 10px', borderRadius: '8px', background: regime.quadrant===q?'#1a1a1a':'#0f1212', border: `1px solid ${regime.quadrant===q?borderColor+'66':'#1b2226'}`, opacity: regime.quadrant===q?1:0.35 }}>
-                <div style={{ fontSize: '10px', color: '#888' }}>{QUADRANT_ICONS[q]} {q}</div>
+
+          {/* ── 2 × 2 quadrant grid ── */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: 6,
+            marginBottom: 16,
+          }}>
+            {(['Goldilocks','Reflation','Deflation','Stagflation'] as const).map(q => {
+              const isActive = regime.quadrant === q;
+              return (
+                <div
+                  key={q}
+                  style={{
+                    padding: '8px 10px',
+                    borderRadius: 8,
+                    background: isActive
+                      ? `${accentColor}12`
+                      : 'rgba(255,255,255,0.02)',
+                    backdropFilter: 'blur(6px)',
+                    WebkitBackdropFilter: 'blur(6px)',
+                    border: `1px solid ${isActive ? accentColor + '55' : 'rgba(255,255,255,0.05)'}`,
+                    opacity: isActive ? 1 : 0.35,
+                    transition: 'all 0.3s',
+                  }}
+                >
+                  <div style={{
+                    fontSize: 10,
+                    color: isActive ? 'rgba(255,255,255,0.70)' : 'rgba(255,255,255,0.38)',
+                  }}>
+                    {QUADRANT_ICONS[q]} {q}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* ── Stats rows ── */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {[
+              {
+                label: 'Growth (3m)',
+                value: `${regime.growth_mom_annualized > 0 ? '+' : ''}${regime.growth_mom_annualized}%`,
+                color: regime.growth_mom_annualized > 0 ? '#4caf82' : '#e05c5c',
+                glow:  regime.growth_mom_annualized > 0
+                  ? 'rgba(76,175,130,0.40)'
+                  : 'rgba(224,92,92,0.40)',
+              },
+              {
+                label: 'CPI YoY',
+                value: `${regime.cpi_yoy}%`,
+                color: regime.cpi_yoy < regime.cpi_yoy_avg_12m ? '#4caf82' : '#e05c5c',
+                glow:  regime.cpi_yoy < regime.cpi_yoy_avg_12m
+                  ? 'rgba(76,175,130,0.40)'
+                  : 'rgba(224,92,92,0.40)',
+              },
+              {
+                label: 'CPI 12m Avg',
+                value: `${regime.cpi_yoy_avg_12m}%`,
+                color: 'rgba(255,255,255,0.38)',
+                glow:  'none',
+              },
+            ].map(stat => (
+              <div
+                key={stat.label}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '7px 10px',
+                  background: 'rgba(255,255,255,0.025)',
+                  backdropFilter: 'blur(6px)',
+                  WebkitBackdropFilter: 'blur(6px)',
+                  borderRadius: 7,
+                  border: '1px solid rgba(255,255,255,0.04)',
+                }}
+              >
+                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.38)' }}>
+                  {stat.label}
+                </span>
+                <span style={{
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: stat.color,
+                  textShadow: stat.glow !== 'none' ? `0 0 8px ${stat.glow}` : 'none',
+                }}>
+                  {stat.value}
+                </span>
               </div>
             ))}
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ fontSize: '11px', color: '#666' }}>Growth (3m)</span><span style={{ fontSize: '12px', fontWeight: 700, color: regime.growth_mom_annualized>0?'#4caf82':'#e05c5c' }}>{regime.growth_mom_annualized>0?'+':''}{regime.growth_mom_annualized}%</span></div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ fontSize: '11px', color: '#666' }}>CPIYoY</span><span style={{ fontSize: '12px', fontWeight: 700, color: regime.cpi_yoy<regime.cpi_yoy_avg_12m?'#4caf82':'#e05c5c' }}>{regime.cpi_yoy}%</span></div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ fontSize: '11px', color: '#666' }}>CPI12mAvg</span><span style={{ fontSize: '12px', fontWeight: 700, color: '#666' }}>{regime.cpi_yoy_avg_12m}%</span></div>
           </div>
         </>
       )}
