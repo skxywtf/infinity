@@ -2,23 +2,29 @@
 
 import React, { useState } from 'react';
 
-// UPGRADED: Added macroRegime to the incoming data props!
+// UPGRADED: Added finnhub, sentiment, and consensus to the incoming data props!
 export default function ChatPanel({ 
   activeTab = '', 
   activeCharts = [],
   market = {},
   news = [],
   govNews = [], 
-  macroRegime = {}, // <-- NEW
-  dynamicTabs = []
+  macroRegime = {}, 
+  dynamicTabs = [],
+  finnhub = {},       // <-- NEW
+  sentiment = [],     // <-- NEW
+  consensus = null    // <-- NEW
 }: { 
   activeTab?: string, 
   activeCharts?: any[],
   market?: any,
   news?: any[],
   govNews?: any[], 
-  macroRegime?: any, // <-- NEW
-  dynamicTabs?: string[]
+  macroRegime?: any,
+  dynamicTabs?: string[],
+  finnhub?: Record<string, any>, // <-- NEW
+  sentiment?: any[],             // <-- NEW
+  consensus?: any                // <-- NEW
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<{ role: 'user' | 'ai'; text: string }[]>([
@@ -57,6 +63,28 @@ export default function ChatPanel({
       } else {
         liveContext += `- Macro Regime data is currently loading or unavailable.\n\n`;
       }
+
+      // --- NEW: INJECT WIDGET DATA CONTEXT ---
+      liveContext += `[LIVE EQUITIES DATA (Finnhub)]\n`;
+      if (Object.keys(finnhub || {}).length > 0) {
+        liveContext += `${JSON.stringify(finnhub)}\n\n`;
+      } else {
+        liveContext += `- No live equities data loaded yet.\n\n`;
+      }
+
+      liveContext += `[ALPHA VANTAGE NEWS SENTIMENT]\n`;
+      if (sentiment && sentiment.length > 0) {
+        liveContext += `${JSON.stringify(sentiment)}\n\n`;
+      } else {
+        liveContext += `- No sentiment data loaded yet.\n\n`;
+      }
+
+      liveContext += `[MACRO CONSENSUS ESTIMATES]\n`;
+      if (consensus) {
+        liveContext += `${JSON.stringify(consensus)}\n\n`;
+      } else {
+        liveContext += `- No consensus data loaded yet.\n\n`;
+      }
       // ----------------------------------------
 
       // Tell it about the Live Wire (Top 3 news stories)
@@ -86,7 +114,6 @@ export default function ChatPanel({
       liveContext += `The user is currently looking at the '${activeTab}' tab.\n`;
       liveContext += `If they ask about a chart not listed below, tell them: "Please click on the [Tab Name] tab so I can see that data!" (Available tabs: ${dynamicTabs.join(', ')}).\n\n`;
       
-      // --- SPECIAL TABS CONTEXT INJECTOR ---
       // --- SPECIAL TABS CONTEXT INJECTOR ---
       if (activeTab === 'Global Macro') {
         liveContext += `The user is looking at two charts in the Global Macro tab.\n`;

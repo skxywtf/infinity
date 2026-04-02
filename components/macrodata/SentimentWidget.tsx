@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
 import React, { useEffect, useState } from 'react';
 
-export default function SentimentWidget() {
+export default function SentimentWidget({ onDataFetched }: { onDataFetched?: (data: any) => void }) {
   const [news, setNews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -15,6 +15,15 @@ export default function SentimentWidget() {
         
         if (data.feed) {
           setNews(data.feed.slice(0, 5)); // Grab top 5 articles
+
+          // --- NEW: Send simplified data to parent page for AI ---
+          if (onDataFetched) {
+            const aiPayload = data.feed.slice(0, 5).map((item: any) => ({
+              headline: item.title,
+              sentiment: item.overall_sentiment_label
+            }));
+            onDataFetched(aiPayload);
+          }
         }
       } catch (error) {
         console.error("Failed to fetch sentiment", error);
@@ -24,7 +33,7 @@ export default function SentimentWidget() {
     };
 
     fetchSentiment();
-  }, []);
+  }, [onDataFetched]); // Added to dependency array for safety
 
   // Helper to colorize the sentiment label
   const getSentimentColor = (label: string) => {

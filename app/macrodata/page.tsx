@@ -50,6 +50,11 @@ export default function MacroPage() {
   // --- NEW: State to catch the Macro Regime Data for the AI ---
   const [macroRegimeChatData, setMacroRegimeChatData] = useState<any>({});
 
+  // --- BRAND NEW: States for Widget AI Context ---
+  const [finnhubChatData, setFinnhubChatData] = useState<Record<string, any>>({});
+  const [sentimentChatData, setSentimentChatData] = useState<any[]>([]);
+  const [consensusChatData, setConsensusChatData] = useState<any>(null);
+
   // --- NEW: Frozen Callback to prevent infinite loops ---
   const handleRegimeData = useCallback((data: any) => {
     setMacroRegimeChatData({
@@ -59,6 +64,20 @@ export default function MacroPage() {
       cpi12mAvg: `${data.cpi_yoy_avg_12m}%`
     });
   }, []); // <-- Empty array means this function NEVER changes identity
+
+  // --- BRAND NEW: Callbacks for the Widgets ---
+  const handleFinnhubData = useCallback((data: any) => {
+    // Use functional state update so multiple tickers don't overwrite each other
+    setFinnhubChatData(prev => ({ ...prev, [data.symbol]: data }));
+  }, []);
+
+  const handleSentimentData = useCallback((data: any) => {
+    setSentimentChatData(data);
+  }, []);
+
+  const handleConsensusData = useCallback((data: any) => {
+    setConsensusChatData(data);
+  }, []);
 
   useEffect(() => {
     fetch('/api/tabs').then(r => r.json()).then(data => {
@@ -163,8 +182,8 @@ export default function MacroPage() {
           {/* --- YAHOO NEWS BAR --- */}
           <WTFNewsFeed maxItems={15} />
 
-          {/* --- NEW: ALPHA VANTAGE AI SENTIMENT --- */}
-          <SentimentWidget />
+          {/* --- NEW: ALPHA VANTAGE AI SENTIMENT WITH CALLBACK --- */}
+          <SentimentWidget onDataFetched={handleSentimentData} />
 
           {/* --- YOURS: OFFICIAL GOVERNMENT WIRE --- */}
           <aside className="card" style={{ background: '#0b0f0f', border: '1px solid #1b2226', borderRadius: '16px', padding: '20px' }}>
@@ -198,12 +217,12 @@ export default function MacroPage() {
 
         <section style={{ display: 'flex', flexDirection: 'column', gap: '20px', minWidth: 0 }}>
           
-          {/* --- NEW: FINNHUB LIVE TICKERS ROW --- */}
+          {/* --- NEW: FINNHUB LIVE TICKERS ROW WITH CALLBACKS --- */}
           <div className="hide-scrollbar" style={{ display: 'flex', gap: '15px', overflowX: 'auto', paddingBottom: '10px', WebkitOverflowScrolling: 'touch' }}>
-            <TickerCard symbol="AAPL" name="Apple" />
-            <TickerCard symbol="TSLA" name="Tesla" />
-            <TickerCard symbol="NVDA" name="NVIDIA" />
-            <TickerCard symbol="META" name="Meta" />
+            <TickerCard symbol="AAPL" name="Apple" onDataFetched={handleFinnhubData} />
+            <TickerCard symbol="TSLA" name="Tesla" onDataFetched={handleFinnhubData} />
+            <TickerCard symbol="NVDA" name="NVIDIA" onDataFetched={handleFinnhubData} />
+            <TickerCard symbol="META" name="Meta" onDataFetched={handleFinnhubData} />
           </div>
 
           <div style={{ display: 'flex', gap: '10px', borderBottom: '1px solid #1b2226', paddingBottom: '10px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
@@ -238,8 +257,8 @@ export default function MacroPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <OecdWidget />
                 <EcbWidget />
-                {/* ADD THIS LINE BELOW */}
-                <ConsensusWidget /> 
+                {/* --- UPDATED: CONSENSUS WIDGET WITH CALLBACK --- */}
+                <ConsensusWidget onDataFetched={handleConsensusData} /> 
               </div>
             )}
             
@@ -275,8 +294,11 @@ export default function MacroPage() {
         market={market} 
         news={news} 
         govNews={govNews} 
-        macroRegime={macroRegimeChatData} /* <-- NEW: Real dynamic data injected here! */
-        dynamicTabs={allTabs} 
+        macroRegime={macroRegimeChatData} 
+        dynamicTabs={allTabs}
+        finnhub={finnhubChatData}       
+        sentiment={sentimentChatData}   
+        consensus={consensusChatData}   
       />
 
       <style jsx>{`

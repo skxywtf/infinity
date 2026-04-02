@@ -12,7 +12,7 @@ interface QuoteData {
   pc: number; // Previous close
 }
 
-export default function TickerCard({ symbol, name }: { symbol: string, name?: string }) {
+export default function TickerCard({ symbol, name, onDataFetched }: { symbol: string, name?: string, onDataFetched?: (data: any) => void }) {
   const [data, setData] = useState<QuoteData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -23,6 +23,11 @@ export default function TickerCard({ symbol, name }: { symbol: string, name?: st
         if (res.ok) {
           const json = await res.json();
           setData(json);
+          
+          // --- NEW: Send data to parent page for AI ---
+          if (onDataFetched) {
+            onDataFetched({ symbol: name || symbol, price: json.c, change: json.dp });
+          }
         }
       } catch (error) {
         console.error("Failed to fetch quote", error);
@@ -35,7 +40,7 @@ export default function TickerCard({ symbol, name }: { symbol: string, name?: st
     // Optional: Refresh every 60 seconds
     const interval = setInterval(fetchQuote, 60000);
     return () => clearInterval(interval);
-  }, [symbol]);
+  }, [symbol, name, onDataFetched]); // Added to dependency array for safety
 
   if (loading) {
     return (

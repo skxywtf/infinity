@@ -2,7 +2,11 @@
 
 import React, { useEffect, useState } from 'react';
 
-export default function ConsensusWidget() {
+interface ConsensusWidgetProps {
+  onDataFetched?: (data: any) => void;
+}
+
+export default function ConsensusWidget({ onDataFetched }: ConsensusWidgetProps) {
   const [forecasts, setForecasts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -14,6 +18,12 @@ export default function ConsensusWidget() {
         
         if (json.data) {
           setForecasts(json.data);
+          
+          // ---> ADDED THIS BLOCK <---
+          // Pass the data up to the AI ChatPanel in page.tsx
+          if (onDataFetched) {
+            onDataFetched(json.data);
+          }
         }
         setLoading(false);
       } catch (error) {
@@ -23,7 +33,7 @@ export default function ConsensusWidget() {
     };
 
     fetchConsensus();
-  }, []);
+  }, [onDataFetched]); // <-- Added onDataFetched to dependency array
 
   // Group data by indicator so we can display it nicely in a table
   const groupedData = forecasts.reduce((acc: any, curr: any) => {
