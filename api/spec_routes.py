@@ -11,6 +11,7 @@ from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy import create_engine, text
 from dotenv import load_dotenv
+from functools import lru_cache
 
 load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL", "")
@@ -59,8 +60,12 @@ def get_calendar_history(series_id: Optional[str] = Query(None), limit: int = Qu
     with engine.connect() as conn: return [dict(r) for r in conn.execute(text(q), p).mappings().all()]
 
 
-@spec_router.get("/api/regime-v2")
-def get_regime():
+
+
+# 1. This helper function does the heavy lifting, but only ONCE.
+# The @lru_cache(maxsize=1) tells Python to remember the result.
+@lru_cache(maxsize=1)
+def get_cached_regime_data():
     with engine.connect() as conn:
         ir = get_series_window(conn, "INDPRO", 6)
         if len(ir) < 4: raise HTTPException(503, "Insufficient INDPRO data")
@@ -78,9 +83,15 @@ def get_regime():
             ("decelerating","falling"): ("Deflation","#4a90d9"),
         }
         q, color = qm[(gt, it)]
+        
     return {"quadrant": q, "color": color, "growth_trend": gt, "inflation_trend": it,
             "growth_mom_annualized": round(gm*100, 2), "cpi_yoy": round(cy, 2),
             "cpi_yoy_avg_12m": round(ay, 2), "calculated_at": datetime.now(timezone.utc).isoformat()}
+
+# 2. This is your API endpoint. It now just returns the saved answer!
+@spec_router.get("/api/regime-v2")
+def get_regime():
+    return get_cached_regime_data()
 
 
 @spec_router.get("/api/surprise/{series_slug}")
