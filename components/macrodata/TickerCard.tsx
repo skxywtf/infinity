@@ -12,7 +12,7 @@ interface QuoteData {
   pc: number; // Previous close
 }
 
-export default function TickerCard({ symbol }: { symbol: string }) {
+export default function TickerCard({ symbol, name }: { symbol: string, name?: string }) {
   const [data, setData] = useState<QuoteData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -57,7 +57,7 @@ export default function TickerCard({ symbol }: { symbol: string }) {
     <div className="w-64 bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-lg flex flex-col gap-3 font-sans transition-all hover:border-gray-700">
       {/* Header: Symbol & Badge */}
       <div className="flex justify-between items-center">
-        <h3 className="text-white font-bold tracking-wider">{symbol.toUpperCase()}</h3>
+        <h3 className="text-white font-bold tracking-wider">{name || symbol.toUpperCase()}</h3>
         <span className={`px-2 py-1 text-xs font-semibold rounded-md flex items-center gap-1 ${colorClass} ${bgBadgeClass}`}>
           {arrow} {Math.abs(data.dp).toFixed(2)}%
         </span>
