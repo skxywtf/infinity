@@ -13,6 +13,7 @@ import OecdWidget from '@/components/macrodata/OecdWidget'; // <-- Your import
 import EcbWidget from '@/components/macrodata/EcbWidget';
 import ConsensusWidget from '../../components/macrodata/ConsensusWidget';
 import TickerCard from '@/components/macrodata/TickerCard'; // <-- NEW: Finnhub Ticker Import (adjust path if needed)
+import SentimentWidget from '@/components/macrodata/SentimentWidget';
 
 const MacroLineChart = dynamic(
   () => import('@/components/macrodata/MacroLineChart'),
@@ -161,6 +162,9 @@ export default function MacroPage() {
           
           {/* --- YAHOO NEWS BAR --- */}
           <WTFNewsFeed maxItems={15} />
+
+          {/* --- NEW: ALPHA VANTAGE AI SENTIMENT --- */}
+          <SentimentWidget />
 
           {/* --- YOURS: OFFICIAL GOVERNMENT WIRE --- */}
           <aside className="card" style={{ background: '#0b0f0f', border: '1px solid #1b2226', borderRadius: '16px', padding: '20px' }}>
