@@ -41,20 +41,21 @@ export default function OecdWidget() {
     fetchOecdData();
   }, []);
 
-  // ── Custom glass tooltip ──
+  // ── Custom dark glass tooltip ──
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       const val = payload[0]?.value;
       const isPos = val >= 0;
       return (
         <div style={{
-          background: 'rgba(255, 255, 255, 0.04)',
+          // FIX: Dark glass background blocks out the bright green chart bars
+          background: 'rgba(10, 16, 24, 0.85)',
           backdropFilter: 'blur(25px)',
           WebkitBackdropFilter: 'blur(25px)',
           border: '1px solid rgba(255,255,255,0.15)',
           borderRadius: '10px',
           padding: '10px 14px',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.55)',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.65)',
           minWidth: '130px',
         }}>
           <p style={{ margin: '0 0 4px 0', color: '#ffffff', fontWeight: 700, fontSize: '13px' }}>
