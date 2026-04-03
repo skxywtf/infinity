@@ -134,23 +134,28 @@ export default function RegimeWidget({ onDataFetched }: RegimeWidgetProps) {
                   style={{
                     padding: '8px 10px',
                     borderRadius: 8,
+                    // FIX: Brightened inactive backgrounds
                     background: isActive
                       ? `${accentColor}14`
-                      : 'rgba(255,255,255,0.03)',
+                      : 'rgba(255,255,255,0.06)', 
                     backdropFilter: 'blur(25px)',
                     WebkitBackdropFilter: 'blur(25px)',
+                    // FIX: Brightened borders for better definition
                     border: `1px solid ${isActive
-                      ? accentColor + '60'
-                      : 'rgba(255,255,255,0.10)'}`,
-                    opacity: isActive ? 1 : 0.45,
+                      ? accentColor + '80'
+                      : 'rgba(255,255,255,0.20)'}`,
+                    // FIX: Bumped opacity from 0.45 to 0.85 to make it legible
+                    opacity: isActive ? 1 : 0.85,
                     transition: 'all 0.3s',
                   }}
                 >
                   <div style={{
                     fontSize: 10,
+                    fontWeight: isActive ? 700 : 500,
+                    // FIX: Brightened inactive text color
                     color: isActive
-                      ? 'rgba(255,255,255,0.85)'
-                      : 'rgba(255,255,255,0.50)',
+                      ? '#ffffff'
+                      : 'rgba(255,255,255,0.85)',
                   }}>
                     {QUADRANT_ICONS[q]} {q}
                   </div>

@@ -129,8 +129,11 @@ export default function SentimentWidget({ onDataFetched }: { onDataFetched?: (da
               height: '8px',
               width: '100%',
               borderRadius: '4px',
-              background: 'linear-gradient(90deg, rgba(224,92,92,0.75) 0%, rgba(255,255,255,0.08) 50%, rgba(76,175,130,0.75) 100%)',
-              border: '1px solid rgba(255,255,255,0.15)',
+              // FIX: Swapped to highly saturated, bright gradient values 
+              background: 'linear-gradient(90deg, rgba(255,82,82,0.9) 0%, rgba(255,255,255,0.1) 50%, rgba(76,175,80,0.9) 100%)',
+              // FIX: Added inner shadow for depth and stronger border
+              border: '1px solid rgba(255,255,255,0.25)',
+              boxShadow: '0 0 10px rgba(255,255,255,0.05), inset 0 2px 4px rgba(0,0,0,0.3)',
               position: 'relative',
             }}>
               {/* Indicator */}
@@ -140,11 +143,10 @@ export default function SentimentWidget({ onDataFetched }: { onDataFetched?: (da
                 left: `calc(${gaugePosition}% - 6px)`,
                 width: '12px',
                 height: '18px',
-                background: 'rgba(255,255,255,0.95)',
-                backdropFilter: 'blur(25px)',
-                WebkitBackdropFilter: 'blur(25px)',
+                // FIX: Made the slider pure white with a stronger glow
+                background: '#ffffff',
                 borderRadius: '3px',
-                boxShadow: '0 0 8px rgba(255,255,255,0.55)',
+                boxShadow: '0 0 12px rgba(255,255,255,0.85), 0 0 4px rgba(0,0,0,0.5)',
                 transition: 'left 1s ease-in-out',
               }} />
             </div>
