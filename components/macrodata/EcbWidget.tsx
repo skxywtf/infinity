@@ -26,30 +26,30 @@ export default function EcbWidget() {
   if (loading) {
     return (
       <div style={{
-        background: 'rgba(10, 16, 20, 0.60)',
-        backdropFilter: 'blur(18px)',
-        WebkitBackdropFilter: 'blur(18px)',
-        border: '1px solid rgba(255,255,255,0.06)',
+        background: 'rgba(255, 255, 255, 0.04)',
+        backdropFilter: 'blur(25px)',
+        WebkitBackdropFilter: 'blur(25px)',
+        border: '1px solid rgba(255,255,255,0.15)',
         borderRadius: 16,
         padding: 40,
         height: 400,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.45)',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.07)',
       }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
           {/* Spinner */}
           <div style={{
             width: 28,
             height: 28,
-            border: '2px solid rgba(59,130,246,0.70)',
+            border: '2px solid rgba(96,165,250,0.80)',
             borderTopColor: 'transparent',
             borderRadius: '50%',
             animation: 'ecb-spin 0.85s linear infinite',
           }} />
           <span style={{
-            color: 'rgba(255,255,255,0.28)',
+            color: 'rgba(255,255,255,0.50)',
             fontSize: 11,
             fontWeight: 700,
             letterSpacing: '2px',
@@ -67,12 +67,12 @@ export default function EcbWidget() {
   // ── Main card ──────────────────────────────────────────────────────────────
   return (
     <div style={{
-      background: 'rgba(10, 16, 20, 0.60)',
-      backdropFilter: 'blur(18px)',
-      WebkitBackdropFilter: 'blur(18px)',
-      border: '1px solid rgba(255,255,255,0.06)',
+      background: 'rgba(255, 255, 255, 0.04)',
+      backdropFilter: 'blur(25px)',
+      WebkitBackdropFilter: 'blur(25px)',
+      border: '1px solid rgba(255,255,255,0.15)',
       borderRadius: 16,
-      boxShadow: '0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05)',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.07)',
       padding: 20,
       height: 400,
       display: 'flex',
@@ -91,7 +91,7 @@ export default function EcbWidget() {
             margin: 0,
             fontSize: 18,
             fontWeight: 700,
-            color: '#fff',
+            color: '#ffffff',
             letterSpacing: '-0.5px',
           }}>
             Inflation Divergence (YoY %)
@@ -99,7 +99,7 @@ export default function EcbWidget() {
           <p style={{
             margin: '4px 0 0 0',
             fontSize: 12,
-            color: 'rgba(255,255,255,0.35)',
+            color: 'rgba(255,255,255,0.50)',
           }}>
             Source: ECB Data Portal vs US BLS
           </p>
@@ -109,16 +109,16 @@ export default function EcbWidget() {
         <div style={{
           textAlign: 'right',
           background: 'rgba(59,130,246,0.08)',
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
-          border: '1px solid rgba(59,130,246,0.20)',
+          backdropFilter: 'blur(25px)',
+          WebkitBackdropFilter: 'blur(25px)',
+          border: '1px solid rgba(96,165,250,0.25)',
           borderRadius: 10,
           padding: '8px 14px',
-          boxShadow: '0 0 18px rgba(59,130,246,0.08)',
+          boxShadow: '0 0 18px rgba(59,130,246,0.10)',
         }}>
           <div style={{
             fontSize: 10,
-            color: 'rgba(255,255,255,0.40)',
+            color: 'rgba(255,255,255,0.50)',
             fontWeight: 700,
             letterSpacing: '1.5px',
             marginBottom: 3,
@@ -143,19 +143,19 @@ export default function EcbWidget() {
           <LineChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <CartesianGrid
               strokeDasharray="3 3"
-              stroke="rgba(255,255,255,0.05)"
+              stroke="rgba(255,255,255,0.07)"
               vertical={false}
             />
             <XAxis
               dataKey="month"
-              stroke="rgba(255,255,255,0.20)"
+              stroke="rgba(255,255,255,0.30)"
               fontSize={11}
               tickLine={false}
               axisLine={false}
               dy={10}
             />
             <YAxis
-              stroke="rgba(255,255,255,0.20)"
+              stroke="rgba(255,255,255,0.30)"
               fontSize={11}
               tickLine={false}
               axisLine={false}
@@ -163,12 +163,13 @@ export default function EcbWidget() {
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: 'rgba(8,14,20,0.88)',
-                backdropFilter: 'blur(14px)',
-                borderColor: 'rgba(255,255,255,0.08)',
+                backgroundColor: 'rgba(255,255,255,0.04)',
+                backdropFilter: 'blur(25px)',
+                WebkitBackdropFilter: 'blur(25px)',
+                borderColor: 'rgba(255,255,255,0.15)',
                 borderRadius: 10,
                 fontSize: 12,
-                color: '#fff',
+                color: '#ffffff',
                 boxShadow: '0 8px 28px rgba(0,0,0,0.55)',
               }}
               itemStyle={{ fontWeight: 'bold' }}
@@ -177,7 +178,7 @@ export default function EcbWidget() {
               wrapperStyle={{
                 fontSize: 12,
                 paddingTop: 10,
-                color: 'rgba(255,255,255,0.45)',
+                color: 'rgba(255,255,255,0.60)',
               }}
               iconType="circle"
             />
@@ -187,7 +188,7 @@ export default function EcbWidget() {
               dataKey="us"
               stroke="#d4af37"
               strokeWidth={2.5}
-              dot={{ r: 3.5, fill: 'rgba(10,16,20,0.90)', strokeWidth: 2 }}
+              dot={{ r: 3.5, fill: 'rgba(255,255,255,0.04)', strokeWidth: 2 }}
               activeDot={{ r: 5 }}
             />
             <Line
@@ -196,7 +197,7 @@ export default function EcbWidget() {
               dataKey="ez"
               stroke="#3b82f6"
               strokeWidth={2.5}
-              dot={{ r: 3.5, fill: 'rgba(10,16,20,0.90)', strokeWidth: 2 }}
+              dot={{ r: 3.5, fill: 'rgba(255,255,255,0.04)', strokeWidth: 2 }}
               activeDot={{ r: 5 }}
             />
           </LineChart>

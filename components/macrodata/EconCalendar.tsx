@@ -1,4 +1,5 @@
 'use client';
+
 import React, { useEffect, useState } from 'react';
 
 interface CalendarEvent {
@@ -10,19 +11,21 @@ interface CalendarEvent {
 const IMPORTANCE_LABEL: Record<number, { label: string; color: string; glow: string }> = {
   3: { label: 'HIGH', color: '#e05c5c', glow: 'rgba(224,92,92,0.35)'  },
   2: { label: 'MED',  color: '#f59e42', glow: 'rgba(245,158,66,0.35)' },
-  1: { label: 'LOW',  color: 'rgba(255,255,255,0.20)', glow: 'none'  },
+  1: { label: 'LOW',  color: 'rgba(255,255,255,0.35)', glow: 'none'  },
 };
 
 function fmt(v: number | null) {
   if (v === null || v === undefined) return '—';
   return v.toFixed(2);
 }
+
 function surpriseColor(v: number | null) {
-  if (v === null) return 'rgba(255,255,255,0.30)';
+  if (v === null) return 'rgba(255,255,255,0.70)';
   if (v > 0)  return '#4caf82';
   if (v < 0)  return '#e05c5c';
-  return 'rgba(255,255,255,0.45)';
+  return 'rgba(255,255,255,0.70)';
 }
+
 function groupByDate(events: CalendarEvent[]) {
   const groups: Record<string, CalendarEvent[]> = {};
   events.forEach(e => {
@@ -55,19 +58,19 @@ export default function EconCalendar() {
 
   if (needsMigration) return (
     <div style={{
-      background: 'rgba(10,16,20,0.60)',
-      backdropFilter: 'blur(18px)',
-      WebkitBackdropFilter: 'blur(18px)',
-      border: '1px solid rgba(255,255,255,0.06)',
+      background: 'rgba(255, 255, 255, 0.04)',
+      backdropFilter: 'blur(25px)',
+      WebkitBackdropFilter: 'blur(25px)',
+      border: '1px solid rgba(255,255,255,0.15)',
       borderRadius: 16,
       padding: 40,
       textAlign: 'center',
-      boxShadow: '0 8px 32px rgba(0,0,0,0.45)',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.07)',
     }}>
-      <div style={{ fontSize: 18, fontWeight: 700, color: '#fff', marginBottom: 16 }}>
+      <div style={{ fontSize: 18, fontWeight: 700, color: '#ffffff', marginBottom: 16 }}>
         Economic Calendar
       </div>
-      <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.25)', lineHeight: 1.8 }}>
+      <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.70)', lineHeight: 1.8 }}>
         Database tables not yet created.<br />
         <code style={{ color: '#d4af37', fontSize: 12 }}>python -m macro_scripts.migrate_spec</code><br />
         <code style={{ color: '#d4af37', fontSize: 12 }}>python -m macro_scripts.ingest_spec_series</code>
@@ -82,67 +85,68 @@ export default function EconCalendar() {
 
   return (
     <div style={{
-      // ── Glass card ──
-      background: 'rgba(10, 16, 20, 0.60)',
-      backdropFilter: 'blur(18px)',
-      WebkitBackdropFilter: 'blur(18px)',
-      border: '1px solid rgba(255,255,255,0.06)',
+      // ── Matte glass card ──
+      background: 'rgba(255, 255, 255, 0.04)',
+      backdropFilter: 'blur(25px)',
+      WebkitBackdropFilter: 'blur(25px)',
+      border: '1px solid rgba(255,255,255,0.15)',
       borderRadius: 16,
-      boxShadow: '0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05)',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.07)',
       padding: 20,
     }}>
 
-      {/* ── Header ── */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: '#fff', letterSpacing: '-0.3px' }}>
-          Economic Calendar
-        </h3>
+      {/* ── Header ── */}  
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>  
+        <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: '#ffffff', letterSpacing: '-0.3px' }}>  
+          Economic Calendar  
+        </h3>  
 
-        {/* Tab switcher */}
-        <div style={{
-          display: 'flex',
-          background: 'rgba(255,255,255,0.04)',
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
-          border: '1px solid rgba(255,255,255,0.06)',
-          borderRadius: 7,
-          padding: 2,
-        }}>
-          {(['upcoming', 'history'] as const).map(t => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              style={{
-                padding: '5px 14px',
-                fontSize: 10,
-                border: 'none',
-                borderRadius: 5,
-                cursor: 'pointer',
-                textTransform: 'uppercase',
-                letterSpacing: '1px',
-                fontWeight: 700,
-                background: tab === t ? 'rgba(255,255,255,0.10)' : 'transparent',
-                backdropFilter: tab === t ? 'blur(6px)' : 'none',
-                color: tab === t ? '#fff' : 'rgba(255,255,255,0.30)',
-                transition: 'all 0.2s',
-              }}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
-      </div>
+        {/* Tab switcher */}  
+        <div style={{  
+          display: 'flex',  
+          background: 'rgba(255,255,255,0.04)',  
+          backdropFilter: 'blur(25px)',  
+          WebkitBackdropFilter: 'blur(25px)',  
+          border: '1px solid rgba(255,255,255,0.15)',  
+          borderRadius: 7,  
+          padding: 2,  
+        }}>  
+          {(['upcoming', 'history'] as const).map(t => (  
+            <button  
+              key={t}  
+              onClick={() => setTab(t)}  
+              style={{  
+                padding: '5px 14px',  
+                fontSize: 10,  
+                border: 'none',  
+                borderRadius: 5,  
+                cursor: 'pointer',  
+                textTransform: 'uppercase',  
+                letterSpacing: '1px',  
+                fontWeight: 700,  
+                background: tab === t ? 'rgba(255,255,255,0.10)' : 'transparent',  
+                backdropFilter: tab === t ? 'blur(25px)' : 'none',  
+                WebkitBackdropFilter: tab === t ? 'blur(25px)' : 'none',  
+                color: tab === t ? '#ffffff' : 'rgba(255,255,255,0.50)',  
+                transition: 'all 0.2s',  
+              }}  
+            >  
+              {t}  
+            </button>  
+          ))}  
+        </div>  
+      </div>  
 
-      {/* ── Loading ── */}
-      {loading && (
-        <div style={{ color: 'rgba(255,255,255,0.20)', fontSize: 12 }}>
-          Loading calendar...
-        </div>
-      )}
+      {/* ── Loading ── */}  
+      {loading && (  
+        <div style={{ color: 'rgba(255,255,255,0.70)', fontSize: 12 }}>  
+          Loading calendar...  
+        </div>  
+      )}  
 
-      {/* ── Empty ── */}
-      {!loading && sortedDates.length === 0 && (
-        <div style={{ color: 'rgba(255,255,255,0.15)', fontSize: 13, padding: '20px 0', textAlign: 'center' }}>
+      {/* ── Empty ── */}  
+      {!loading && sortedDates.length === 0 && (  
+        <div style={{ color: 'rgba(255,255,255,0.70)', fontSize: 13, padding: '20px 0', textAlign: 'center' }}>
           No events found. Run ingestion to populate calendar data.
         </div>
       )}
@@ -160,7 +164,7 @@ export default function EconCalendar() {
             <span key={h} style={{
               fontSize: 9,
               fontWeight: 700,
-              color: 'rgba(255,255,255,0.20)',
+              color: 'rgba(255,255,255,0.70)',
               letterSpacing: '0.8px',
               textAlign: i > 1 ? 'right' : 'left',
             }}>
@@ -208,16 +212,16 @@ export default function EconCalendar() {
                         background: 'rgba(255,255,255,0.025)',
                         backdropFilter: 'blur(8px)',
                         WebkitBackdropFilter: 'blur(8px)',
-                        border: '1px solid rgba(255,255,255,0.05)',
+                        border: '1px solid rgba(255,255,255,0.10)',
                         transition: 'background 0.15s, border-color 0.15s',
                       }}
                       onMouseEnter={e => {
-                        e.currentTarget.style.background = 'rgba(255,255,255,0.045)';
-                        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.09)';
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.20)';
                       }}
                       onMouseLeave={e => {
                         e.currentTarget.style.background = 'rgba(255,255,255,0.025)';
-                        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)';
+                        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.10)';
                       }}
                     >
                       <span style={{
@@ -230,20 +234,20 @@ export default function EconCalendar() {
                         {imp.label}
                       </span>
 
-                      <span style={{ fontSize: 12, fontWeight: 600, color: '#dde8e8' }}>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: '#ffffff' }}>
                         {ev.indicator}
                       </span>
 
-                      <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.30)', textAlign: 'right' }}>
+                      <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.70)', textAlign: 'right' }}>
                         {fmt(ev.prior)}
                       </span>
-                      <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', textAlign: 'right' }}>
+                      <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.70)', textAlign: 'right' }}>
                         {fmt(ev.consensus)}
                       </span>
                       <span style={{
                         fontSize: 11,
                         fontWeight: ev.actual !== null ? 700 : 400,
-                        color: ev.actual !== null ? '#fff' : 'rgba(255,255,255,0.15)',
+                        color: ev.actual !== null ? '#ffffff' : 'rgba(255,255,255,0.50)',
                         textAlign: 'right',
                       }}>
                         {fmt(ev.actual)}

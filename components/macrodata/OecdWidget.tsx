@@ -48,16 +48,16 @@ export default function OecdWidget() {
       const isPos = val >= 0;
       return (
         <div style={{
-          background: 'rgba(8,14,20,0.88)',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-          border: '1px solid rgba(255,255,255,0.08)',
+          background: 'rgba(255, 255, 255, 0.04)',
+          backdropFilter: 'blur(25px)',
+          WebkitBackdropFilter: 'blur(25px)',
+          border: '1px solid rgba(255,255,255,0.15)',
           borderRadius: '10px',
           padding: '10px 14px',
           boxShadow: '0 8px 24px rgba(0,0,0,0.55)',
           minWidth: '130px',
         }}>
-          <p style={{ margin: '0 0 4px 0', color: '#fff', fontWeight: 700, fontSize: '13px' }}>
+          <p style={{ margin: '0 0 4px 0', color: '#ffffff', fontWeight: 700, fontSize: '13px' }}>
             {label}
           </p>
           <p style={{
@@ -79,13 +79,13 @@ export default function OecdWidget() {
 
   return (
     <div style={{
-      // ── Glass card ──
-      background: 'rgba(10, 16, 20, 0.60)',
-      backdropFilter: 'blur(18px)',
-      WebkitBackdropFilter: 'blur(18px)',
-      border: '1px solid rgba(255,255,255,0.06)',
+      // ── Matte glass card ──
+      background: 'rgba(255, 255, 255, 0.04)',
+      backdropFilter: 'blur(25px)',
+      WebkitBackdropFilter: 'blur(25px)',
+      border: '1px solid rgba(255,255,255,0.15)',
       borderRadius: '16px',
-      boxShadow: '0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05)',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.07)',
       padding: '24px',
       width: '100%',
     }}>
@@ -102,7 +102,7 @@ export default function OecdWidget() {
             margin: '0 0 4px 0',
             fontSize: '18px',
             fontWeight: 700,
-            color: '#fff',
+            color: '#ffffff',
             letterSpacing: '-0.3px',
           }}>
             G20 Macro Coverage (World Bank)
@@ -110,7 +110,7 @@ export default function OecdWidget() {
           <p style={{
             margin: 0,
             fontSize: '12px',
-            color: 'rgba(255,255,255,0.35)',
+            color: 'rgba(255,255,255,0.50)',
           }}>
             Real GDP Growth (Annualized %)
           </p>
@@ -119,16 +119,16 @@ export default function OecdWidget() {
         {/* Live badge */}
         <div style={{
           padding: '4px 10px',
-          background: 'rgba(30,58,138,0.25)',
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
-          border: '1px solid rgba(30,58,138,0.50)',
+          background: 'rgba(30, 58, 138, 0.20)',
+          backdropFilter: 'blur(25px)',
+          WebkitBackdropFilter: 'blur(25px)',
+          border: '1px solid rgba(96, 165, 250, 0.25)',
           borderRadius: '6px',
           color: '#60a5fa',
           fontSize: '11px',
           fontWeight: 700,
           letterSpacing: '1px',
-          boxShadow: '0 0 12px rgba(59,130,246,0.10)',
+          boxShadow: '0 0 12px rgba(59,130,246,0.12)',
         }}>
           LIVE NO-AUTH
         </div>
@@ -144,22 +144,22 @@ export default function OecdWidget() {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            background: 'rgba(255,255,255,0.02)',
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
-            border: '1px solid rgba(255,255,255,0.04)',
+            background: 'rgba(255,255,255,0.03)',
+            backdropFilter: 'blur(25px)',
+            WebkitBackdropFilter: 'blur(25px)',
+            border: '1px solid rgba(255,255,255,0.15)',
             borderRadius: '12px',
             gap: '16px',
           }}>
             <div style={{
               width: '32px', height: '32px',
-              border: '3px solid rgba(59,130,246,0.70)',
+              border: '3px solid rgba(96,165,250,0.80)',
               borderTopColor: 'transparent',
               borderRadius: '50%',
               animation: 'oecd-spin 0.8s linear infinite',
             }} />
             <span style={{
-              color: 'rgba(255,255,255,0.30)',
+              color: 'rgba(255,255,255,0.50)',
               fontWeight: 600,
               fontSize: '11px',
               letterSpacing: '2.5px',
@@ -172,24 +172,27 @@ export default function OecdWidget() {
             <BarChart data={data} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
               <CartesianGrid
                 strokeDasharray="3 3"
-                stroke="rgba(255,255,255,0.04)"
+                stroke="rgba(255,255,255,0.06)"
                 vertical={false}
               />
               <XAxis
                 dataKey="country"
-                stroke="rgba(255,255,255,0.25)"
+                stroke="rgba(255,255,255,0.40)"
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
               />
               <YAxis
-                stroke="rgba(255,255,255,0.25)"
+                stroke="rgba(255,255,255,0.40)"
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
                 tickFormatter={(val) => `${val}%`}
               />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
+              <Tooltip
+                content={<CustomTooltip />}
+                cursor={{ fill: 'rgba(255,255,255,0.04)' }}
+              />
               <Bar dataKey="gdpGrowth" radius={[4, 4, 0, 0]}>
                 {data.map((entry, index) => (
                   <Cell

@@ -40,13 +40,13 @@ export default function ConsensusWidget({ onDataFetched }: ConsensusWidgetProps)
 
   return (
     <div style={{
-      // ── Glass surface ──
-      background: 'rgba(10, 16, 20, 0.60)',
-      backdropFilter: 'blur(18px)',
-      WebkitBackdropFilter: 'blur(18px)',
-      border: '1px solid rgba(255, 255, 255, 0.06)',
+      // ── Matte glass surface ──
+      background: 'rgba(255, 255, 255, 0.04)',
+      backdropFilter: 'blur(25px)',
+      WebkitBackdropFilter: 'blur(25px)',
+      border: '1px solid rgba(255, 255, 255, 0.15)',
       borderRadius: '16px',
-      boxShadow: '0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05)',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.07)',
       padding: '24px',
       width: '100%',
     }}>
@@ -63,7 +63,7 @@ export default function ConsensusWidget({ onDataFetched }: ConsensusWidgetProps)
             margin: '0 0 4px 0',
             fontSize: '18px',
             fontWeight: 700,
-            color: '#fff',
+            color: '#ffffff',
             letterSpacing: '-0.3px',
           }}>
             Consensus Estimates
@@ -71,7 +71,7 @@ export default function ConsensusWidget({ onDataFetched }: ConsensusWidgetProps)
           <p style={{
             margin: 0,
             fontSize: '12px',
-            color: 'rgba(255,255,255,0.35)',
+            color: 'rgba(255,255,255,0.70)',
             letterSpacing: '0.2px',
           }}>
             Philly Fed Survey of Professional Forecasters
@@ -81,16 +81,16 @@ export default function ConsensusWidget({ onDataFetched }: ConsensusWidgetProps)
         {/* Badge */}
         <div style={{
           padding: '4px 10px',
-          background: 'rgba(30, 58, 138, 0.25)',
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
-          border: '1px solid rgba(30, 58, 138, 0.50)',
+          background: 'rgba(30, 58, 138, 0.30)',
+          backdropFilter: 'blur(25px)',
+          WebkitBackdropFilter: 'blur(25px)',
+          border: '1px solid rgba(96, 165, 250, 0.25)',
           borderRadius: '6px',
           color: '#60a5fa',
           fontSize: '11px',
           fontWeight: 700,
           letterSpacing: '1px',
-          boxShadow: '0 0 12px rgba(59,130,246,0.10)',
+          boxShadow: '0 0 12px rgba(59,130,246,0.12)',
         }}>
           Q-FORECAST
         </div>
@@ -106,9 +106,9 @@ export default function ConsensusWidget({ onDataFetched }: ConsensusWidgetProps)
           alignItems: 'center',
           justifyContent: 'center',
           background: 'rgba(255,255,255,0.03)',
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
-          border: '1px solid rgba(255,255,255,0.05)',
+          backdropFilter: 'blur(25px)',
+          WebkitBackdropFilter: 'blur(25px)',
+          border: '1px solid rgba(255,255,255,0.15)',
           borderRadius: '12px',
           gap: '12px',
         }}>
@@ -121,7 +121,7 @@ export default function ConsensusWidget({ onDataFetched }: ConsensusWidgetProps)
             animation: 'spin 0.8s linear infinite',
           }} />
           <span style={{
-            color: 'rgba(255,255,255,0.30)',
+            color: 'rgba(255,255,255,0.50)',
             fontSize: '11px',
             letterSpacing: '2px',
             fontWeight: 600,
@@ -138,11 +138,11 @@ export default function ConsensusWidget({ onDataFetched }: ConsensusWidgetProps)
             fontSize: '14px',
           }}>
             <thead>
-              <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.15)' }}>
                 {['Indicator', 'Target Quarter', 'Consensus %'].map((h, i) => (
                   <th key={h} style={{
                     padding: '10px 16px',
-                    color: 'rgba(255,255,255,0.35)',
+                    color: 'rgba(255,255,255,0.70)',
                     fontWeight: 600,
                     fontSize: '12px',
                     letterSpacing: '0.5px',
@@ -160,12 +160,12 @@ export default function ConsensusWidget({ onDataFetched }: ConsensusWidgetProps)
 
                   {/* ── Group header row ── */}
                   <tr style={{
-                    background: 'rgba(255,255,255,0.03)',
-                    borderTop: '2px solid rgba(255,255,255,0.05)',
+                    background: 'rgba(255,255,255,0.04)',
+                    borderTop: '2px solid rgba(255,255,255,0.10)',
                   }}>
                     <td colSpan={3} style={{
                       padding: '10px 16px',
-                      color: '#fff',
+                      color: '#ffffff',
                       fontWeight: 700,
                       fontSize: '13px',
                       letterSpacing: '0.3px',
@@ -186,23 +186,23 @@ export default function ConsensusWidget({ onDataFetched }: ConsensusWidgetProps)
                       <tr
                         key={`${idx}-${itemIdx}`}
                         style={{
-                          borderBottom: '1px solid rgba(255,255,255,0.04)',
+                          borderBottom: '1px solid rgba(255,255,255,0.08)',
                           transition: 'background 0.15s',
                           cursor: 'default',
                         }}
-                        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.03)')}
+                        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')}
                         onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                       >
                         <td style={{
                           padding: '12px 16px 12px 32px',
-                          color: 'rgba(255,255,255,0.25)',
+                          color: 'rgba(255,255,255,0.40)',
                           fontSize: '12px',
                         }}>
                           ↳ Target
                         </td>
                         <td style={{
                           padding: '12px 16px',
-                          color: 'rgba(255,255,255,0.55)',
+                          color: 'rgba(255,255,255,0.70)',
                           fontSize: '13px',
                         }}>
                           {cleanDate}
@@ -213,7 +213,7 @@ export default function ConsensusWidget({ onDataFetched }: ConsensusWidgetProps)
                           color: '#60a5fa',
                           fontWeight: 700,
                           fontSize: '13px',
-                          textShadow: '0 0 10px rgba(96,165,250,0.30)',
+                          textShadow: '0 0 10px rgba(96,165,250,0.35)',
                         }}>
                           {displayValue}
                         </td>

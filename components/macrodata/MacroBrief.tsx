@@ -54,19 +54,19 @@ export default function MacroBrief() {
 
   return (
     <div style={{
-      // ── Glass card ──
-      background: 'rgba(10, 16, 20, 0.60)',
-      backdropFilter: 'blur(18px)',
-      WebkitBackdropFilter: 'blur(18px)',
-      border: '1px solid rgba(255,255,255,0.06)',
+      // ── Matte glass card ──
+      background: 'rgba(255, 255, 255, 0.04)',
+      backdropFilter: 'blur(25px)',
+      WebkitBackdropFilter: 'blur(25px)',
+      border: '1px solid rgba(255,255,255,0.15)',
       borderRadius: 16,
-      boxShadow: '0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05)',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.07)',
       padding: 20,
     }}>
 
       {/* ── Header ── */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: '#fff', letterSpacing: '-0.3px' }}>
+        <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: '#ffffff', letterSpacing: '-0.3px' }}>
           WTF Macro Brief
         </h3>
 
@@ -75,9 +75,9 @@ export default function MacroBrief() {
           disabled={generating}
           style={{
             padding: '8px 18px',
-            background: generating ? 'rgba(212,175,55,0.10)' : 'transparent',
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
+            background: generating ? 'rgba(212,175,55,0.08)' : 'rgba(255,255,255,0.04)',
+            backdropFilter: 'blur(25px)',
+            WebkitBackdropFilter: 'blur(25px)',
             border: '1px solid rgba(212,175,55,0.45)',
             borderRadius: 8,
             cursor: generating ? 'not-allowed' : 'pointer',
@@ -88,8 +88,8 @@ export default function MacroBrief() {
             boxShadow: generating ? 'none' : '0 0 12px rgba(212,175,55,0.12)',
             transition: 'all 0.2s',
           }}
-          onMouseEnter={e => { if (!generating) e.currentTarget.style.background = 'rgba(212,175,55,0.12)'; }}
-          onMouseLeave={e => { if (!generating) e.currentTarget.style.background = 'transparent'; }}
+          onMouseEnter={e => { if (!generating) e.currentTarget.style.background = 'rgba(212,175,55,0.14)'; }}
+          onMouseLeave={e => { if (!generating) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
         >
           {generating ? 'GENERATING...' : 'GENERATE'}
         </button>
@@ -103,7 +103,9 @@ export default function MacroBrief() {
           marginBottom: 12,
           padding: '8px 12px',
           background: 'rgba(245,158,66,0.08)',
-          border: '1px solid rgba(245,158,66,0.18)',
+          backdropFilter: 'blur(25px)',
+          WebkitBackdropFilter: 'blur(25px)',
+          border: '1px solid rgba(245,158,66,0.25)',
           borderRadius: 8,
         }}>
           {error}
@@ -112,7 +114,7 @@ export default function MacroBrief() {
 
       {/* ── Loading ── */}
       {loading && !error && (
-        <div style={{ color: 'rgba(255,255,255,0.20)', fontSize: 12 }}>Loading...</div>
+        <div style={{ color: 'rgba(255,255,255,0.40)', fontSize: 12 }}>Loading...</div>
       )}
 
       {/* ── Content ── */}
@@ -121,15 +123,16 @@ export default function MacroBrief() {
           {/* Brief body */}
           <div style={{
             fontSize: 13,
-            color: 'rgba(170,186,186,0.90)',
+            color: 'rgba(255,255,255,0.70)',
             padding: 16,
-            background: 'rgba(255,255,255,0.03)',
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
+            background: 'rgba(255,255,255,0.04)',
+            backdropFilter: 'blur(25px)',
+            WebkitBackdropFilter: 'blur(25px)',
+            border: '1px solid rgba(255,255,255,0.15)',
             borderRadius: 10,
             marginBottom: 16,
             borderLeft: '3px solid rgba(212,175,55,0.60)',
-            boxShadow: 'inset 0 0 20px rgba(0,0,0,0.15)',
+            boxShadow: 'inset 0 0 20px rgba(0,0,0,0.10)',
             lineHeight: 1.65,
           }}>
             {brief.content_md}
@@ -146,22 +149,23 @@ export default function MacroBrief() {
                     style={{
                       padding: '12px 14px',
                       borderRadius: 10,
-                      background: 'rgba(255,255,255,0.03)',
-                      backdropFilter: 'blur(8px)',
-                      WebkitBackdropFilter: 'blur(8px)',
-                      border: '1px solid rgba(255,255,255,0.06)',
+                      background: 'rgba(255,255,255,0.04)',
+                      backdropFilter: 'blur(25px)',
+                      WebkitBackdropFilter: 'blur(25px)',
+                      border: '1px solid rgba(255,255,255,0.15)',
                       boxShadow: `0 2px 12px rgba(0,0,0,0.25), inset 0 0 0 1px ${ts.bg}`,
                       transition: 'border-color 0.2s',
                     }}
-                    onMouseEnter={e => (e.currentTarget.style.borderColor = `${ts.color}30`)}
-                    onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)')}
+                    onMouseEnter={e => (e.currentTarget.style.borderColor = `${ts.color}40`)}
+                    onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)')}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ fontWeight: 700, color: '#dde8e8', fontSize: 13 }}>{slug}</span>
+                      <span style={{ fontWeight: 700, color: '#ffffff', fontSize: 13 }}>{slug}</span>
                       <span style={{
                         background: ts.bg,
-                        backdropFilter: 'blur(6px)',
-                        border: `1px solid ${ts.color}30`,
+                        backdropFilter: 'blur(25px)',
+                        WebkitBackdropFilter: 'blur(25px)',
+                        border: `1px solid ${ts.color}40`,
                         color: ts.color,
                         padding: '3px 10px',
                         borderRadius: 4,
@@ -175,7 +179,7 @@ export default function MacroBrief() {
                     </div>
                     <p style={{
                       fontSize: 11,
-                      color: 'rgba(90,120,120,0.90)',
+                      color: 'rgba(255,255,255,0.55)',
                       margin: '6px 0 0',
                       lineHeight: 1.5,
                     }}>

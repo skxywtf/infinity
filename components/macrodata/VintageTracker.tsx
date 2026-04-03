@@ -42,15 +42,15 @@ export default function VintageTracker({ onDataFetched }: VintageTrackerProps) {
     setIsLoading(false);
   };
 
-  // ── shared input style ──────────────────────────────────────────────────────
+  // ── Shared input style ──
   const inputBase: React.CSSProperties = {
     padding: '10px 14px',
     borderRadius: 8,
-    background: 'rgba(255,255,255,0.04)',
-    backdropFilter: 'blur(8px)',
-    WebkitBackdropFilter: 'blur(8px)',
-    color: '#fff',
-    border: '1px solid rgba(255,255,255,0.08)',
+    background: 'rgba(255, 255, 255, 0.05)',
+    backdropFilter: 'blur(25px)',
+    WebkitBackdropFilter: 'blur(25px)',
+    color: '#ffffff',
+    border: '1px solid rgba(255,255,255,0.15)',
     outline: 'none',
     fontSize: 13,
     transition: 'border-color 0.2s',
@@ -58,13 +58,13 @@ export default function VintageTracker({ onDataFetched }: VintageTrackerProps) {
 
   return (
     <div style={{
-      // ── Glass card ──
-      background: 'rgba(10, 16, 20, 0.60)',
-      backdropFilter: 'blur(18px)',
-      WebkitBackdropFilter: 'blur(18px)',
-      border: '1px solid rgba(255,255,255,0.06)',
+      // ── Matte glass card ──
+      background: 'rgba(255, 255, 255, 0.04)',
+      backdropFilter: 'blur(25px)',
+      WebkitBackdropFilter: 'blur(25px)',
+      border: '1px solid rgba(255,255,255,0.15)',
       borderRadius: 16,
-      boxShadow: '0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05)',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.07)',
       padding: 30,
       textAlign: 'left',
     }}>
@@ -81,7 +81,7 @@ export default function VintageTracker({ onDataFetched }: VintageTrackerProps) {
         ALFRED Vintage Data Tracker
       </h2>
       <p style={{
-        color: 'rgba(255,255,255,0.35)',
+        color: 'rgba(255,255,255,0.55)',
         fontSize: 13,
         marginBottom: 28,
         lineHeight: 1.6,
@@ -97,7 +97,7 @@ export default function VintageTracker({ onDataFetched }: VintageTrackerProps) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <label style={{
             fontSize: 11,
-            color: 'rgba(255,255,255,0.40)',
+            color: 'rgba(255,255,255,0.55)',
             fontWeight: 700,
             letterSpacing: '0.5px',
           }}>
@@ -107,8 +107,8 @@ export default function VintageTracker({ onDataFetched }: VintageTrackerProps) {
             value={seriesId}
             onChange={e => setSeriesId(e.target.value)}
             style={{ ...inputBase, minWidth: 220 }}
-            onFocus={e  => (e.currentTarget.style.borderColor = 'rgba(212,175,55,0.45)')}
-            onBlur={e   => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)')}
+            onFocus={e  => (e.currentTarget.style.borderColor = 'rgba(212,175,55,0.55)')}
+            onBlur={e   => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)')}
           >
             <option value="GDP">Real GDP (Quarterly)</option>
             <option value="CPIAUCSL">CPI Inflation (Monthly)</option>
@@ -121,7 +121,7 @@ export default function VintageTracker({ onDataFetched }: VintageTrackerProps) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <label style={{
             fontSize: 11,
-            color: 'rgba(255,255,255,0.40)',
+            color: 'rgba(255,255,255,0.55)',
             fontWeight: 700,
             letterSpacing: '0.5px',
           }}>
@@ -132,8 +132,8 @@ export default function VintageTracker({ onDataFetched }: VintageTrackerProps) {
             value={vintageDate}
             onChange={e => setVintageDate(e.target.value)}
             style={{ ...inputBase }}
-            onFocus={e  => (e.currentTarget.style.borderColor = 'rgba(212,175,55,0.45)')}
-            onBlur={e   => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)')}
+            onFocus={e  => (e.currentTarget.style.borderColor = 'rgba(212,175,55,0.55)')}
+            onBlur={e   => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)')}
           />
         </div>
 
@@ -148,10 +148,10 @@ export default function VintageTracker({ onDataFetched }: VintageTrackerProps) {
               background: isLoading
                 ? 'rgba(212,175,55,0.25)'
                 : 'rgba(212,175,55,0.92)',
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)',
-              border: '1px solid rgba(212,175,55,0.30)',
-              color: isLoading ? 'rgba(0,0,0,0.40)' : '#000',
+              backdropFilter: 'blur(25px)',
+              WebkitBackdropFilter: 'blur(25px)',
+              border: '1px solid rgba(212,175,55,0.35)',
+              color: isLoading ? 'rgba(0,0,0,0.40)' : '#000000',
               fontWeight: 700,
               fontSize: 12,
               letterSpacing: '1px',
@@ -172,11 +172,11 @@ export default function VintageTracker({ onDataFetched }: VintageTrackerProps) {
         <div style={{
           padding: '12px 16px',
           background: 'rgba(224,92,92,0.08)',
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
+          backdropFilter: 'blur(25px)',
+          WebkitBackdropFilter: 'blur(25px)',
           color: '#e05c5c',
           borderRadius: 8,
-          border: '1px solid rgba(224,92,92,0.20)',
+          border: '1px solid rgba(224,92,92,0.25)',
           marginBottom: 20,
           fontSize: 13,
         }}>
@@ -187,26 +187,26 @@ export default function VintageTracker({ onDataFetched }: VintageTrackerProps) {
       {/* ── Data table ── */}
       {vintageData.length > 0 && (
         <div style={{
-          background: 'rgba(255,255,255,0.025)',
-          backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)',
+          background: 'rgba(255,255,255,0.04)',
+          backdropFilter: 'blur(25px)',
+          WebkitBackdropFilter: 'blur(25px)',
           borderRadius: 10,
-          border: '1px solid rgba(255,255,255,0.07)',
+          border: '1px solid rgba(255,255,255,0.15)',
           overflow: 'hidden',
-          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.07)',
         }}>
 
           {/* Table header */}
           <div style={{
             padding: '12px 16px',
-            background: 'rgba(255,255,255,0.04)',
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
-            borderBottom: '1px solid rgba(255,255,255,0.07)',
+            background: 'rgba(255,255,255,0.05)',
+            backdropFilter: 'blur(25px)',
+            WebkitBackdropFilter: 'blur(25px)',
+            borderBottom: '1px solid rgba(255,255,255,0.15)',
             display: 'flex',
             justifyContent: 'space-between',
             fontWeight: 700,
-            color: 'rgba(255,255,255,0.40)',
+            color: 'rgba(255,255,255,0.60)',
             fontSize: 11,
             letterSpacing: '1px',
           }}>
@@ -223,19 +223,19 @@ export default function VintageTracker({ onDataFetched }: VintageTrackerProps) {
                   key={index}
                   style={{
                     padding: '11px 16px',
-                    borderBottom: '1px solid rgba(255,255,255,0.04)',
+                    borderBottom: '1px solid rgba(255,255,255,0.08)',
                     display: 'flex',
                     justifyContent: 'space-between',
                     fontSize: 13,
-                    color: isLatest ? '#d4af37' : 'rgba(255,255,255,0.75)',
+                    color: isLatest ? '#d4af37' : 'rgba(255,255,255,0.80)',
                     fontWeight: isLatest ? 700 : 400,
                     background: isLatest
-                      ? 'rgba(212,175,55,0.06)'
+                      ? 'rgba(212,175,55,0.07)'
                       : 'transparent',
                     transition: 'background 0.15s',
                   }}
                   onMouseEnter={e => {
-                    if (!isLatest) e.currentTarget.style.background = 'rgba(255,255,255,0.025)';
+                    if (!isLatest) e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
                   }}
                   onMouseLeave={e => {
                     if (!isLatest) e.currentTarget.style.background = 'transparent';
@@ -257,9 +257,9 @@ export default function VintageTracker({ onDataFetched }: VintageTrackerProps) {
             padding: '9px 16px',
             textAlign: 'center',
             fontSize: 11,
-            color: 'rgba(255,255,255,0.20)',
-            borderTop: '1px solid rgba(255,255,255,0.05)',
-            background: 'rgba(255,255,255,0.02)',
+            color: 'rgba(255,255,255,0.40)',
+            borderTop: '1px solid rgba(255,255,255,0.15)',
+            background: 'rgba(255,255,255,0.03)',
           }}>
             Showing the 50 most recent observations prior to {vintageDate}
           </div>

@@ -46,17 +46,17 @@ export default function RegimeWidget({ onDataFetched }: RegimeWidgetProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const accentColor = regime?.color ?? 'rgba(255,255,255,0.20)';
+  const accentColor = regime?.color ?? 'rgba(255,255,255,0.35)';
 
   return (
     <aside style={{
-      // ── Glass card — accent border driven by regime color ──
-      background: 'rgba(10, 16, 20, 0.60)',
-      backdropFilter: 'blur(18px)',
-      WebkitBackdropFilter: 'blur(18px)',
-      border: `1px solid ${accentColor}40`,
+      // ── Matte glass card — accent border driven by regime color ──
+      background: 'rgba(255, 255, 255, 0.04)',
+      backdropFilter: 'blur(25px)',
+      WebkitBackdropFilter: 'blur(25px)',
+      border: `1px solid ${accentColor}50`,
       borderRadius: 16,
-      boxShadow: `0 8px 32px rgba(0,0,0,0.45), 0 0 0 1px ${accentColor}10, inset 0 1px 0 rgba(255,255,255,0.05)`,
+      boxShadow: `0 8px 32px rgba(0,0,0,0.45), 0 0 0 1px ${accentColor}12, inset 0 1px 0 rgba(255,255,255,0.07)`,
       padding: 20,
       transition: 'border-color 0.5s, box-shadow 0.5s',
     }}>
@@ -65,7 +65,7 @@ export default function RegimeWidget({ onDataFetched }: RegimeWidgetProps) {
       <div style={{
         fontSize: 11,
         fontWeight: 700,
-        color: 'rgba(255,255,255,0.28)',
+        color: 'rgba(255,255,255,0.50)',
         marginBottom: 16,
         letterSpacing: '2px',
       }}>
@@ -74,7 +74,7 @@ export default function RegimeWidget({ onDataFetched }: RegimeWidgetProps) {
 
       {/* ── States ── */}
       {loading && (
-        <div style={{ color: 'rgba(255,255,255,0.20)', fontSize: 12 }}>
+        <div style={{ color: 'rgba(255,255,255,0.40)', fontSize: 12 }}>
           Calculating...
         </div>
       )}
@@ -93,12 +93,12 @@ export default function RegimeWidget({ onDataFetched }: RegimeWidgetProps) {
             gap: 10,
             marginBottom: 16,
             padding: '12px 14px',
-            background: `${accentColor}14`,
-            backdropFilter: 'blur(10px)',
-            WebkitBackdropFilter: 'blur(10px)',
+            background: `${accentColor}16`,
+            backdropFilter: 'blur(25px)',
+            WebkitBackdropFilter: 'blur(25px)',
             borderRadius: 10,
-            border: `1px solid ${accentColor}45`,
-            boxShadow: `0 0 22px ${accentColor}10`,
+            border: `1px solid ${accentColor}55`,
+            boxShadow: `0 0 22px ${accentColor}12`,
           }}>
             <span style={{ fontSize: 20 }}>
               {QUADRANT_ICONS[regime.quadrant] ?? '⬜'}
@@ -109,11 +109,11 @@ export default function RegimeWidget({ onDataFetched }: RegimeWidgetProps) {
                 fontWeight: 900,
                 color: accentColor,
                 letterSpacing: '-0.5px',
-                textShadow: `0 0 14px ${accentColor}55`,
+                textShadow: `0 0 14px ${accentColor}60`,
               }}>
                 {regime.quadrant.toUpperCase()}
               </div>
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.32)' }}>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)' }}>
                 {QUADRANT_DESC[regime.quadrant]}
               </div>
             </div>
@@ -135,18 +135,22 @@ export default function RegimeWidget({ onDataFetched }: RegimeWidgetProps) {
                     padding: '8px 10px',
                     borderRadius: 8,
                     background: isActive
-                      ? `${accentColor}12`
-                      : 'rgba(255,255,255,0.02)',
-                    backdropFilter: 'blur(6px)',
-                    WebkitBackdropFilter: 'blur(6px)',
-                    border: `1px solid ${isActive ? accentColor + '55' : 'rgba(255,255,255,0.05)'}`,
-                    opacity: isActive ? 1 : 0.35,
+                      ? `${accentColor}14`
+                      : 'rgba(255,255,255,0.03)',
+                    backdropFilter: 'blur(25px)',
+                    WebkitBackdropFilter: 'blur(25px)',
+                    border: `1px solid ${isActive
+                      ? accentColor + '60'
+                      : 'rgba(255,255,255,0.10)'}`,
+                    opacity: isActive ? 1 : 0.45,
                     transition: 'all 0.3s',
                   }}
                 >
                   <div style={{
                     fontSize: 10,
-                    color: isActive ? 'rgba(255,255,255,0.70)' : 'rgba(255,255,255,0.38)',
+                    color: isActive
+                      ? 'rgba(255,255,255,0.85)'
+                      : 'rgba(255,255,255,0.50)',
                   }}>
                     {QUADRANT_ICONS[q]} {q}
                   </div>
@@ -177,7 +181,7 @@ export default function RegimeWidget({ onDataFetched }: RegimeWidgetProps) {
               {
                 label: 'CPI 12m Avg',
                 value: `${regime.cpi_yoy_avg_12m}%`,
-                color: 'rgba(255,255,255,0.38)',
+                color: 'rgba(255,255,255,0.60)',
                 glow:  'none',
               },
             ].map(stat => (
@@ -188,14 +192,14 @@ export default function RegimeWidget({ onDataFetched }: RegimeWidgetProps) {
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   padding: '7px 10px',
-                  background: 'rgba(255,255,255,0.025)',
-                  backdropFilter: 'blur(6px)',
-                  WebkitBackdropFilter: 'blur(6px)',
+                  background: 'rgba(255,255,255,0.04)',
+                  backdropFilter: 'blur(25px)',
+                  WebkitBackdropFilter: 'blur(25px)',
                   borderRadius: 7,
-                  border: '1px solid rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.10)',
                 }}
               >
-                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.38)' }}>
+                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)' }}>
                   {stat.label}
                 </span>
                 <span style={{

@@ -11,7 +11,7 @@ export default function SentimentWidget({ onDataFetched }: { onDataFetched?: (da
       try {
         const res = await fetch('/api/alphavantage/sentiment');
         const data = await res.json();
-        
+
         if (data.feed) {
           setNews(data.feed.slice(0, 5));
 
@@ -21,8 +21,8 @@ export default function SentimentWidget({ onDataFetched }: { onDataFetched?: (da
               provider: "ALPHA VANTAGE",
               news_items: data.feed.slice(0, 5).map((item: any) => ({
                 headline: item.title,
-                sentiment: item.overall_sentiment_label
-              }))
+                sentiment: item.overall_sentiment_label,
+              })),
             };
             onDataFetched(aiPayload);
           }
@@ -38,9 +38,9 @@ export default function SentimentWidget({ onDataFetched }: { onDataFetched?: (da
   }, [onDataFetched]);
 
   const getSentimentColor = (label: string) => {
-    if (label.includes('Bullish')) return '#4caf50';
-    if (label.includes('Bearish')) return '#ff5252';
-    return '#888888';
+    if (label.includes('Bullish')) return '#4caf82';
+    if (label.includes('Bearish')) return '#e05c5c';
+    return 'rgba(255,255,255,0.45)';
   };
 
   const formatLabel = (label: string) => {
@@ -49,27 +49,27 @@ export default function SentimentWidget({ onDataFetched }: { onDataFetched?: (da
     return label.toUpperCase();
   };
 
-  const avgScore = news.length > 0 
+  const avgScore = news.length > 0
     ? news.reduce((acc, item) => acc + parseFloat(item.overall_sentiment_score), 0) / news.length
     : 0;
-  
+
   const gaugePosition = Math.max(0, Math.min(100, ((avgScore + 0.5) * 100)));
 
   return (
     <aside style={{
-      // ── Glass surface ──
-      background: 'rgba(10, 16, 20, 0.60)',
-      backdropFilter: 'blur(18px)',
-      WebkitBackdropFilter: 'blur(18px)',
-      border: '1px solid rgba(255, 255, 255, 0.06)',
+      // ── Matte glass surface ──
+      background: 'rgba(255, 255, 255, 0.04)',
+      backdropFilter: 'blur(25px)',
+      WebkitBackdropFilter: 'blur(25px)',
+      border: '1px solid rgba(255, 255, 255, 0.15)',
       borderRadius: '16px',
-      boxShadow: '0 8px 32px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.05)',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.07)',
       padding: '20px',
       display: 'flex',
       flexDirection: 'column',
       gap: '18px',
     }}>
-      
+
       {/* ── Header ── */}
       <div style={{
         fontSize: '11px',
@@ -82,15 +82,16 @@ export default function SentimentWidget({ onDataFetched }: { onDataFetched?: (da
         textTransform: 'uppercase',
       }}>
         <span style={{ textShadow: '0 0 10px rgba(212,175,55,0.40)' }}>AI Sentiment</span>
-        <span style={{ 
+        <span style={{
           background: 'rgba(212, 175, 55, 0.10)',
-          border: '1px solid rgba(212,175,55,0.20)',
+          backdropFilter: 'blur(25px)',
+          WebkitBackdropFilter: 'blur(25px)',
+          border: '1px solid rgba(212,175,55,0.25)',
           color: '#d4af37',
           padding: '2px 8px',
           borderRadius: '4px',
           fontSize: '9px',
           letterSpacing: '1px',
-          backdropFilter: 'blur(8px)',
         }}>
           ALPHA VANTAGE
         </span>
@@ -99,7 +100,7 @@ export default function SentimentWidget({ onDataFetched }: { onDataFetched?: (da
       {loading ? (
         <div style={{
           fontSize: '12px',
-          color: 'rgba(255,255,255,0.30)',
+          color: 'rgba(255,255,255,0.45)',
           textAlign: 'center',
           padding: '20px 0',
           fontStyle: 'italic',
@@ -114,7 +115,7 @@ export default function SentimentWidget({ onDataFetched }: { onDataFetched?: (da
               display: 'flex',
               justifyContent: 'space-between',
               fontSize: '10px',
-              color: 'rgba(255,255,255,0.40)',
+              color: 'rgba(255,255,255,0.55)',
               fontWeight: 600,
               letterSpacing: '0.5px',
             }}>
@@ -123,15 +124,14 @@ export default function SentimentWidget({ onDataFetched }: { onDataFetched?: (da
               <span>BULLISH</span>
             </div>
 
-            {/* Gauge track — glass inset */}
+            {/* Gauge track */}
             <div style={{
               height: '8px',
               width: '100%',
               borderRadius: '4px',
-              background: 'linear-gradient(90deg, rgba(255,82,82,0.70) 0%, rgba(40,40,50,0.60) 50%, rgba(76,175,80,0.70) 100%)',
-              border: '1px solid rgba(255,255,255,0.06)',
+              background: 'linear-gradient(90deg, rgba(224,92,92,0.75) 0%, rgba(255,255,255,0.08) 50%, rgba(76,175,130,0.75) 100%)',
+              border: '1px solid rgba(255,255,255,0.15)',
               position: 'relative',
-              backdropFilter: 'blur(4px)',
             }}>
               {/* Indicator */}
               <div style={{
@@ -140,17 +140,18 @@ export default function SentimentWidget({ onDataFetched }: { onDataFetched?: (da
                 left: `calc(${gaugePosition}% - 6px)`,
                 width: '12px',
                 height: '18px',
-                background: 'rgba(255,255,255,0.90)',
-                backdropFilter: 'blur(4px)',
+                background: 'rgba(255,255,255,0.95)',
+                backdropFilter: 'blur(25px)',
+                WebkitBackdropFilter: 'blur(25px)',
                 borderRadius: '3px',
-                boxShadow: '0 0 8px rgba(255,255,255,0.50)',
+                boxShadow: '0 0 8px rgba(255,255,255,0.55)',
                 transition: 'left 1s ease-in-out',
               }} />
             </div>
           </div>
 
           {/* ── Divider ── */}
-          <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)' }} />
+          <div style={{ height: '1px', background: 'rgba(255,255,255,0.10)' }} />
 
           {/* ── News impact wire ── */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -168,21 +169,22 @@ export default function SentimentWidget({ onDataFetched }: { onDataFetched?: (da
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{
                       fontSize: '9px',
-                      color: 'rgba(255,255,255,0.30)',
+                      color: 'rgba(255,255,255,0.50)',
                       textTransform: 'uppercase',
                       letterSpacing: '0.5px',
                     }}>
                       {item.source}
                     </span>
-                    <span style={{ 
-                      fontSize: '10px', 
+                    <span style={{
+                      fontSize: '10px',
                       fontWeight: 700,
                       color: sentColor,
                       background: `${sentColor}18`,
-                      border: `1px solid ${sentColor}30`,
+                      backdropFilter: 'blur(25px)',
+                      WebkitBackdropFilter: 'blur(25px)',
+                      border: `1px solid ${sentColor}35`,
                       padding: '2px 7px',
                       borderRadius: '4px',
-                      backdropFilter: 'blur(6px)',
                       letterSpacing: '0.3px',
                     }}>
                       {formatLabel(item.overall_sentiment_label)} ({item.overall_sentiment_score})
@@ -190,17 +192,20 @@ export default function SentimentWidget({ onDataFetched }: { onDataFetched?: (da
                   </div>
 
                   {/* Headline */}
-                  <div style={{
-                    fontSize: '13px',
-                    color: 'rgba(226,232,240,0.88)',
-                    lineHeight: '1.5',
-                    fontWeight: 500,
-                    transition: 'color 0.2s',
-                  }}
-                    onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
-                    onMouseLeave={e => (e.currentTarget.style.color = 'rgba(226,232,240,0.88)')}
+                  <div
+                    style={{
+                      fontSize: '13px',
+                      color: 'rgba(255,255,255,0.75)',
+                      lineHeight: '1.5',
+                      fontWeight: 500,
+                      transition: 'color 0.2s',
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.color = '#ffffff')}
+                    onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.75)')}
                   >
-                    {item.title.length > 70 ? item.title.substring(0, 70) + '...' : item.title}
+                    {item.title.length > 70
+                      ? item.title.substring(0, 70) + '...'
+                      : item.title}
                   </div>
 
                   {/* Ticker tags */}
@@ -211,11 +216,12 @@ export default function SentimentWidget({ onDataFetched }: { onDataFetched?: (da
                         <span key={i} style={{
                           fontSize: '9px',
                           color: tc,
-                          background: `${tc}12`,
-                          border: `1px solid ${tc}35`,
+                          background: `${tc}14`,
+                          backdropFilter: 'blur(25px)',
+                          WebkitBackdropFilter: 'blur(25px)',
+                          border: `1px solid ${tc}40`,
                           padding: '1px 5px',
                           borderRadius: '3px',
-                          backdropFilter: 'blur(4px)',
                           letterSpacing: '0.3px',
                         }}>
                           {tickerData.ticker}

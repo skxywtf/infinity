@@ -17,7 +17,7 @@ import SentimentWidget from '@/components/macrodata/SentimentWidget';
 
 const MacroLineChart = dynamic(
   () => import('@/components/macrodata/MacroLineChart'),
-  { ssr: false, loading: () => <p style={{ color: '#888', padding: '20px' }}>Loading chart data...</p> }
+  { ssr: false, loading: () => <p style={{ color: 'rgba(255,255,255,0.50)', padding: '20px' }}>Loading chart data...</p> }
 );
 
 const SPECIAL_TABS = ['Vintage Data', 'Calendar', 'WTF Brief', 'Fundamentals', 'Positioning', 'Global Macro'];
@@ -26,19 +26,20 @@ const HIDDEN_TABS = ['Recession Data'];
 // ─── Shared glass style tokens ───────────────────────────────────────────────
 const glass = {
   base: {
-    background: 'rgba(11, 20, 22, 0.55)',
-    backdropFilter: 'blur(16px)',
-    WebkitBackdropFilter: 'blur(16px)',
-    border: '1px solid rgba(255, 255, 255, 0.06)',
+    background: 'rgba(255, 255, 255, 0.04)',
+    backdropFilter: 'blur(25px)',
+    WebkitBackdropFilter: 'blur(25px)',
+    border: '1px solid rgba(255, 255, 255, 0.15)',
     borderRadius: '16px',
+    boxShadow: '0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.07)',
   } as React.CSSProperties,
   accent: {
-    background: 'rgba(11, 20, 22, 0.65)',
-    backdropFilter: 'blur(20px)',
-    WebkitBackdropFilter: 'blur(20px)',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
+    background: 'rgba(255, 255, 255, 0.04)',
+    backdropFilter: 'blur(25px)',
+    WebkitBackdropFilter: 'blur(25px)',
+    border: '1px solid rgba(255, 255, 255, 0.15)',
     borderRadius: '16px',
-    boxShadow: '0 4px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)',
+    boxShadow: '0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.07)',
   } as React.CSSProperties,
 };
 // ─────────────────────────────────────────────────────────────────────────────
@@ -152,19 +153,18 @@ export default function MacroPage() {
   }
 
   return (
-    // ── Page root: deep dark background with subtle radial glow ───────────────
     <main style={{
       maxWidth: '1800px',
       margin: '0 auto',
       padding: '20px',
       background: 'radial-gradient(ellipse at 20% 0%, rgba(16,32,40,0.9) 0%, #050a0b 60%)',
       minHeight: '100vh',
-      color: 'white',
+      color: '#ffffff',
       fontFamily: 'sans-serif',
       position: 'relative',
     }}>
 
-      {/* Ambient background glow orbs — purely decorative */}
+      {/* ── Ambient background glow orbs ── */}
       <div aria-hidden style={{
         position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden',
       }}>
@@ -185,14 +185,14 @@ export default function MacroPage() {
         }} />
       </div>
 
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      {/* ── Header ── */}
       <header style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: '30px',
         paddingBottom: '15px',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        borderBottom: '1px solid rgba(255,255,255,0.15)',
         position: 'relative',
         zIndex: 1,
       }}>
@@ -202,7 +202,7 @@ export default function MacroPage() {
             fontWeight: 900,
             letterSpacing: '-1.5px',
             margin: 0,
-            color: '#fff',
+            color: '#ffffff',
             textShadow: '0 0 30px rgba(255,255,255,0.15)',
           }}>
             SKXY TERMINAL
@@ -211,23 +211,28 @@ export default function MacroPage() {
         <div style={{
           textAlign: 'right',
           fontSize: '11px',
-          opacity: 0.55,
+          color: 'rgba(255,255,255,0.70)',
           letterSpacing: '1px',
         }}>
-          <div>LIVE CONNECTION: <span style={{ color: '#4caf50', textShadow: '0 0 8px rgba(76,175,80,0.6)' }}>ACTIVE</span></div>
+          <div>
+            LIVE CONNECTION:{' '}
+            <span style={{ color: '#4caf50', textShadow: '0 0 8px rgba(76,175,80,0.6)' }}>
+              ACTIVE
+            </span>
+          </div>
           <div>DATASET: US_MACRO_CORE</div>
         </div>
       </header>
 
-      {/* ── Mobile toggle ───────────────────────────────────────────────────── */}
+      {/* ── Mobile toggle ── */}
       <button className="mobile-toggle" onClick={() => setSidebar(!isSidebarOpen)}>
         {isSidebarOpen ? 'Hide Terminal Menu ▲' : 'Show Terminal Menu ▼'}
       </button>
 
-      {/* ── Main grid ──────────────────────────────────────────────────────── */}
+      {/* ── Main grid ── */}
       <div className="terminal-grid" style={{ position: 'relative', zIndex: 1 }}>
 
-        {/* ── Sidebar ──────────────────────────────────────────────────────── */}
+        {/* ── Sidebar ── */}
         <div className={`sidebar-container ${isSidebarOpen ? 'open' : ''}`}>
 
           {/* Watchlist glass card */}
@@ -238,7 +243,7 @@ export default function MacroPage() {
             <div style={{
               fontSize: '11px',
               fontWeight: 700,
-              color: 'rgba(255,255,255,0.35)',
+              color: 'rgba(255,255,255,0.70)',
               marginBottom: '20px',
               letterSpacing: '2px',
               textTransform: 'uppercase',
@@ -251,7 +256,7 @@ export default function MacroPage() {
               <WatchlistItem label="DXY Index (UUP)"    value={market.uup.price}  change={market.uup.change}  isPositive={market.uup.pos} />
               <WatchlistItem label="Bitcoin (BTC)"      value={market.btc.price}  change={market.btc.change}  isPositive={market.btc.pos} />
               <WatchlistItem label="Gold (GC=F)"        value={market.gold.price} change={market.gold.change} isPositive={market.gold.pos} />
-              <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '4px 0' }} />
+              <div style={{ height: '1px', background: 'rgba(255,255,255,0.15)', margin: '4px 0' }} />
               <WatchlistItem
                 label="Real GDP (BEA)"
                 value={latestGDP !== null ? `${(latestGDP / 1000).toFixed(2)}T` : '---'}
@@ -283,13 +288,14 @@ export default function MacroPage() {
               <span>GOV WIRE</span>
               <span style={{
                 background: 'rgba(30,58,138,0.5)',
-                border: '1px solid rgba(96,165,250,0.2)',
+                border: '1px solid rgba(96,165,250,0.25)',
                 color: '#bfdbfe',
                 padding: '2px 8px',
                 borderRadius: '4px',
                 fontSize: '9px',
                 letterSpacing: '1px',
-                backdropFilter: 'blur(8px)',
+                backdropFilter: 'blur(25px)',
+                WebkitBackdropFilter: 'blur(25px)',
               }}>
                 OFFICIAL
               </span>
@@ -307,18 +313,27 @@ export default function MacroPage() {
                     justifyContent: 'space-between',
                   }}>
                     <span>{item.publisher.toUpperCase()}</span>
-                    <span style={{ color: 'rgba(255,255,255,0.3)', fontWeight: 'normal' }}>{getTimeAgo(item.time)}</span>
+                    <span style={{ color: 'rgba(255,255,255,0.50)', fontWeight: 'normal' }}>
+                      {getTimeAgo(item.time)}
+                    </span>
                   </div>
                   <div
-                    style={{ fontSize: '13px', color: '#cbd5e1', lineHeight: '1.5', transition: 'color 0.2s' }}
+                    style={{
+                      fontSize: '13px',
+                      color: 'rgba(255,255,255,0.70)',
+                      lineHeight: '1.5',
+                      transition: 'color 0.2s',
+                    }}
                     onMouseOver={e => (e.currentTarget.style.color = '#93c5fd')}
-                    onMouseOut={e  => (e.currentTarget.style.color = '#cbd5e1')}
+                    onMouseOut={e  => (e.currentTarget.style.color = 'rgba(255,255,255,0.70)')}
                   >
                     {item.title}
                   </div>
                 </a>
               )) : (
-                <div style={{ fontSize: '12px', color: '#555' }}>Loading official releases...</div>
+                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.35)' }}>
+                  Loading official releases...
+                </div>
               )}
             </div>
           </aside>
@@ -329,19 +344,32 @@ export default function MacroPage() {
             padding: '20px',
             textAlign: 'center',
             marginTop: 'auto',
-            border: '1px dashed rgba(255,255,255,0.07)',
+            border: '1px dashed rgba(255,255,255,0.15)',
           }}>
-            <div style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.25)', marginBottom: '10px', letterSpacing: '2px' }}>
+            <div style={{
+              fontSize: '10px',
+              fontWeight: 700,
+              color: 'rgba(255,255,255,0.35)',
+              marginBottom: '10px',
+              letterSpacing: '2px',
+            }}>
               SPONSORED
             </div>
-            <div style={{ fontSize: '13px', color: '#666', padding: '10px 0', lineHeight: '1.6' }}>
+            <div style={{
+              fontSize: '13px',
+              color: 'rgba(255,255,255,0.35)',
+              padding: '10px 0',
+              lineHeight: '1.6',
+            }}>
               Advertisement Space Available<br />
-              <span style={{ fontSize: '11px', opacity: 0.5 }}>(Contact sage@worldtradefactory.com)</span>
+              <span style={{ fontSize: '11px', opacity: 0.6 }}>
+                (Contact sage@worldtradefactory.com)
+              </span>
             </div>
           </aside>
         </div>
 
-        {/* ── Main content ───────────────────────────────────────────────────── */}
+        {/* ── Main content ── */}
         <section style={{ display: 'flex', flexDirection: 'column', gap: '20px', minWidth: 0 }}>
 
           {/* Ticker row */}
@@ -358,18 +386,18 @@ export default function MacroPage() {
             <TickerCard symbol="META" name="Meta"   onDataFetched={handleFinnhubData} />
           </div>
 
-          {/* ── Tab bar ─────────────────────────────────────────────────────── */}
+          {/* ── Tab bar ── */}
           <div style={{
             display: 'flex',
             gap: '6px',
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            borderBottom: '1px solid rgba(255,255,255,0.15)',
             paddingBottom: '12px',
             overflowX: 'auto',
             WebkitOverflowScrolling: 'touch',
           }}>
             {allTabs.map(tab => {
-              const isActive   = activeTab === tab;
-              const isSpecial  = SPECIAL_TABS.includes(tab);
+              const isActive  = activeTab === tab;
+              const isSpecial = SPECIAL_TABS.includes(tab);
               return (
                 <button
                   key={tab}
@@ -380,22 +408,22 @@ export default function MacroPage() {
                           ? 'rgba(212,175,55,0.12)'
                           : 'rgba(255,255,255,0.08)')
                       : 'transparent',
-                    backdropFilter: isActive ? 'blur(12px)' : 'none',
-                    WebkitBackdropFilter: isActive ? 'blur(12px)' : 'none',
+                    backdropFilter: isActive ? 'blur(25px)' : 'none',
+                    WebkitBackdropFilter: isActive ? 'blur(25px)' : 'none',
                     color: isSpecial
-                      ? (isActive ? '#d4af37' : 'rgba(212,175,55,0.5)')
-                      : (isActive ? '#fff'    : 'rgba(255,255,255,0.45)'),
+                      ? (isActive ? '#d4af37' : 'rgba(212,175,55,0.60)')
+                      : (isActive ? '#ffffff' : 'rgba(255,255,255,0.60)'),
                     border: isSpecial
                       ? (isActive
-                          ? '1px solid rgba(212,175,55,0.35)'
-                          : '1px solid rgba(212,175,55,0.12)')
+                          ? '1px solid rgba(212,175,55,0.40)'
+                          : '1px solid rgba(212,175,55,0.20)')
                       : (isActive
-                          ? '1px solid rgba(255,255,255,0.12)'
+                          ? '1px solid rgba(255,255,255,0.15)'
                           : '1px solid transparent'),
                     boxShadow: isActive && isSpecial
-                      ? '0 0 12px rgba(212,175,55,0.12)'
+                      ? '0 0 12px rgba(212,175,55,0.15)'
                       : isActive
-                        ? '0 0 12px rgba(255,255,255,0.04)'
+                        ? '0 0 12px rgba(255,255,255,0.06)'
                         : 'none',
                     padding: '9px 18px',
                     borderRadius: '8px',
@@ -412,7 +440,7 @@ export default function MacroPage() {
             })}
           </div>
 
-          {/* ── Tab content ─────────────────────────────────────────────────── */}
+          {/* ── Tab content ── */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
             {activeTab === 'Vintage Data' && <VintageTracker onDataFetched={setVintageChatData} />}
             {activeTab === 'Calendar'     && <EconCalendar />}
@@ -431,7 +459,7 @@ export default function MacroPage() {
                 ...glass.base,
                 padding: '40px',
                 textAlign: 'center',
-                color: 'rgba(255,255,255,0.2)',
+                color: 'rgba(255,255,255,0.35)',
                 fontSize: '13px',
               }}>
                 No positioning data yet.
@@ -449,20 +477,27 @@ export default function MacroPage() {
                   overflow: 'hidden',
                   transition: 'box-shadow 0.2s',
                 }}
-                onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 8px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.07)')}
-                onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 4px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)')}
+                onMouseEnter={e => (e.currentTarget.style.boxShadow =
+                  '0 12px 48px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.12)')}
+                onMouseLeave={e => (e.currentTarget.style.boxShadow =
+                  '0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.07)')}
               >
                 <div style={{ marginBottom: '12px' }}>
                   <h3 style={{
                     margin: 0,
                     fontSize: '18px',
                     fontWeight: 700,
-                    color: '#fff',
+                    color: '#ffffff',
                     letterSpacing: '-0.5px',
                   }}>
                     {chart.title}
                   </h3>
-                  <p style={{ margin: 0, fontSize: '12px', color: 'rgba(255,255,255,0.35)', marginTop: '3px' }}>
+                  <p style={{
+                    margin: 0,
+                    fontSize: '12px',
+                    color: 'rgba(255,255,255,0.50)',
+                    marginTop: '3px',
+                  }}>
                     Source: {chart.source}
                   </p>
                 </div>
@@ -473,7 +508,7 @@ export default function MacroPage() {
             ))}
 
             {!SPECIAL_TABS.includes(activeTab) && activeCharts.length === 0 && activeTab !== '' && (
-              <p style={{ color: 'rgba(255,255,255,0.35)' }}>Loading charts...</p>
+              <p style={{ color: 'rgba(255,255,255,0.50)' }}>Loading charts...</p>
             )}
           </div>
         </section>
@@ -509,11 +544,11 @@ export default function MacroPage() {
           display: block;
           width: 100%;
           padding: 12px;
-          background: rgba(27, 34, 38, 0.6);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          color: white;
-          border: 1px solid rgba(255,255,255,0.08);
+          background: rgba(255, 255, 255, 0.04);
+          backdrop-filter: blur(25px);
+          -webkit-backdrop-filter: blur(25px);
+          color: #ffffff;
+          border: 1px solid rgba(255, 255, 255, 0.15);
           border-radius: 10px;
           margin-bottom: 20px;
           font-weight: bold;
@@ -522,7 +557,7 @@ export default function MacroPage() {
           transition: background 0.2s;
         }
         .mobile-toggle:hover {
-          background: rgba(40, 52, 58, 0.7);
+          background: rgba(255, 255, 255, 0.08);
         }
 
         .chart-wrapper {
@@ -551,11 +586,11 @@ export default function MacroPage() {
 function WatchlistItem({ label, value, change, isPositive }: any) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <span style={{ fontWeight: 500, fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>
+      <span style={{ fontWeight: 500, fontSize: '13px', color: 'rgba(255,255,255,0.70)' }}>
         {label}
       </span>
       <div style={{ textAlign: 'right' }}>
-        <div style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>{value}</div>
+        <div style={{ fontSize: '14px', fontWeight: 700, color: '#ffffff' }}>{value}</div>
         <div style={{
           fontSize: '11px',
           color: isPositive ? '#4caf50' : '#ff5252',
@@ -573,7 +608,7 @@ function WatchlistItem({ label, value, change, isPositive }: any) {
 // ── getTimeAgo ────────────────────────────────────────────────────────────────
 function getTimeAgo(timeNum: number) {
   if (!timeNum) return '';
-  const diff = new Date().getTime() - new Date(timeNum * 1000).getTime();
+  const diff  = new Date().getTime() - new Date(timeNum * 1000).getTime();
   const mins  = Math.floor(diff / (1000 * 60));
   const hours = Math.floor(diff / (1000 * 60 * 60));
   const days  = Math.floor(hours / 24);

@@ -50,9 +50,9 @@ function Table({ section, years, label }: { section: any; years: number[]; label
               <th style={{
                 textAlign: 'left',
                 padding: '8px 10px',
-                color: 'rgba(255,255,255,0.25)',
+                color: 'rgba(255,255,255,0.70)',
                 fontWeight: 600,
-                borderBottom: '1px solid rgba(255,255,255,0.06)',
+                borderBottom: '1px solid rgba(255,255,255,0.15)',
                 width: 180,
                 letterSpacing: '0.3px',
               }}>
@@ -62,9 +62,9 @@ function Table({ section, years, label }: { section: any; years: number[]; label
                 <th key={yr} style={{
                   textAlign: 'right',
                   padding: '8px 10px',
-                  color: 'rgba(255,255,255,0.35)',
+                  color: 'rgba(255,255,255,0.70)',
                   fontWeight: 600,
-                  borderBottom: '1px solid rgba(255,255,255,0.06)',
+                  borderBottom: '1px solid rgba(255,255,255,0.15)',
                   minWidth: 72,
                 }}>
                   {yr}
@@ -78,15 +78,15 @@ function Table({ section, years, label }: { section: any; years: number[]; label
               return (
                 <tr
                   key={rowLabel}
-                  style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', transition: 'background 0.15s' }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.02)')}
+                  style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', transition: 'background 0.15s' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.04)')}
                   onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                 >
                   <td style={{
                     padding: '7px 10px',
-                    color: isKey ? '#dde8e8' : 'rgba(255,255,255,0.30)',
+                    color: isKey ? '#ffffff' : 'rgba(255,255,255,0.55)',
                     fontWeight: isKey ? 600 : 400,
-                    borderLeft: isKey ? '2px solid rgba(212,175,55,0.50)' : '2px solid transparent',
+                    borderLeft: isKey ? '2px solid rgba(212,175,55,0.60)' : '2px solid transparent',
                   }}>
                     {rowLabel}
                   </td>
@@ -99,7 +99,7 @@ function Table({ section, years, label }: { section: any; years: number[]; label
                       <td key={yr} style={{ textAlign: 'right', padding: '7px 10px' }}>
                         <div style={{
                           fontWeight: isKey ? 700 : 400,
-                          color: isKey ? '#fff' : 'rgba(255,255,255,0.50)',
+                          color: isKey ? '#ffffff' : 'rgba(255,255,255,0.65)',
                         }}>
                           {fmt(val, rowLabel)}
                         </div>
@@ -157,25 +157,25 @@ export default function Fundamentals() {
 
   return (
     <div style={{
-      // ── Glass card ──
-      background: 'rgba(10, 16, 20, 0.60)',
-      backdropFilter: 'blur(18px)',
-      WebkitBackdropFilter: 'blur(18px)',
-      border: '1px solid rgba(255,255,255,0.06)',
+      // ── Matte glass card ──
+      background: 'rgba(255, 255, 255, 0.04)',
+      backdropFilter: 'blur(25px)',
+      WebkitBackdropFilter: 'blur(25px)',
+      border: '1px solid rgba(255,255,255,0.15)',
       borderRadius: 16,
-      boxShadow: '0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05)',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.07)',
       padding: 24,
     }}>
 
       {/* ── Header ── */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <div>
-          <div style={{ fontSize: 18, fontWeight: 700, color: '#fff', letterSpacing: '-0.3px' }}>
+          <div style={{ fontSize: 18, fontWeight: 700, color: '#ffffff', letterSpacing: '-0.3px' }}>
             Fundamentals
           </div>
           <div style={{
             fontSize: 10,
-            color: 'rgba(255,255,255,0.25)',
+            color: 'rgba(255,255,255,0.50)',
             marginTop: 2,
             letterSpacing: 1,
           }}>
@@ -185,7 +185,7 @@ export default function Fundamentals() {
 
         {data && (
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>{data.company.name}</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: '#ffffff' }}>{data.company.name}</div>
             <div style={{
               fontSize: 10,
               color: '#4caf82',
@@ -207,34 +207,34 @@ export default function Fundamentals() {
           placeholder="TICKER (AAPL · MSFT · NVDA · TSLA)"
           style={{
             flex: 1,
-            background: 'rgba(255,255,255,0.04)',
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
-            border: '1px solid rgba(255,255,255,0.08)',
+            background: 'rgba(255,255,255,0.05)',
+            backdropFilter: 'blur(25px)',
+            WebkitBackdropFilter: 'blur(25px)',
+            border: '1px solid rgba(255,255,255,0.15)',
             borderRadius: 8,
             padding: '10px 14px',
-            color: '#fff',
+            color: '#ffffff',
             fontSize: 13,
             outline: 'none',
             fontFamily: 'monospace',
             letterSpacing: 1,
             transition: 'border-color 0.2s',
           }}
-          onFocus={e  => (e.currentTarget.style.borderColor = 'rgba(212,175,55,0.45)')}
-          onBlur={e   => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)')}
+          onFocus={e  => (e.currentTarget.style.borderColor = 'rgba(212,175,55,0.55)')}
+          onBlur={e   => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)')}
         />
 
         <select
           value={years}
           onChange={e => setYears(Number(e.target.value))}
           style={{
-            background: 'rgba(255,255,255,0.04)',
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
-            border: '1px solid rgba(255,255,255,0.08)',
+            background: 'rgba(255,255,255,0.05)',
+            backdropFilter: 'blur(25px)',
+            WebkitBackdropFilter: 'blur(25px)',
+            border: '1px solid rgba(255,255,255,0.15)',
             borderRadius: 8,
             padding: '10px',
-            color: 'rgba(255,255,255,0.55)',
+            color: 'rgba(255,255,255,0.70)',
             fontSize: 12,
             outline: 'none',
           }}
@@ -247,10 +247,10 @@ export default function Fundamentals() {
           disabled={loading}
           style={{
             background: loading ? 'rgba(212,175,55,0.25)' : 'rgba(212,175,55,0.90)',
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
-            border: '1px solid rgba(212,175,55,0.30)',
-            color: loading ? 'rgba(0,0,0,0.45)' : '#000',
+            backdropFilter: 'blur(25px)',
+            WebkitBackdropFilter: 'blur(25px)',
+            border: '1px solid rgba(212,175,55,0.35)',
+            color: loading ? 'rgba(0,0,0,0.45)' : '#000000',
             borderRadius: 8,
             padding: '10px 20px',
             fontWeight: 700,
@@ -272,9 +272,9 @@ export default function Fundamentals() {
           fontSize: 12,
           padding: '10px 14px',
           background: 'rgba(224,92,92,0.08)',
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
-          border: '1px solid rgba(224,92,92,0.18)',
+          backdropFilter: 'blur(25px)',
+          WebkitBackdropFilter: 'blur(25px)',
+          border: '1px solid rgba(224,92,92,0.25)',
           borderRadius: 8,
           marginBottom: 16,
         }}>
@@ -285,7 +285,7 @@ export default function Fundamentals() {
       {/* ── Loading state ── */}
       {loading && (
         <div style={{
-          color: 'rgba(255,255,255,0.20)',
+          color: 'rgba(255,255,255,0.40)',
           fontSize: 12,
           textAlign: 'center',
           padding: 40,
@@ -302,7 +302,7 @@ export default function Fundamentals() {
             display: 'flex',
             gap: 6,
             marginBottom: 20,
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            borderBottom: '1px solid rgba(255,255,255,0.15)',
             paddingBottom: 12,
           }}>
             {(Object.keys(SECTION_LABELS) as Section[]).map(s => (
@@ -310,19 +310,19 @@ export default function Fundamentals() {
                 key={s}
                 onClick={() => setSection(s)}
                 style={{
-                  background: section === s ? 'rgba(255,255,255,0.07)' : 'transparent',
-                  backdropFilter: section === s ? 'blur(8px)' : 'none',
-                  WebkitBackdropFilter: section === s ? 'blur(8px)' : 'none',
-                  color: section === s ? '#d4af37' : 'rgba(255,255,255,0.25)',
+                  background: section === s ? 'rgba(255,255,255,0.08)' : 'transparent',
+                  backdropFilter: section === s ? 'blur(25px)' : 'none',
+                  WebkitBackdropFilter: section === s ? 'blur(25px)' : 'none',
+                  color: section === s ? '#d4af37' : 'rgba(255,255,255,0.45)',
                   border: '1px solid',
-                  borderColor: section === s ? 'rgba(212,175,55,0.30)' : 'transparent',
+                  borderColor: section === s ? 'rgba(212,175,55,0.40)' : 'rgba(255,255,255,0.10)',
                   padding: '6px 14px',
                   borderRadius: 6,
                   fontSize: 11,
                   fontWeight: 600,
                   cursor: 'pointer',
                   letterSpacing: 1,
-                  boxShadow: section === s ? '0 0 12px rgba(212,175,55,0.10)' : 'none',
+                  boxShadow: section === s ? '0 0 12px rgba(212,175,55,0.12)' : 'none',
                   transition: 'all 0.2s',
                 }}
               >
@@ -332,7 +332,7 @@ export default function Fundamentals() {
             <div style={{ flex: 1 }} />
             <div style={{
               fontSize: 10,
-              color: 'rgba(255,255,255,0.15)',
+              color: 'rgba(255,255,255,0.40)',
               alignSelf: 'center',
             }}>
               FY {data.fiscalYears[0]}–{data.fiscalYears[data.fiscalYears.length - 1]}
@@ -342,7 +342,7 @@ export default function Fundamentals() {
           {active && <Table section={active} years={data.fiscalYears} label={SECTION_LABELS[section]} />}
 
           {data.warnings.length > 0 && (
-            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.15)', marginTop: 8 }}>
+            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginTop: 8 }}>
               Missing: {data.warnings.join(', ')}
             </div>
           )}
@@ -354,7 +354,7 @@ export default function Fundamentals() {
         <div style={{
           textAlign: 'center',
           padding: '30px 0',
-          color: 'rgba(255,255,255,0.15)',
+          color: 'rgba(255,255,255,0.40)',
           fontSize: 12,
         }}>
           Enter a ticker to pull SEC 10-K financials

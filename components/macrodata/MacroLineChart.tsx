@@ -27,7 +27,7 @@ const recessionPlugin = {
     );  
 
     ctx.save();  
-    ctx.fillStyle = 'rgba(128, 128, 128, 0.18)';  
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
 
     let isRecession = false;  
     let startX: number | null = null;  
@@ -109,7 +109,7 @@ export default function MacroLineChart({ seriesId, recessionData = [] }: MacroLi
         alignItems: 'center',  
         justifyContent: 'center',  
         height: '100%',  
-        color: 'rgba(255,255,255,0.25)',  
+        color: 'rgba(255,255,255,0.50)',  
         fontSize: 12,  
         letterSpacing: '0.5px',  
       }}>  
@@ -128,11 +128,11 @@ export default function MacroLineChart({ seriesId, recessionData = [] }: MacroLi
       legend: { display: false },  
       tooltip: {  
         enabled: true,  
-        // ── Glass tooltip ──  
-        backgroundColor: 'rgba(8,14,20,0.88)',  
-        titleColor: 'rgba(255,255,255,0.45)',  
-        bodyColor: '#fff',  
-        borderColor: 'rgba(255,255,255,0.08)',  
+        // ── Matte glass tooltip ──
+        backgroundColor: 'rgba(255, 255, 255, 0.04)',
+        titleColor: 'rgba(255,255,255,0.60)',  
+        bodyColor: '#ffffff',  
+        borderColor: 'rgba(255,255,255,0.15)',  
         borderWidth: 1,  
         padding: 10,  
         cornerRadius: 8,  
@@ -146,13 +146,13 @@ export default function MacroLineChart({ seriesId, recessionData = [] }: MacroLi
     scales: {  
       x: {  
         grid: { display: false },  
-        ticks: { color: 'rgba(255,255,255,0.25)', maxTicksLimit: 6 },  
-        border: { color: 'rgba(255,255,255,0.06)' },  
+        ticks: { color: 'rgba(255,255,255,0.40)', maxTicksLimit: 6 },  
+        border: { color: 'rgba(255,255,255,0.15)' },  
       },  
       y: {  
-        grid: { color: 'rgba(255,255,255,0.04)' },  
-        ticks: { color: 'rgba(255,255,255,0.35)' },  
-        border: { color: 'rgba(255,255,255,0.06)' },  
+        grid: { color: 'rgba(255,255,255,0.06)' },  
+        ticks: { color: 'rgba(255,255,255,0.50)' },  
+        border: { color: 'rgba(255,255,255,0.15)' },  
       },  
     },  
   };  
@@ -171,52 +171,43 @@ export default function MacroLineChart({ seriesId, recessionData = [] }: MacroLi
 
   return ( 
     <div style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}> 
+
       {/* ── Transform toggle ── */} 
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10 }}> 
         <div style={{ 
           display: 'flex', 
-          background: 'rgba(255, 255, 255, 0.05)', 
-          border: '1px solid rgba(255,255,255,0.08)',
+          background: 'rgba(255, 255, 255, 0.04)',
+          backdropFilter: 'blur(25px)',
+          WebkitBackdropFilter: 'blur(25px)',
+          border: '1px solid rgba(255,255,255,0.15)',
           borderRadius: '6px', 
           padding: '3px',
-          gap: '2px'
+          gap: '2px',
         }}> 
-          <button
-            onClick={() => setTransform('level')}
-            style={{
-              background: transform === 'level' ? 'rgba(255,255,255,0.12)' : 'transparent',
-              color: transform === 'level' ? '#fff' : 'rgba(255,255,255,0.4)',
-              border: 'none',
-              borderRadius: '4px',
-              padding: '4px 10px',
-              fontSize: '11px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              transition: 'all 0.2s ease'
-            }}
-          >
-            LEVEL
-          </button>
-          <button
-            onClick={() => setTransform('yoy')}
-            style={{
-              background: transform === 'yoy' ? 'rgba(255,255,255,0.12)' : 'transparent',
-              color: transform === 'yoy' ? '#fff' : 'rgba(255,255,255,0.4)',
-              border: 'none',
-              borderRadius: '4px',
-              padding: '4px 10px',
-              fontSize: '11px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              transition: 'all 0.2s ease'
-            }}
-          >
-            YOY %
-          </button>
+          {(['level', 'yoy'] as const).map(t => (
+            <button
+              key={t}
+              onClick={() => setTransform(t)}
+              style={{
+                background: transform === t ? 'rgba(255,255,255,0.10)' : 'transparent',
+                color: transform === t ? '#ffffff' : 'rgba(255,255,255,0.50)',
+                border: 'none',
+                borderRadius: '4px',
+                padding: '4px 10px',
+                fontSize: '11px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                letterSpacing: '0.5px',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              {t === 'level' ? 'LEVEL' : 'YOY %'}
+            </button>
+          ))}
         </div> 
       </div> 
 
-      {/* ── Chart Rendering ── */}
+      {/* ── Chart ── */}
       <div style={{ flex: 1, minHeight: 0 }}>
         <Line data={data} options={options} plugins={[recessionPlugin]} />
       </div>

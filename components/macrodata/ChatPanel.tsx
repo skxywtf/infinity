@@ -156,13 +156,13 @@ export default function ChatPanel({
         <div style={{ 
           width: '360px',
           height: '480px',
-          // ── Glass panel ──
-          background: 'rgba(8, 14, 18, 0.80)',
-          backdropFilter: 'blur(24px)',
-          WebkitBackdropFilter: 'blur(24px)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
+          // ── Matte glass panel ──
+          background: 'rgba(255, 255, 255, 0.04)',
+          backdropFilter: 'blur(25px)',
+          WebkitBackdropFilter: 'blur(25px)',
+          border: '1px solid rgba(255, 255, 255, 0.15)',
           borderRadius: '16px',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06)',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.07)',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
@@ -172,11 +172,11 @@ export default function ChatPanel({
           {/* ── Header bar ── */}
           <div style={{ 
             background: 'rgba(252, 203, 11, 0.10)',
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
-            borderBottom: '1px solid rgba(252, 203, 11, 0.15)',
+            backdropFilter: 'blur(25px)',
+            WebkitBackdropFilter: 'blur(25px)',
+            borderBottom: '1px solid rgba(252, 203, 11, 0.20)',
             padding: '14px 16px',
-            color: '#fff',
+            color: '#ffffff',
             fontWeight: 700,
             fontSize: '13px',
             letterSpacing: '0.5px',
@@ -199,8 +199,8 @@ export default function ChatPanel({
               onClick={() => setIsOpen(false)}
               style={{ 
                 background: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                color: 'rgba(255,255,255,0.5)',
+                border: '1px solid rgba(255,255,255,0.15)',
+                color: 'rgba(255,255,255,0.70)',
                 cursor: 'pointer',
                 width: '26px', height: '26px',
                 borderRadius: '6px',
@@ -209,12 +209,12 @@ export default function ChatPanel({
                 transition: 'all 0.2s',
               }}
               onMouseEnter={e => {
-                e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
-                e.currentTarget.style.color = '#fff';
+                e.currentTarget.style.background = 'rgba(255,255,255,0.14)';
+                e.currentTarget.style.color = '#ffffff';
               }}
               onMouseLeave={e => {
                 e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
-                e.currentTarget.style.color = 'rgba(255,255,255,0.5)';
+                e.currentTarget.style.color = 'rgba(255,255,255,0.70)';
               }}
             >
               ✖
@@ -236,12 +236,12 @@ export default function ChatPanel({
                 background: msg.role === 'user'
                   ? 'rgba(252, 203, 11, 0.90)'
                   : 'rgba(255, 255, 255, 0.06)',
-                backdropFilter: msg.role === 'ai' ? 'blur(8px)' : 'none',
-                WebkitBackdropFilter: msg.role === 'ai' ? 'blur(8px)' : 'none',
+                backdropFilter: msg.role === 'ai' ? 'blur(25px)' : 'none',
+                WebkitBackdropFilter: msg.role === 'ai' ? 'blur(25px)' : 'none',
                 border: msg.role === 'ai'
-                  ? '1px solid rgba(255,255,255,0.07)'
+                  ? '1px solid rgba(255,255,255,0.15)'
                   : 'none',
-                color: msg.role === 'user' ? '#000' : '#e2e8f0',
+                color: msg.role === 'user' ? '#000000' : '#ffffff',
                 padding: '10px 14px',
                 borderRadius: msg.role === 'user' ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
                 maxWidth: '82%',
@@ -256,7 +256,7 @@ export default function ChatPanel({
             ))}
             {isLoading && (
               <div style={{
-                color: 'rgba(255,255,255,0.35)',
+                color: 'rgba(255,255,255,0.50)',
                 fontSize: '12px',
                 fontStyle: 'italic',
                 alignSelf: 'flex-start',
@@ -274,10 +274,10 @@ export default function ChatPanel({
           {/* ── Input bar ── */}
           <div style={{ 
             padding: '10px 12px',
-            borderTop: '1px solid rgba(255,255,255,0.06)',
+            borderTop: '1px solid rgba(255,255,255,0.15)',
             display: 'flex',
             gap: '8px',
-            background: 'rgba(0,0,0,0.20)',
+            background: 'rgba(255,255,255,0.03)',
           }}>
             <input 
               type="text" 
@@ -288,18 +288,18 @@ export default function ChatPanel({
               style={{ 
                 flex: 1,
                 background: 'rgba(255,255,255,0.05)',
-                backdropFilter: 'blur(8px)',
-                WebkitBackdropFilter: 'blur(8px)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                color: '#fff',
+                backdropFilter: 'blur(25px)',
+                WebkitBackdropFilter: 'blur(25px)',
+                border: '1px solid rgba(255,255,255,0.15)',
+                color: '#ffffff',
                 padding: '10px 14px',
                 borderRadius: '8px',
                 outline: 'none',
                 fontSize: '13px',
                 transition: 'border-color 0.2s',
               }}
-              onFocus={e  => (e.currentTarget.style.borderColor = 'rgba(252,203,11,0.40)')}
-              onBlur={e   => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)')}
+              onFocus={e  => (e.currentTarget.style.borderColor = 'rgba(252,203,11,0.50)')}
+              onBlur={e   => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)')}
             />
             <button 
               onClick={sendMessage}
@@ -308,10 +308,10 @@ export default function ChatPanel({
                 background: isLoading
                   ? 'rgba(252,203,11,0.40)'
                   : 'rgba(252,203,11,0.92)',
-                backdropFilter: 'blur(8px)',
-                WebkitBackdropFilter: 'blur(8px)',
-                border: '1px solid rgba(252,203,11,0.30)',
-                color: '#000',
+                backdropFilter: 'blur(25px)',
+                WebkitBackdropFilter: 'blur(25px)',
+                border: '1px solid rgba(252,203,11,0.35)',
+                color: '#000000',
                 padding: '0 16px',
                 borderRadius: '8px',
                 cursor: isLoading ? 'not-allowed' : 'pointer',
@@ -333,9 +333,9 @@ export default function ChatPanel({
           onClick={() => setIsOpen(true)}
           style={{ 
             background: 'rgba(252, 203, 11, 0.88)',
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
-            color: '#000',
+            backdropFilter: 'blur(25px)',
+            WebkitBackdropFilter: 'blur(25px)',
+            color: '#000000',
             border: '1px solid rgba(252,203,11,0.40)',
             borderRadius: '50px',
             padding: '14px 24px',
