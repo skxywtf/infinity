@@ -12,7 +12,7 @@ export async function GET() {
 
   try {
     const response = await fetch(
-      `https://financialmodelingprep.com/api/v3/quote/${symbols}?apikey=${API_KEY}`
+      `https://financialmodelingprep.com/api/v3/quote-short/AAPL,MSFT,BTCUSD,EURUSD?apikey=${process.env.FMP_KEY}`
     );
     
     const data = await response.json();
