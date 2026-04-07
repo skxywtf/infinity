@@ -13,7 +13,7 @@ export async function GET() {
   try {
     // We fetch each symbol individually using the 'stable/quote' link that worked for you
     const fetchPromises = symbols.map(symbol => 
-      fetch(`https://financialmodelingprep.com/stable/quote?symbol=${symbol}&apikey=${API_KEY}`, {
+      fetch(`https://financialmodelingprep.com/stable/quote?symbol=AAPL&apikey=${API_KEY}`, {
         next: { revalidate: 60 } // Refresh data every 60 seconds
       }).then(res => res.json())
     );
