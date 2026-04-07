@@ -1,32 +1,39 @@
 import { NextResponse } from 'next/server';
 
 export async function GET() {
-  const API_KEY = process.env.FMP_KEY; 
-  
-  if (!API_KEY) {
-    return NextResponse.json({ error: 'API key is missing' }, { status: 500 });
-  }
-
-  // The symbols you want in your sidebar
-  const symbols = ['SPY', 'QQQ', 'GCUSD', 'CLUSD', 'DXUSD', 'BTCUSD']; 
+  const ALPHA_KEY = process.env.ALPHA_VANTAGE_KEY;
+  const symbols = ['SPY', 'QQQ', 'GLD', 'BTCUSD']; // Using GLD for Gold as it's more stable on free tiers
 
   try {
-    // We fetch each symbol individually using the 'stable/quote' link that worked for you
-    const fetchPromises = symbols.map(symbol => 
-      fetch(`https://financialmodelingprep.com/stable/quote?symbol=${symbol}&apikey=${API_KEY}`, {
-        next: { revalidate: 60 } // Refresh data every 60 seconds
-      }).then(res => res.json())
-    );
+    const fetchPromises = symbols.map(async (symbol) => {
+      // 1. Handle Crypto via Binance (No key needed, 100% Free)
+      if (symbol === 'BTCUSD') {
+        const res = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT');
+        const d = await res.json();
+        return {
+          symbol: "BTC",
+          price: parseFloat(d.lastPrice),
+          changesPercentage: parseFloat(d.priceChangePercent),
+          name: "Bitcoin"
+        };
+      }
 
-    const results = await Promise.all(fetchPromises);
+      // 2. Handle Stocks/Indices via Alpha Vantage (Free tier)
+      const res = await fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${ALPHA_KEY}`);
+      const d = await res.json();
+      const quote = d["Global Quote"];
+      
+      return quote ? {
+        symbol: quote["01. symbol"],
+        price: parseFloat(quote["05. price"]),
+        changesPercentage: parseFloat(quote["10. change percent"].replace('%', '')),
+        name: symbol
+      } : null;
+    });
 
-    // Results come back as an array of arrays (e.g., [[{spy}], [{qqq}]]), 
-    // so we flatten them into one single list for your component.
-    const flattenedData = results.flat();
-
-    return NextResponse.json(flattenedData);
+    const results = (await Promise.all(fetchPromises)).filter(Boolean);
+    return NextResponse.json(results);
   } catch (error) {
-    console.error("FMP Individual Fetch Error:", error);
-    return NextResponse.json({ error: 'Failed to fetch market data' }, { status: 500 });
+    return NextResponse.json({ error: 'Data Fetch Failed' }, { status: 500 });
   }
 }
