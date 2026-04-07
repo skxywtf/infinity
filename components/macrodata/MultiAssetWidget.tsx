@@ -16,25 +16,30 @@ export default function MultiAssetWidget() {
   // We use this to show a loading message while waiting for the data
   const [loading, setLoading] = useState(true);
 
-  // useEffect runs automatically when the component first appears on the screen
-  useEffect(() => {
+useEffect(() => {
     const fetchQuotes = async () => {
       try {
-        // Go to the API route we just created in Step 1
         const res = await fetch('/api/fmp/quotes');
         const data = await res.json();
         
-        // Save the data to our state and turn off loading
-        setQuotes(data);
+        // BULLETPROOF CHECK: Only setQuotes if it is an array
+        if (Array.isArray(data)) {
+          setQuotes(data);
+        } else {
+          console.error("Expected array from FMP API, but got:", data);
+          setQuotes([]); // Fallback to empty array so .map() doesn't crash
+        }
+        
         setLoading(false);
       } catch (error) {
         console.error("Failed to load quotes", error);
+        setQuotes([]); // Safety fallback
         setLoading(false);
       }
     };
 
     fetchQuotes();
-  }, []); // The empty brackets mean "only run this once"
+  }, []);
 
   return (
     <aside style={{

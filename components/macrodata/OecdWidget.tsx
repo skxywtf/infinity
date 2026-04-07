@@ -13,8 +13,8 @@ export default function OecdWidget() {
         setLoading(true);
         const response = await fetch('/api/oecd');
         const json = await response.json();
-        if (json.data && json.data.length > 0) {
-          setData(json.data);
+        if (Array.isArray(json.data) && json.data.length > 0) {
+        setData(json.data);
         } else {
           throw new Error("No data returned from API");
         }
