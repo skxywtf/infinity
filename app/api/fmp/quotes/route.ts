@@ -1,39 +1,58 @@
 import { NextResponse } from 'next/server';
 
 export async function GET() {
-  const ALPHA_KEY = process.env.ALPHA_VANTAGE_KEY;
-  const symbols = ['SPY', 'QQQ', 'GLD', 'BTCUSD']; // Using GLD for Gold as it's more stable on free tiers
+  // Use the exact name you have in your .env / Vercel settings
+  const ALPHA_KEY = process.env.ALPHAVANTAGE_KEY; 
+  const symbols = ['SPY', 'QQQ', 'GLD']; 
 
   try {
-    const fetchPromises = symbols.map(async (symbol) => {
-      // 1. Handle Crypto via Binance (No key needed, 100% Free)
-      if (symbol === 'BTCUSD') {
-        const res = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT');
-        const d = await res.json();
-        return {
-          symbol: "BTC",
-          price: parseFloat(d.lastPrice),
-          changesPercentage: parseFloat(d.priceChangePercent),
-          name: "Bitcoin"
-        };
-      }
+    // 1. Fetch Bitcoin (Public API, no key needed)
+    const btcRes = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT', { 
+      next: { revalidate: 30 } 
+    });
+    const btcData = await btcRes.json();
+    
+    const btcObject = {
+      symbol: "BTC",
+      name: "Bitcoin",
+      price: parseFloat(btcData.lastPrice) || 0,
+      changesPercentage: parseFloat(btcData.priceChangePercent) || 0
+    };
 
-      // 2. Handle Stocks/Indices via Alpha Vantage (Free tier)
-      const res = await fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${ALPHA_KEY}`);
-      const d = await res.json();
-      const quote = d["Global Quote"];
-      
-      return quote ? {
-        symbol: quote["01. symbol"],
-        price: parseFloat(quote["05. price"]),
-        changesPercentage: parseFloat(quote["10. change percent"].replace('%', '')),
-        name: symbol
-      } : null;
+    // 2. Fetch Stocks
+    const stockPromises = symbols.map(async (symbol) => {
+      try {
+        // We use ALPHA_KEY here which we defined at the top
+        const res = await fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${ALPHA_KEY}`);
+        const d = await res.json();
+        
+        // Alpha Vantage returns an "Information" key if you hit the rate limit
+        const q = d["Global Quote"];
+        
+        if (!q || !q["05. price"]) return null;
+
+        return {
+          symbol: q["01. symbol"],
+          name: symbol,
+          price: parseFloat(q["05. price"]) || 0,
+          changesPercentage: parseFloat(q["10. change percent"]?.replace('%', '')) || 0
+        };
+      } catch (e) { 
+        console.error(`Error fetching ${symbol}:`, e);
+        return null; 
+      }
     });
 
-    const results = (await Promise.all(fetchPromises)).filter(Boolean);
-    return NextResponse.json(results);
+    const stockResults = (await Promise.all(stockPromises)).filter((item): item is any => item !== null);
+
+    // 3. Combine results
+    const finalData = [btcObject, ...stockResults];
+    
+    return NextResponse.json(finalData);
+
   } catch (error) {
-    return NextResponse.json({ error: 'Data Fetch Failed' }, { status: 500 });
+    console.error("Route Error:", error);
+    // Returning an empty array [] prevents the "Application Error" client-side crash
+    return NextResponse.json([]);
   }
 }
