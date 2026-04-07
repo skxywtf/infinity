@@ -14,6 +14,7 @@ import EcbWidget from '@/components/macrodata/EcbWidget';
 import ConsensusWidget from '../../components/macrodata/ConsensusWidget';
 import TickerCard from '@/components/macrodata/TickerCard';
 import SentimentWidget from '@/components/macrodata/SentimentWidget';
+import MultiAssetWidget from '@/components/macrodata/MultiAssetWidget';
 
 const MacroLineChart = dynamic(
   () => import('@/components/macrodata/MacroLineChart'),
@@ -269,6 +270,9 @@ export default function MacroPage() {
           <RegimeWidget onDataFetched={handleRegimeData} />
           <WTFNewsFeed maxItems={15} />
           <SentimentWidget onDataFetched={handleSentimentData} />
+          
+          {/* ── ADDED MULTI-ASSET WIDGET HERE ── */}
+          <MultiAssetWidget />
 
           {/* Gov Wire glass card */}
           <aside style={{
