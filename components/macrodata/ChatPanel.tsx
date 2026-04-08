@@ -209,8 +209,8 @@ export default function ChatPanel({
                 transition: 'all 0.2s',
               }}
               onMouseEnter={e => {
-                e.currentTarget.style.background = 'rgba(255,255,255,0.14)';
-                e.currentTarget.style.color = '#ffffff';
+                e.currentTarget.style.background = 'rgba(255,255,255,0.12)';
+                e.currentTarget.style.color = '#fff';
               }}
               onMouseLeave={e => {
                 e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
@@ -241,7 +241,7 @@ export default function ChatPanel({
                 border: msg.role === 'ai'
                   ? '1px solid rgba(255,255,255,0.15)'
                   : 'none',
-                color: msg.role === 'user' ? '#000000' : '#ffffff',
+                color: msg.role === 'user' ? '#000' : '#ffffff',
                 padding: '10px 14px',
                 borderRadius: msg.role === 'user' ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
                 maxWidth: '82%',
@@ -311,7 +311,7 @@ export default function ChatPanel({
                 backdropFilter: 'blur(25px)',
                 WebkitBackdropFilter: 'blur(25px)',
                 border: '1px solid rgba(252,203,11,0.35)',
-                color: '#000000',
+                color: '#000',
                 padding: '0 16px',
                 borderRadius: '8px',
                 cursor: isLoading ? 'not-allowed' : 'pointer',
@@ -335,7 +335,7 @@ export default function ChatPanel({
             background: 'rgba(252, 203, 11, 0.88)',
             backdropFilter: 'blur(25px)',
             WebkitBackdropFilter: 'blur(25px)',
-            color: '#000000',
+            color: '#000',
             border: '1px solid rgba(252,203,11,0.40)',
             borderRadius: '50px',
             padding: '14px 24px',
