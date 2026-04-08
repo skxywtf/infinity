@@ -14,6 +14,7 @@ import EcbWidget from '@/components/macrodata/EcbWidget';
 import ConsensusWidget from '../../components/macrodata/ConsensusWidget';
 import TickerCard from '@/components/macrodata/TickerCard';
 import SentimentWidget from '@/components/macrodata/SentimentWidget';
+import MacroDataWidget from '@/components/macrodata/MacroDataWidget'; // ADD THIS LINE!
 
 
 const MacroLineChart = dynamic(
@@ -454,6 +455,13 @@ export default function MacroPage() {
                 <EcbWidget />
                 <ConsensusWidget onDataFetched={handleConsensusData} />
               </div>
+            )}
+
+            {/* INJECT MACRO TERMINAL SCOREBOARD HERE */}
+            {activeTab === 'Global Data' && (
+               <div style={{ marginBottom: '10px' }}>
+                 <MacroDataWidget />
+               </div>
             )}
 
             {activeTab === 'Positioning' && activeCharts.length === 0 && (
