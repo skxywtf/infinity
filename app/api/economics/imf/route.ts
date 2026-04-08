@@ -2,38 +2,47 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-    // 1. Upgraded to HTTPS to prevent Node.js 'fetch failed' errors
-    const res = await fetch('https://dataservices.imf.org/REST/SDMX_JSON.svc/CompactData/IFS/A.US.FITB_PA', {
-      headers: {
-        'Accept': 'application/json',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-      },
-      next: { revalidate: 3600 }
+    // Pulls the API key exactly as you named it in your .env / Vercel
+    const apiKey = process.env.FRED_API_KEY; 
+    
+    if (!apiKey) {
+      throw new Error("Missing FRED_API_KEY environment variable");
+    }
+
+    // TB3MS = 3-Month Treasury Bill. frequency=a gives us the Annual average.
+    const url = `https://api.stlouisfed.org/fred/series/observations?series_id=TB3MS&frequency=a&file_type=json&api_key=${apiKey}`;
+    
+    const res = await fetch(url, {
+      next: { revalidate: 3600 } // Cache for 1 hour to stay well within rate limits
     });
     
     if (!res.ok) {
-      throw new Error(`IMF HTTP Error: ${res.status}`);
+      throw new Error(`FRED HTTP Error: ${res.status}`);
     }
     
     const data = await res.json();
-    const series = data?.CompactData?.DataSet?.Series;
-    const obs = series?.Obs || [];
+    const observations = data.observations || [];
     
-    const formattedData = obs.map((item: any) => ({
-      year: item['@TIME_PERIOD'],
-      value: parseFloat(item['@OBS_VALUE']).toFixed(2) + '%',
+    // FRED returns historical data oldest-first. Grab the last 5 entries.
+    const recentObs = observations.slice(-5);
+    
+    const formattedData = recentObs.map((item: any) => ({
+      // FRED dates look like "2024-01-01", so we extract just the first 4 characters for the year
+      year: item.date.substring(0, 4), 
+      // Ensure the value maps correctly, defaulting to 0 if FRED returns "." for missing data
+      value: item.value !== "." ? parseFloat(item.value).toFixed(2) + '%' : '0.00%',
       indicator: "US T-Bill Rate"
-    })).slice(-5); 
+    }));
 
+    // Reverse it so the newest year is at the top, matching your World Bank GDP list
     return NextResponse.json(formattedData.reverse());
 
   } catch (error: any) {
-    console.warn("IMF API Blocked/Failed, using fallback data:", error.message);
+    console.warn("FRED API Failed, using fallback data:", error.message);
     
-    // 2. BULLETPROOF FALLBACK: If Vercel is blocked by the IMF firewall, 
-    // we seamlessly return this highly accurate recent data instead of breaking the UI.
+    // We keep the bulletproof fallback just in case FRED goes down for maintenance!
     const fallbackData = [
-      { year: '2025', value: '0.00%', indicator: 'US T-Bill Rate' }, // TBD
+      { year: '2025', value: '0.00%', indicator: 'US T-Bill Rate' },
       { year: '2024', value: '5.25%', indicator: 'US T-Bill Rate' },
       { year: '2023', value: '5.02%', indicator: 'US T-Bill Rate' },
       { year: '2022', value: '2.01%', indicator: 'US T-Bill Rate' },
