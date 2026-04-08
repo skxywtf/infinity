@@ -24,6 +24,9 @@ export default function MacroDataWidget() {
         const wbJson = await wbResponse.json();
         const imfJson = await imfResponse.json();
 
+        console.log("WB Data received:", wbJson);
+        console.log("IMF Data received:", imfJson);
+
         setWbData(Array.isArray(wbJson) ? wbJson : []);
         setImfData(Array.isArray(imfJson) ? imfJson : []);
       } catch (error) {
