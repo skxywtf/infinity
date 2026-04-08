@@ -36,6 +36,19 @@ export default function MacroDataWidget() {
     fetchMacroData();
   }, []);
 
+  // Helper function to handle '0.00T', '0.00%', or '0' strings from the API
+  const formatValue = (val: string) => {
+    if (!val) return 'TBD';
+    
+    // parseFloat cleanly strips letters/symbols, turning "0.00T" into the number 0
+    const num = parseFloat(val);
+    
+    // If it parses to exactly 0, the data hasn't been officially released yet
+    if (num === 0) return 'TBD';
+    
+    return val;
+  };
+
   if (loading) {
     return (
       <div className="w-full h-32 flex items-center justify-center border border-gray-800 bg-gray-900/30 rounded-xl">
@@ -72,7 +85,7 @@ export default function MacroDataWidget() {
               >
                 <span className="font-mono text-sm">{item.year}</span>
                 <span className={`font-mono ${index === 0 ? 'text-lg font-bold text-green-400' : 'text-sm'}`}>
-                  {item.value}
+                  {formatValue(item.value)}
                 </span>
               </div>
             ))}
@@ -96,7 +109,7 @@ export default function MacroDataWidget() {
               >
                 <span className="font-mono text-sm">{item.year}</span>
                 <span className={`font-mono ${index === 0 ? 'text-lg font-bold text-yellow-400' : 'text-sm'}`}>
-                  {item.value}
+                  {formatValue(item.value)}
                 </span>
               </div>
             ))}
